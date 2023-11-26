@@ -7,25 +7,37 @@ Tested with:
   - Compiler: MSYS2
   - Version: g++.exe (Rev3, Built by MSYS2 project) 12.1.0
 
-SFML information:
+SFML:
   - Version: 2.6.0
 
-TGUI information:
-  - version: 1.0
+TGUI:
+  - Version: 1.0
 
 # Ultilies breakdown
 
 EventHelper.h
+
 funcHelper.h
+
 iniPareser.h
+
 Input.h
+
 Log.h
+
 Stopwatch.h
+
 StringHelper.h
+
 TerminatingFunction.h
+
 UpdateLimiter.h
+
 CommandHandler.h
+
 CommandPrompt.h
+
 LiveVar.h
+
 VarDisplay.h
 
