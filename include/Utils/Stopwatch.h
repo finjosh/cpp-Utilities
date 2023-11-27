@@ -23,7 +23,7 @@ public:
    std::uint64_t lap(){
       const auto t = std::chrono::high_resolution_clock::now();
       const auto last_r = laps.back();
-      laps.push_back( t );
+      laps.push_back(t);
       return ticks<fmt>(last_r, t);
    }
 
@@ -41,7 +41,7 @@ public:
       for( std::size_t idx = 0; idx <= laps.size()-2; idx++){
          const auto lap_end = laps[idx+1];
          const auto lap_start = laps[idx];
-         lap_times.push_back( ticks<fmt_lap>(lap_start, lap_end) );
+         lap_times.push_back(ticks<fmt_lap>(lap_start, lap_end));
       }
 
       return { ticks<fmt_total>(start_time, laps.back()), lap_times };

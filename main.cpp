@@ -6,6 +6,9 @@
 
 #include "include/Utils/TerminatingFunction.h"
 #include "include/Utils/EventHelper.h"
+#include "include/Utils/Stopwatch.h"
+#include "include/Utils/Log.h"
+#include "include/Utils/StringHelper.h"
 #include "include/Utils/Debug/LiveVar.h"
 #include "include/Utils/Debug/VarDisplay.h"
 #include "include/Utils/Debug/CommandPrompt.h"
@@ -32,7 +35,7 @@ int main()
 {
     //* funcHelper
     // Note: funcHelper is not dependent on any other class contained in this project
-    cout << "Testing outputs for funcHelper: " << endl;
+    cout << "Outputs for funcHelper: " << endl;
     {
         using namespace funcHelper;
 
@@ -91,7 +94,7 @@ int main()
 
     //* EventHelper 
     // Note: Event help is not dependent on any other classes in this project
-    cout << "Testing outputs for EventHelper: " << endl;
+    cout << "Outputs for EventHelper: " << endl;
     {
         // EventHelper is assigned functions the same way as funcHelper
         // the main difference is you call ".connect" or use the "()" operator to add a function to the event
@@ -120,6 +123,40 @@ int main()
         // has the same features as a normal event
     }
     //* -----------
+
+    //* Stopwatch
+    cout << "Outputs for Stopwatch: " << endl;
+    {
+        using namespace timer;
+
+        // when creating the stopwatch it starts the timer
+        Stopwatch timer; 
+        
+        // but you can restart the timer by calling "start"
+        timer.start();
+        std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<1,1>>(1)); // sleeping this thread for 1 second
+        cout << timer.lap<Stopwatch::TimeFormat::MILLISECONDS>() << endl;
+        cout << float(timer.elapsed<Stopwatch::TimeFormat::MILLISECONDS>())/1000.0 << endl; // printing seconds as float
+    }
+
+    //* String Helper
+    cout << "Outputs for StringHelper: " << endl;
+    {
+        // the main function continued in StringHelper are the following: 
+        //      trim, toLower, toInt, toUInt, toULong, toFloat, toLongDouble, toBool, FloatToStringRound
+        // the rest of the functions serve the same functionality 
+
+        // for example trim and trim_copy
+        std::string str = "      a string that needs to be trimmed          ";
+        cout << "Untrimmed string: " << str << endl;
+        cout << "Trimmed copy string: " << StringHelper::trim_copy(str) << endl;
+        cout << "Original string: " << str << endl;
+        StringHelper::trim(str);
+        cout << "Trimmed original string: " << str << endl;
+
+        // if you dont want to use toInt you could also use attemptToInt
+        
+    }
 
     // setup for sfml and tgui
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "C++ Utilities");

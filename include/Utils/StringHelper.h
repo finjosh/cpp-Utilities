@@ -89,6 +89,7 @@ public:
     static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
 
 private:
+    inline StringHelper() = default;
     static const char *const whitespaceDelimiters;
 };
 
