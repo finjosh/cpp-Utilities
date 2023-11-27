@@ -135,7 +135,7 @@ public:
     EventDynamic()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -147,7 +147,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -159,7 +159,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -198,7 +198,7 @@ public:
     EventDynamic2()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -210,7 +210,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -222,7 +222,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -237,7 +237,7 @@ public:
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
     unsigned int connect(const Func& func, const BoundArgs&... args)
     {
-        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T>(1)); });
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
     }
 
     /// @brief Call all connected callbacks
@@ -259,16 +259,16 @@ public:
 
 /// Optional unbound parameters:
 /// - T (value according to template parameter
-template <typename T, typename T2, typename T3, typename T4>
-class EventDynamic4 : public Event
+template <typename T, typename T2, typename T3>
+class EventDynamic3 : public Event
 {
 public:
 
     /// @brief Constructor
-    EventDynamic4()
+    EventDynamic3()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -280,7 +280,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -292,7 +292,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoketed
+    /// @brief Connects a signal handler that will be called when this signal is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -307,19 +307,96 @@ public:
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
     unsigned int connect(const Func& func, const BoundArgs&... args)
     {
-        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T>(1)); });
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3)>>::value>* = nullptr>
     unsigned int connect(const Func& func, const BoundArgs&... args)
     {
-        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T>(1), dereferenceParam<T>(2)); });
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2)); });
+    }
+
+    /// @brief Call all connected callbacks
+    ///
+    /// @param widget  Widget that is triggering the signal
+    /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
+    ///
+    /// @return True when a callback function was executed, false when there weren't any connected callback functions
+    bool invoke(T param, T2 param2, T3 param3)
+    {
+        if (m_functions.empty())
+            return false;
+
+        m_parameters[0] = static_cast<const void*>(&param);
+        m_parameters[1] = static_cast<const void*>(&param2);
+        m_parameters[2] = static_cast<const void*>(&param3);
+        return Event::invoke();
+    }
+};
+
+/// Optional unbound parameters:
+/// - T (value according to template parameter
+template <typename T, typename T2, typename T3, typename T4>
+class EventDynamic4 : public Event
+{
+public:
+
+    /// @brief Constructor
+    EventDynamic4()
+    {}
+
+    /// @brief Connects a signal handler that will be called when this signal is invoked
+    ///
+    /// @param func  Callback function that can be passed to the connect function
+    /// @param args  Additional arguments to pass to the function
+    ///
+    /// @return Unique id of the connection
+    template <typename Func, typename... BoundArgs>
+    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    {
+        return connect(func, args...);
+    }
+
+    /// @brief Connects a signal handler that will be called when this signal is invoked
+    ///
+    /// @param func  Callback function without unbound parameters
+    /// @param args  Additional arguments to pass to the function
+    ///
+    /// @return Unique id of the connection
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect(func, args...);
+    }
+
+    /// @brief Connects a signal handler that will be called when this signal is invoked
+    ///
+    /// @param func  Callback function that have their last parameter unbound of type T
+    /// @param args  Additional arguments to pass to the function
+    ///
+    /// @return Unique id of the connection
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); });
+    }
+
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
+    }
+
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4)>>::value>* = nullptr>
     unsigned int connect(const Func& func, const BoundArgs&... args)
     {
-        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T>(1), dereferenceParam<T>(2), dereferenceParam<T>(3)); });
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3)); });
     }
 
     /// @brief Call all connected callbacks
@@ -337,6 +414,97 @@ public:
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
         m_parameters[3] = static_cast<const void*>(&param4);
+        return Event::invoke();
+    }
+};
+
+/// Optional unbound parameters:
+/// - T (value according to template parameter
+template <typename T, typename T2, typename T3, typename T4, typename T5>
+class EventDynamic5 : public Event
+{
+public:
+
+    /// @brief Constructor
+    EventDynamic5()
+    {}
+
+    /// @brief Connects a signal handler that will be called when this signal is invoked
+    ///
+    /// @param func  Callback function that can be passed to the connect function
+    /// @param args  Additional arguments to pass to the function
+    ///
+    /// @return Unique id of the connection
+    template <typename Func, typename... BoundArgs>
+    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    {
+        return connect(func, args...);
+    }
+
+    /// @brief Connects a signal handler that will be called when this signal is invoked
+    ///
+    /// @param func  Callback function without unbound parameters
+    /// @param args  Additional arguments to pass to the function
+    ///
+    /// @return Unique id of the connection
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect(func, args...);
+    }
+
+    /// @brief Connects a signal handler that will be called when this signal is invoked
+    ///
+    /// @param func  Callback function that have their last parameter unbound of type T
+    /// @param args  Additional arguments to pass to the function
+    ///
+    /// @return Unique id of the connection
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); });
+    }
+
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
+    }
+
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2)); });
+    }
+
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3)); });
+    }
+
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4, T5)>>::value>* = nullptr>
+    unsigned int connect(const Func& func, const BoundArgs&... args)
+    {
+        return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3), dereferenceParam<T5>(4)); });
+    }
+
+    /// @brief Call all connected callbacks
+    ///
+    /// @param widget  Widget that is triggering the signal
+    /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
+    ///
+    /// @return True when a callback function was executed, false when there weren't any connected callback functions
+    bool invoke(T param, T2 param2, T3 param3, T4 param4, T5 param5)
+    {
+        if (m_functions.empty())
+            return false;
+
+        m_parameters[0] = static_cast<const void*>(&param);
+        m_parameters[1] = static_cast<const void*>(&param2);
+        m_parameters[2] = static_cast<const void*>(&param3);
+        m_parameters[3] = static_cast<const void*>(&param4);
+        m_parameters[4] = static_cast<const void*>(&param5);
         return Event::invoke();
     }
 };
