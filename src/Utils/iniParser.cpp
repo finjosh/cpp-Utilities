@@ -101,7 +101,7 @@ bool iniParser::LoadData()
             else
             {
                 // faulty formatted section
-                m_loadedDataErrors[0] = formattingError::section;
+                m_loadedDataErrors.section = true;
                 continue;
             }
 
@@ -115,7 +115,7 @@ bool iniParser::LoadData()
             if (temp == std::string::npos) 
             {
                 // faulty formatted line
-                m_loadedDataErrors[1] = formattingError::key;
+                m_loadedDataErrors.key = true;
                 continue;
             }
 
@@ -154,20 +154,40 @@ void iniParser::unloadData()
     this->m_loadedData.clear();
 }
 
-bool iniParser::wasFormattingError() const
+bool iniParser::isFormatError() const
 {
-    return !(m_loadedDataErrors[0] == formattingError::none && m_loadedDataErrors[1] == formattingError::none);
+    return !(m_loadedDataErrors.key && m_loadedDataErrors.section);
 }
 
-void iniParser::clearFormattingErrors()
+void iniParser::clearFormatErrors()
 {
-    m_loadedDataErrors[0] = formattingError::none;
-    m_loadedDataErrors[1] = formattingError::none;
+    m_loadedDataErrors.section = false;
+    m_loadedDataErrors.key = false;
 }
 
-const iniParser::formattingError* iniParser::getFormattingErrors() const
+const iniParser::formatError iniParser::getFormatErrors() const
 {
-    return &m_loadedDataErrors[0];
+    return m_loadedDataErrors;
+}
+
+bool iniParser::isKeyFormatError() const
+{
+    return m_loadedDataErrors.key;
+}
+
+bool iniParser::isSectionFormatError() const
+{
+    return m_loadedDataErrors.section;
+}   
+
+void iniParser::clearKeyError()
+{
+    m_loadedDataErrors.key = false;
+}
+
+void iniParser::clearSectionError()
+{
+    m_loadedDataErrors.section = false;
 }
 
 void iniParser::CopyFile_Error()

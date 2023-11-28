@@ -22,13 +22,11 @@ bool StringHelper::attemptToInt(std::string string, int& result)
     StringHelper::trim(string);
     return std::from_chars(string.data(), string.data() + string.length(), result).ec == std::errc{};
 }
-//TODO test if these functions work
 bool StringHelper::attemptToUInt(std::string string, unsigned int& result)
 {
     StringHelper::trim(string);
     return std::from_chars(string.data(), string.data() + string.length(), result).ec == std::errc{};
 }
-//TODO test if these functions work
 bool StringHelper::attemptToULong(std::string string, unsigned long& result)
 {
     StringHelper::trim(string);

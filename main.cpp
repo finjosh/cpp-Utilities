@@ -9,6 +9,8 @@
 #include "include/Utils/Stopwatch.h"
 #include "include/Utils/Log.h"
 #include "include/Utils/StringHelper.h"
+#include "include/Utils/UpdateLimiter.h"
+#include "include/Utils/iniParser.h"
 #include "include/Utils/Debug/LiveVar.h"
 #include "include/Utils/Debug/VarDisplay.h"
 #include "include/Utils/Debug/CommandPrompt.h"
@@ -90,7 +92,6 @@ int main()
         // - you have to input them when calling the function
         // - you can use only some of the dynamic inputs
     }
-    //* ----------
 
     //* EventHelper 
     // Note: Event help is not dependent on any other classes in this project
@@ -122,7 +123,6 @@ int main()
         // when invoking you must give all the inputs
         // has the same features as a normal event
     }
-    //* -----------
 
     //* Stopwatch
     cout << "Outputs for Stopwatch: " << endl;
@@ -154,8 +154,91 @@ int main()
         StringHelper::trim(str);
         cout << "Trimmed original string: " << str << endl;
 
+        // the following example is basically the same this for floats and the other supported variable types
+        int temp = StringHelper::toInt("1234", 0);
         // if you dont want to use toInt you could also use attemptToInt
+        if (StringHelper::attemptToInt("1234", temp))
+            cout << "Successfully converted to int" << endl;
+        // useful when you need to know if it was successfully converted
+    }
+
+    //* Update Limiter
+    {
+        // limits the rate at which a thread can run
+        // the limit is set in frames per second
+
+        UpdateLimiter limit(60);
+
+        // you can also update the limit while it is in use
+        limit.updateLimit(16);
+
+        // Using stopwatch to print to console how long its taking
+        timer::Stopwatch timer;
+
+        for (int i = 0; i < 48; i++)
+        {
+            timer.start();
         
+            // showing we can update limit on the fly
+            if (i == 16)
+            {
+                limit.updateLimit(32);
+                cout << "update limit is now 144" << endl;
+            }
+
+            // must call wait when you want the thread to wait till next update time
+            limit.wait();
+            cout << timer.lap<timer::Stopwatch::MILLISECONDS>()/1000.f << "s" << endl;
+        }
+    }
+
+    //* Log
+    {
+        // When you run the program there will be a DebugLog.txt file created which is where all of the Logs will be printed
+        // To create a log you use the command CreateLog
+        Log::CreateLog(LogType::Debug, "Creating a log");
+        // When it writes the String to the file it will include the infomation about which Log type it is and the time is was added
+    }
+
+    //* ini Parser
+    {
+        // first we want to open the file
+        iniParser file;
+        file.setFilePath("testing.ini");
+
+        if (file.isOpen())
+        {
+            file.LoadData();
+            if (!file.isDataLoaded())
+            {
+                cout << "Data was not loaded" << endl;
+                // overriding data so we can write to the file
+                file.overrideData();
+            }
+            else if (file.isFormatError())
+            {
+                cout << "Data has format error" << endl;
+                
+                // This makes a copy of the data in the file and continues with the program
+                // any data that was formatted properly will still be loaded
+                // This will not override any older error files
+                file.CopyFile_Error();
+            }
+        }
+        else
+        {
+            cout << "File was not opened" << endl;
+        }
+
+        // now that we have the file open and data loaded we can start adding data to the file
+        file.addSection("Test");
+        // NOTE: No data is saved to the file until you either set a new path, delete the iniParser instance, or call the save function
+        // NOTE: if autosave is off then it will only save when calling the save function explicitly 
+        
+        file.addValue("Test", "v", "789");
+        file.SaveData();
+
+        cout << "Getting the var we just added: " << file.getValue("Test", "v") << endl;
     }
 
     // setup for sfml and tgui

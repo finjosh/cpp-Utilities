@@ -1,1 +1,3 @@
-[Mon Nov 27 09:39:59 2023] [Debug] -- testing stopwatch
+
+[Mon Nov 27 19:00:07 2023] [Debug] -- Creating a log
+[Mon Nov 27 19:01:37 2023] [Debug] -- Creating a log
