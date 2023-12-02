@@ -156,7 +156,7 @@ void iniParser::unloadData()
 
 bool iniParser::isFormatError() const
 {
-    return !(m_loadedDataErrors.key && m_loadedDataErrors.section);
+    return (m_loadedDataErrors.key || m_loadedDataErrors.section);
 }
 
 void iniParser::clearFormatErrors()

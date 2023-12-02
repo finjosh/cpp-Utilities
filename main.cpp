@@ -4,13 +4,13 @@
 #include "TGUI/TGUI.hpp"
 #include "TGUI/Backend/SFML-Graphics.hpp"
 
-#include "include/Utils/TerminatingFunction.h"
+#include "include/Utils/TerminatingFunction.h" // Depends on funcHelper
 #include "include/Utils/EventHelper.h"
 #include "include/Utils/Stopwatch.h"
 #include "include/Utils/Log.h"
 #include "include/Utils/StringHelper.h"
 #include "include/Utils/UpdateLimiter.h"
-#include "include/Utils/iniParser.h"
+#include "include/Utils/iniParser.h" // Depends on StringHelper
 #include "include/Utils/Debug/LiveVar.h"
 #include "include/Utils/Debug/VarDisplay.h"
 #include "include/Utils/Debug/CommandPrompt.h"
@@ -29,6 +29,11 @@ public:
         cout << str << endl;
     }
 
+    void function2(int i)
+    {
+        cout << std::to_string(i) << endl;
+    }
+
 private:
     std::string str;
 };
@@ -37,8 +42,8 @@ int main()
 {
     //* funcHelper
     // Note: funcHelper is not dependent on any other class contained in this project
-    cout << "Outputs for funcHelper: " << endl;
     {
+        cout << "Outputs for funcHelper: " << endl;
         using namespace funcHelper;
 
         // the usage of a func is the same with a normal function as it is with a lambda
@@ -73,6 +78,23 @@ int main()
         func<std::string> rtnFunction([](){ return "A returned value"; });
         cout << rtnFunction() << endl;
 
+        // how function type ids work
+        cout << function.getTypeid() << endl;
+        function.setFunction([](){});
+        cout << function.getTypeid() << endl;
+        function.setFunction([](int i){}, 345);
+        cout << function.getTypeid() << endl;
+        function.setFunction([](int i){}, 3);
+        cout << function.getTypeid() << endl;
+        function.setFunction(testingClass::function2, &temp, 1);
+        cout << function.getTypeid() << endl;
+        function.setFunction(testingClass::function2, &temp, 2);
+        cout << function.getTypeid() << endl;
+        // The summary of how function type ids work is the following:
+        //      - No matter what you input into the function it will have the same name
+        //      - The id is given base on the give functions input (NOT what you gave as input but what the function requires i.e. int, float) and which class it was created in
+        //      - Lambda functions will never have the same id even if they are the exact same
+
         //* now onto dynamic functions
         // You have the option between a function that takes in 1-5 vars which are dynamic and an infinite amount of static vars (set at creation)
         // Note: you can not return anything with dynamic functions
@@ -95,8 +117,8 @@ int main()
 
     //* EventHelper 
     // Note: Event help is not dependent on any other classes in this project
-    cout << "Outputs for EventHelper: " << endl;
     {
+        cout << "Outputs for EventHelper: " << endl;
         // EventHelper is assigned functions the same way as funcHelper
         // the main difference is you call ".connect" or use the "()" operator to add a function to the event
         EventHelper::Event event;
@@ -125,8 +147,8 @@ int main()
     }
 
     //* Stopwatch
-    cout << "Outputs for Stopwatch: " << endl;
     {
+        cout << "Outputs for Stopwatch: " << endl;
         using namespace timer;
 
         // when creating the stopwatch it starts the timer
@@ -140,8 +162,8 @@ int main()
     }
 
     //* String Helper
-    cout << "Outputs for StringHelper: " << endl;
     {
+        cout << "Outputs for StringHelper: " << endl;
         // the main function continued in StringHelper are the following: 
         //      trim, toLower, toInt, toUInt, toULong, toFloat, toLongDouble, toBool, FloatToStringRound
         // the rest of the functions serve the same functionality 
@@ -164,6 +186,7 @@ int main()
 
     //* Update Limiter
     {
+        cout << "Outputs for Update Limiter" << endl;
         // limits the rate at which a thread can run
         // the limit is set in frames per second
 
@@ -202,6 +225,8 @@ int main()
 
     //* ini Parser
     {
+        //! Depends on StringHelper
+        cout << "Outputs for ini Parser" << endl;
         // first we want to open the file
         iniParser file;
         file.setFilePath("testing.ini");
@@ -239,6 +264,14 @@ int main()
         file.SaveData();
 
         cout << "Getting the var we just added: " << file.getValue("Test", "v") << endl;
+    }
+
+    //* Terminating functions
+    {
+        // There is some setup for Terminating functions
+        // to find them please look down in the update for the window (while loop)
+
+        
     }
 
     // setup for sfml and tgui
@@ -281,7 +314,7 @@ int main()
         VarDisplay::Update();
         //! ------------------------------=-----
         //! Updates all Terminating Functions
-        TerminatingFunction::UpdateFunctions(deltaTime);
+        TerminatingFunction::UpdateFunctions(deltaTime); //* only function that is required to be called for terminating functions
         //! ------------------------------
 
         // draw for tgui

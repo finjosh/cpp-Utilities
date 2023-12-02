@@ -8,6 +8,7 @@
 
 #include "funcHelper.h"
 
+// TODO update this to work more like how commands work in the command handler
 class TerminatingFunction
 {
 public:
@@ -32,9 +33,9 @@ public:
     /// @brief returns the deltaTime from the last time it was updated
     /// @warning does NOT update unless the UpdateFunctions function is called
     static float getDeltaTime();
-    static std::unordered_multiset<funcHelper::func<StateType>> terminatingFunctions;
 private:
     static float deltaTime;
+    static std::unordered_multiset<funcHelper::func<StateType>> terminatingFunctions;
 };
 
 typedef funcHelper::func<TerminatingFunction::StateType> TFunc;
