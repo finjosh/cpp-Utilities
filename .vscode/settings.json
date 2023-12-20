@@ -93,5 +93,14 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp"
-    }
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "v:\\Git_projects\\cpp-Utilities",
+            "binaryPath": "v:\\Git_projects\\cpp-Utilities\\main",
+            "binaryArgs": []
+        }
+    ],
+    "makefile.makefilePath": "Makefile",
+    "C_Cpp.default.compilerPath": "V:\\VSCodeFolder\\MSYS2\\mingw64\\bin\\gcc.exe"
 }

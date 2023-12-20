@@ -1,15 +1,17 @@
 #include "include\Utils\TerminatingFunction.h"
 
-std::unordered_multiset<funcHelper::func<TF::StateType>> TerminatingFunction::terminatingFunctions;
-float TerminatingFunction::deltaTime = 0;
+std::list<TerminatingFunction::_tFunc> TerminatingFunction::terminatingFunctions;
 
 void TerminatingFunction::UpdateFunctions(float deltaTime)
 {
-    TerminatingFunction::deltaTime = deltaTime;
     auto function = TerminatingFunction::terminatingFunctions.begin();
     while (function != TerminatingFunction::terminatingFunctions.end())
     {
-        if (!function->valid() || function->invoke() == StateType::Finished)
+        function->totalTime += deltaTime;
+        data rtnData(deltaTime, function->totalTime);
+        if (function->func.valid()) function->func.invoke(&rtnData);
+
+        if (rtnData.state == TerminatingFunction::State::Finished)
         {
             auto temp = function;
             function++;
@@ -21,17 +23,11 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
     }
 }
 
-std::string TerminatingFunction::Add(funcHelper::func<StateType> function, bool replace)
+std::string TerminatingFunction::Add(funcHelper::funcDynamic<data*> function)
 { 
     if (function.valid())
     {
-        if (replace && TerminatingFunction::terminatingFunctions.contains(function))
-        {
-            TerminatingFunction::terminatingFunctions.erase(function);
-            TerminatingFunction::terminatingFunctions.emplace(function); 
-        }
-        else
-            TerminatingFunction::terminatingFunctions.emplace(function); 
+        TerminatingFunction::terminatingFunctions.push_back({function}); 
         
         return function.getTypeid();
     }
@@ -41,11 +37,8 @@ std::string TerminatingFunction::Add(funcHelper::func<StateType> function, bool 
 void TerminatingFunction::clear()
 { TerminatingFunction::terminatingFunctions.clear(); }
 
-void TerminatingFunction::erase(const std::string& functionTypeid)
+void TerminatingFunction::remove(const std::string& functionTypeid)
 {
-    std::erase_if(terminatingFunctions, [functionTypeid](const funcHelper::func<void>& func){ return functionTypeid == func.getTypeid(); });
+    TerminatingFunction::terminatingFunctions.remove_if([functionTypeid](const _tFunc& func){ return functionTypeid == func.func.getTypeid(); });
     return;
 }
-
-float TerminatingFunction::getDeltaTime()
-{ return TerminatingFunction::deltaTime; }

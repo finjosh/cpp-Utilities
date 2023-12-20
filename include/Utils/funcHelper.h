@@ -148,7 +148,7 @@ public:
     }
 
     /// @brief invokes the currently set function
-    inline void invoke(T param)
+    inline void invoke(T param) const
     { 
         m_parameters[0] = static_cast<const void*>(&param);
         func::invoke();

@@ -3,42 +3,67 @@
 
 #pragma once
 
-#include <unordered_set>
+#include <list>
 #include <string>
 
 #include "funcHelper.h"
 
-// TODO update this to work more like how commands work in the command handler
-class TerminatingFunction
+struct TerminatingFunction 
 {
 public:
-    enum StateType
+    enum State
     {
         Finished = 0,
         Running = 1
     };
 
+    struct data
+    {
+        inline data(const float& deltaTime, const float& totalTime) : deltaTime(deltaTime), totalTime(totalTime) {};
+        const float deltaTime = 0.f;
+        const float totalTime = 0.f;
+        State state = State::Finished;
+    };
+
     /// @brief Calling this function will call all Terminating Functions and erase ther from the list if they are finished running
     /// @param deltaTime the deltaTime in seconds
     static void UpdateFunctions(float deltaTime);
-    /// @param replace if there is already the same function currently running does it get replaced
+    /// @note if the function is already added it will be added again
     /// @warning The function will only be added if it is valid
-    /// @returns the function typeid or "" if function is not valid
-    static std::string Add(funcHelper::func<StateType> function, bool replace = false);
+    /// @returns the function typeid is "" if function is not valid
+    static std::string Add(funcHelper::funcDynamic<data*> function);
     /// @brief clears all terminating functions from the list 
     static void clear();
     /// @brief erases the given function from the terminating functions list IF there is one in the list
     /// @warning removes all functions with the same functionTypeid
-    static void erase(const std::string& functionTypeid);
-    /// @brief returns the deltaTime from the last time it was updated
-    /// @warning does NOT update unless the UpdateFunctions function is called
-    static float getDeltaTime();
+    static void remove(const std::string& functionTypeid);
+
+protected:
+    struct _tFunc
+    {
+        inline _tFunc(funcHelper::funcDynamic<data*> func) : func(func) {};
+
+        funcHelper::funcDynamic<data*> func;
+        float totalTime = 0.f;
+
+        bool operator== (const _tFunc& tFunc)
+        {
+            return func.getTypeid() == tFunc.func.getTypeid();
+        }
+    };
+
+    // second value is the current time the function has been running for
+    static std::list<_tFunc> terminatingFunctions;
 private:
-    static float deltaTime;
-    static std::unordered_multiset<funcHelper::func<StateType>> terminatingFunctions;
+    inline TerminatingFunction() = default;
 };
 
-typedef funcHelper::func<TerminatingFunction::StateType> TFunc;
-typedef TerminatingFunction TF;
+// use this for typedefs that shorten names
+namespace TerminatingFunctions
+{
+    typedef TerminatingFunction TermFunc;
+    typedef funcHelper::funcDynamic<TermFunc::data*> TFunction;
+    typedef TerminatingFunction::data TData;
+}
 
 #endif // TERMINATINGFUNCTION_H

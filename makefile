@@ -1,28 +1,36 @@
-# directory that the makefile was called from
-mkfile_path:=$(abspath $(lastword $(MAKEFILE_LIST)))
-project_name:=$(strip $(notdir $(patsubst %/,%,$(dir $(mkfile_path)))))
-project_dir:=$(patsubst %/makefile,%, $(mkfile_path))
-
-# any of the dirs for source files
-SRCDIRS=. src src/Utils src/Utils/Debug
-
 # exe name
 PROJECT:=main
-# all .cpp file paths
-SRC=$(foreach D,$(SRCDIRS),$(wildcard $(D)/*.cpp))
+# the directory in which all .o and .d files will be made
+OBJ_O_DIR:=bin
+# assumes that source directories are the same as include
+SRCDIRS=. src src/Utils src/Utils/Debug
 # the include flags for compilation
 INCLUDES=-I /VSCodeFolder/Libraries/SFML-2.6.0/include -D SFML_STATIC -I /VSCodeFolder/Libraries/TGUI-1.0/include -I $(project_dir)
 # the paths to libs for linking
 LIBS=-L /VSCodeFolder/Libraries/SFML-2.6.0/lib -L /VSCodeFolder/Libraries/TGUI-1.0/lib -L $(project_dir)
 
-OBJ_O_DIR=bin
+
+#! DONT EDIT ANYTHING FROM HERE DOWN
+# any of the dirs for source files
+# DIRS:=dir /AD /B /S	
+# findSubDirs=$(shell ${DIRS} $1)
+
+# directory that the makefile was called from
+mkfile_path:=$(abspath $(lastword $(MAKEFILE_LIST)))
+project_name:=$(strip $(notdir $(patsubst %/,%,$(dir $(mkfile_path)))))
+project_dir:=$(patsubst %/makefile,%, $(mkfile_path))
+
+# all .cpp file paths
+SRC:=$(foreach D,$(SRCDIRS),$(wildcard $(D)/*.cpp))
 # Create an object file of every cpp file
 OBJECTS=$(addprefix $(OBJ_O_DIR)/,$(patsubst %.cpp,%.o,$(SRC)))
 # Creating dependency files
 DEPFILES=$(patsubst %.o,%.d,$(OBJECTS))
 
+OUTPATHS:=$(foreach d,$(filter-out ./,$(SRCDIRS)),$(OBJ_O_DIR)/$(d)/)
+
 # so there is no file that gets mistaked with the tasks listed
-.PHONY = all info bin help
+.PHONY = all info clean
 
 # compiler to use
 CC=g++
@@ -45,7 +53,7 @@ DEPFLAGS=-MP -MD
 # any compiler options
 COMPILE_OPTIONS=-std=c++20 $(DEBUG_BUILD) $(STATIC_BUILD) $(INCLUDES) $(DEPFLAGS)
 
-all: $(PROJECT)
+all: $(OUTPATHS) $(PROJECT)
 
 # try interlacing the objects and header files
 $(PROJECT): $(OBJECTS)
@@ -57,23 +65,34 @@ $(OBJ_O_DIR)/%.o:%.cpp
 # include the dependencies
 -include $(DEPFILES)
 
-bin:
-	$(foreach d,$(filter-out ./,$(SRCDIRS)),$(call makeDir,$(patsubst $(OBJ_O_DIR)/%/,$(OBJ_O_DIR)/%,$(OBJ_O_DIR)/$(d))))
+$(OBJ_O_DIR)/%/:
+	$(call makeDir,$(patsubst %/,%,$@))
 
+# shell command for removing a dir
+RMDIR:=rmdir /s /q
+# shell command for removing a file
+RMFILE:=del /q /f
+
+clean:
+	$(shell ${RMFILE} $(PROJECT).exe)
+	$(shell ${RMDIR} $(OBJ_O_DIR))
+	$(call makeBinDir)
+
+# the shell command for making a dir
 MKDIR_P:=mkdir
+# makes a dir for the given path
 makeDir=$(shell ${MKDIR_P} $(subst /,\,$1))
+# make bin directories 
+makeBinDir=$(foreach d,$(filter-out ./,$(SRCDIRS)),$(call makeDir,$(patsubst $(OBJ_O_DIR)/%/,$(OBJ_O_DIR)/%,$(OBJ_O_DIR)/$(d))))
 
 info:
 	@echo Project Name: $(project_name)
 	@echo Makefile Dir: $(mkfile_path)
 	@echo Project Dir: $(project_dir)
-	@echo Source Files: $(SRC)
 	@echo Compiler: $(CC)
+	@echo Object Folder: $(OBJ_O_DIR)
+	@echo Output Paths: $(OUTPATHS)
+	@echo Source Files: $(SRC)
 	@echo Linker Flags: $(LINKERFLAGS)
 	@echo Libraries: $(LIBS)
 	@echo Includes: $(INCLUDES)
-	@echo Object Folder: $(OBJ_O_DIR)
-
-help:
-	@echo - Before trying to "make" the project run "make bin"
-	@echo - After a new directory is added make sure to update the make file and run "make bin" again
