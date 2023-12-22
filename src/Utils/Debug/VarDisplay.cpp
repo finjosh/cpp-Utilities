@@ -29,7 +29,7 @@ void VarDisplay::init(tgui::Gui& gui)
     gui.add(_parent);
 
     _parent->onClosing(&_closeWindow);
-    _parent->setSize({150,200});
+    _parent->setSize({"10%","15%"});
     _parent->setPosition({"90%", "0%"});
     _parent->setResizable(true);
     _parent->onMinimize(&VarDisplay::minimizeWindow);
@@ -117,12 +117,12 @@ void VarDisplay::Update()
     if (_varChanged)
     {
         std::string str = "";
-        bool red = false;
-        std::for_each(_vars.begin(), _vars.end(), [&str, &red](const std::pair<std::string, float>& i)
+        bool altColor = false;
+        std::for_each(_vars.begin(), _vars.end(), [&str, &altColor](const std::pair<std::string, float>& i)
         { 
-            str += (red == true ? "<color=#B62000>" : "<color=#000000>");
+            str += (altColor == true ? "<color=" + ALT_COLOR + ">" : "<color=#000000>");
             str += ("<b><i>" + i.first + "</i></b></color> = " + std::to_string(i.second) + "\n"); 
-            red = !red;
+            altColor = !altColor;
         });
         if (str.length() > 0)
             str.erase(--str.end());
