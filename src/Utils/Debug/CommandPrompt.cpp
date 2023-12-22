@@ -112,7 +112,30 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
                     CommandPrompt::setMaxHistory(temp);
                     data->setReturnStr("Max history set successfully");
                     data->setReturnColor({0,255,0});
-                }})
+                }}),
+                { "getRandom", "[min = 0] [max = " + std::to_string(RAND_MAX) + " ] [amount = 1]" +
+                            " | prints n random numbers in the following syntax: \"a(1) a(2) a(3) a(4) ... a(n)\" (hard max of " + std::to_string(RAND_MAX) + " and hard min of 0)",
+                    {[](Command::Data* input)
+                    {
+                        int min = 0;
+                        int max = RAND_MAX;
+
+                        if (!Command::isValidInput<int>("Invalid min entered", *input, input->getToken(0), min, -1, [](int& v){ return v >= 0;}) 
+                            || !Command::isValidInput<int>("Invalid max entered", *input, input->getToken(1), max, -1, [&max, &min](int& v){ return !(v < 0 || v > max || min > max);}))
+                            return;
+
+                        unsigned long amount = 1;
+                        if (input->getNumOfTokens() == 3)
+                            Command::isValidInput<unsigned long>("Invalid amount entered - Defaulted to 1", *input, input->getToken(2), amount, 1, [](unsigned long& v){ return v > 0; });
+
+                        while (amount != 0)
+                        {
+                            input->addToReturnStr(std::to_string((min + (rand())%(max+1 - min))) + " ");
+                            amount--;
+                        } 
+                    }}
+                }
+                // ,Command::command("print", "", {[](Command::Data* data){ for (auto s: data->getTokens()) { data->addToReturnStr(s); } }})
             }});
         }
         // * ---------------------------
@@ -147,6 +170,9 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
 
         _textBox->onReturnKeyPress([]()
         {
+            if (_textBox->getText().size() == 0 && _autoFillList->isVisible())
+                _textBox->setText(_autoFillList->getSelectedItem());
+
             _chatBox->addLine("> " + _textBox->getText(), tgui::Color::White, tgui::TextStyle::Bold);
 
             auto commandData = Command::Handler::callCommand(_textBox->getText().toStdString());
@@ -204,9 +230,9 @@ void CommandPrompt::UpdateEvent(const sf::Event& event)
             }
         }
 
-        if (event.key.code == sf::Keyboard::Key::Up)
+        if (event.key.code == sf::Keyboard::Key::Up && (_textBox->isFocused() || _autoFillList->isFocused()))
         {
-            if (!_autoFillList->isVisible())
+            if (!_autoFillList->isVisible() && _commandHistory.size() != 0)
             {
                 _autoFillList->removeAllItems();
                 for (auto i = _commandHistory.begin(); i != _commandHistory.end(); i++)
@@ -332,6 +358,7 @@ void CommandPrompt::AutoFill()
 
 void CommandPrompt::addHistory(const std::string& command)
 {
+    if (StringHelper::trim_copy(command).size() == 0) return;
     if (_maxHistory > _commandHistory.size())
     {
         if (command != "" && _commandHistory.back() != command)
@@ -347,7 +374,6 @@ void CommandPrompt::addHistory(const std::string& command)
 void CommandPrompt::setMaxHistory(const size_t& size)
 {
     _maxHistory = size;
-    _commandHistory.resize(size);
 }
 
 size_t CommandPrompt::getMaxHistory()

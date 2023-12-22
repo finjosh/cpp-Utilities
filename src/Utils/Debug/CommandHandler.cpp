@@ -116,19 +116,24 @@ void Data::deepParseCommand()
         {
             size_t startOfSub = i;
             std::string command = token.substr(1);
-            i++;
+            this->removeToken(i);
             token = this->getToken(i);
-            while (!token.ends_with(')'))
+            while (!token.ends_with(')') && token != "")
             {
                 command += " " + token;
-                i++;
+                this->removeToken(i);
                 token = this->getToken(i);
             }
             // once token ends with ')' add it to the end of the command
-            command += " " + token.substr(0, token.size()-1);
+            if (token != "")
+            {
+                this->removeToken(i);
+                token.erase(token.size()-1);
+                command += " " + token;
+            }
             Tokens temp = this->parseCommand(Command::Handler::callCommand(command).getReturnStr());
-            this->_tokens.erase(this->_tokens.begin()+startOfSub,this->_tokens.begin()+i+1); // removing all the tokens we have used
-            this->_tokens.insert(--this->_tokens.end(), temp.begin(), temp.end()); // adding the data from the sub command
+            // this->_tokens.erase(this->_tokens.begin()+startOfSub,this->_tokens.begin()+i); // removing all the tokens we have used
+            this->_tokens.insert(this->_tokens.begin()+startOfSub, temp.begin(), temp.end()); // adding the data from the sub command
             i = startOfSub + temp.size()-1; // setting i to the end of the sub commands return tokens
         }
         i++;

@@ -47,10 +47,10 @@ public:
 protected:
     /// @brief adds a var to the list
     /// @note used with the events from live vars
-    static void addVar(const std::string& name, const std::string& value);
+    static void addVar(const std::string& name, const float& value);
     /// @brief sets the value of a var 
     /// @note used with the events from live vars
-    static void setVar(const std::string& name, const std::string& value);
+    static void setVar(const std::string& name, const float& value);
     /// @brief removes a var from the list
     /// @note used with the events from live vars
     static void removeVar(const std::string& name);
@@ -61,7 +61,7 @@ protected:
 private:
     VarDisplay() = default;
 
-    static std::map<std::string, std::string> _vars; //! Not efficient as vars are already stored in "LiveVar.h"
+    static std::map<std::string, float> _vars;
     static bool _varChanged;
 
     static tgui::ChildWindow::Ptr _parent;

@@ -1,6 +1,6 @@
 #include "include\Utils\Log.h"
 
-std::string Log::LogFile = "DebugLog.txt";
+std::string Log::LogFile = "Log.txt";
 std::ofstream Log::file = std::ofstream(Log::LogFile, std::ios_base::out | std::ios_base::app);
 const std::map<const LogType, const std::string> Log::LogDictionary = {
     {LogType::Error, "Error"},

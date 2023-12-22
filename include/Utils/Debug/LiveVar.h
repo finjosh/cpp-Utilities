@@ -22,7 +22,7 @@ public:
     /**
      * @brief if there is not already a var of that name returns min float
     */
-    static float getVar(const std::string& name);
+    static float getValue(const std::string& name);
 
     /**
      * @brief the given event is called whenever the value connected to the given name is changed
@@ -37,7 +37,7 @@ public:
      * @note if the given name does not exist nothing happens
      * @returns true if set false if not
     */
-    static bool setVar(const std::string& name, const float& value);
+    static bool setValue(const std::string& name, const float& value);
 
     /**
      * @param func a function that will return the new value depending on the given event data
@@ -74,7 +74,7 @@ public:
     {
         std::list<std::pair<sf::Keyboard::Key, float>> values = {value...};
 
-        return initVar(name, v, {&updateValue2, values});
+        return initVar(name, v, {&presetKeys, values});
     }
 
     /// @returns true if removed false if not
@@ -88,14 +88,33 @@ public:
     static EventHelper::EventDynamic<std::string> onVarRemoved;
 
 protected:
-    static void updateValue(const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey, const float& increment, 
+    // updates the value based on the keys and increment amount
+    static void incrementKeys(const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey, const float& increment, 
                             const float& min, const float& max, float* value, const sf::Event& event);
-    static void updateValue2(const std::list<std::pair<sf::Keyboard::Key, float>>& values, float* value, const sf::Event& event);
+    // updates the value based on the preset keys and values
+    static void presetKeys(const std::list<std::pair<sf::Keyboard::Key, float>>& values, float* value, const sf::Event& event);
 
 private:
-    LiveVar() = default;
+    inline LiveVar() = default;
 
-    static std::unordered_map<std::string, std::pair<float, std::pair<EventHelper::EventDynamic<float>, funcHelper::funcDynamic2<float*, sf::Event>>>> m_vars;
+    class var
+    {
+    public:
+        var(const float& value, funcHelper::funcDynamic2<float*, sf::Event> keyEvent);
+
+        float getValue() const;
+        void setValue(const float& v);
+        void invokeKeyEvent(const sf::Event& event);
+
+        // called when ever the value is changed
+        EventHelper::EventDynamic<float> onChanged;
+    private:
+        float value;
+        // used to change the value based on the preset key events
+        funcHelper::funcDynamic2<float*, sf::Event> keyEvent;
+    };
+
+    static std::unordered_map<std::string, var> m_vars;
 };
 
 #endif

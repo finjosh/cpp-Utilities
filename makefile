@@ -3,7 +3,7 @@ PROJECT:=main
 # the directory in which all .o and .d files will be made
 OBJ_O_DIR:=bin
 # assumes that source directories are the same as include
-SRCDIRS=. src src/Utils src/Utils/Debug
+SRCDIRS=. src src/Utils src/Utils/Debug src/Examples
 # the include flags for compilation
 INCLUDES=-I /VSCodeFolder/Libraries/SFML-2.6.0/include -D SFML_STATIC -I /VSCodeFolder/Libraries/TGUI-1.0/include -I $(project_dir)
 # the paths to libs for linking

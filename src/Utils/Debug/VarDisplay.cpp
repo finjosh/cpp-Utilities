@@ -1,6 +1,6 @@
 #include "include/Utils/Debug/VarDisplay.h"
 
-std::map<std::string, std::string> VarDisplay::_vars;
+std::map<std::string, float> VarDisplay::_vars;
 bool VarDisplay::_varChanged = false;
 
 tgui::ChildWindow::Ptr VarDisplay::_parent = nullptr;
@@ -13,11 +13,11 @@ void VarDisplay::init(tgui::Gui& gui)
     // adding any event updates for the new live var
     LiveVar::onVarAdded([](const std::string& name)
     { 
-        VarDisplay::addVar(name, std::to_string(LiveVar::getVar(name))); 
+        VarDisplay::addVar(name, LiveVar::getValue(name)); 
         // adding auto updating values for the live vars
         LiveVar::getVarEvent(name)->connect([name]()
         {
-            VarDisplay::setVar(name, std::to_string(LiveVar::getVar(name)));
+            VarDisplay::setVar(name, LiveVar::getValue(name));
         });
     });
     // adding updates for the removed live var
@@ -56,11 +56,12 @@ void VarDisplay::init(tgui::Gui& gui)
         Command::command("display", "Displays the live variables", {VarDisplay::openWindow}),
         Command::command("hide", "Hides the display for live variables", {VarDisplay::_closeWindow, nullptr}),
         Command::command("get", "[Name] | Gets the value for the given variable", {[](Command::Data* data){
-            float temp = LiveVar::getVar(data->getToken());
+            float temp = LiveVar::getValue(data->getToken());
             if (temp == std::numeric_limits<float>::min())
             {
-                data->setReturnStr("Value could not exist");
+                data->setReturnStr("Value does not exist");
                 data->setReturnColor(Command::WARNING_COLOR);
+                return;
             }
             data->setReturnStr(std::to_string(temp));
         }}),
@@ -68,7 +69,7 @@ void VarDisplay::init(tgui::Gui& gui)
             float value;
             if (!Command::isValidInput<float>("Invalid amount entered", *data, data->getToken(1), value, std::numeric_limits<float>::min()))
                 return;
-            if (LiveVar::setVar(data->getToken(), value))
+            if (LiveVar::setValue(data->getToken(), value))
             {
                 data->setReturnStr("Variable successfully set");
                 data->setReturnColor({0,255,0});
@@ -117,10 +118,10 @@ void VarDisplay::Update()
     {
         std::string str = "";
         bool red = false;
-        std::for_each(_vars.begin(), _vars.end(), [&str, &red](const std::pair<std::string, std::string>& i)
+        std::for_each(_vars.begin(), _vars.end(), [&str, &red](const std::pair<std::string, float>& i)
         { 
             str += (red == true ? "<color=#B62000>" : "<color=#000000>");
-            str += ("<b><i>" + i.first + "</i></b></color> = " + i.second + "\n"); 
+            str += ("<b><i>" + i.first + "</i></b></color> = " + std::to_string(i.second) + "\n"); 
             red = !red;
         });
         if (str.length() > 0)
@@ -139,14 +140,20 @@ void VarDisplay::openWindow()
     _parent->moveToFront();
 }
 
-void VarDisplay::addVar(const std::string& name, const std::string& value)
+void VarDisplay::closeWindow()
+{
+    _parent->setEnabled(false);
+    _parent->setVisible(false);
+}
+
+void VarDisplay::addVar(const std::string& name, const float& value)
 {
     _varChanged = true;
 
     _vars.insert({name, value});
 }
 
-void VarDisplay::setVar(const std::string& name, const std::string& value)
+void VarDisplay::setVar(const std::string& name, const float& value)
 {
     auto iter = _vars.find(name);
 

@@ -105,7 +105,7 @@ private:
 /// @param strValue the value as a string
 /// @param defaultValue the value will be assigned this value is the string is invalid
 /// @param comparisonFunc if the value does not fit this comparison then the input will no longer be valid
-/// @note also changes the return color to invalid input color
+/// @note also changes the return color to invalid input color if needed
 /// @returns false if the input is not valid for the given type 
 template<typename valueType, typename Compare = bool(valueType&), typename std::enable_if_t<std::is_same_v<valueType, int> || std::is_same_v<valueType, float> || 
                                 std::is_same_v<valueType, unsigned long> || std::is_same_v<valueType, unsigned int> || std::is_same_v<valueType, bool>>* = nullptr>

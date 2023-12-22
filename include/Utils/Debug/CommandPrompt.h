@@ -22,7 +22,7 @@ public:
     /// @brief used to erase all pointers to UI in tgui so the program can close without a crash
     static void close();
 
-    /// @brief used to update the command prompts events
+    /// @brief used to update the command prompts keyboard events
     static void UpdateEvent(const sf::Event& event);
 
     /// @brief opens the command prompts window

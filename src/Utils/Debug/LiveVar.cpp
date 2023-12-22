@@ -1,16 +1,37 @@
 #include "include/Utils/Debug/LiveVar.h"
 
+LiveVar::var::var(const float& value, funcHelper::funcDynamic2<float*, sf::Event> keyEvent) : value(value), keyEvent(keyEvent) {}
+
+float LiveVar::var::getValue() const
+{
+    return value;
+}
+
+void LiveVar::var::setValue(const float& v)
+{
+    if (v != value)
+    {
+        value = v;
+        onChanged.invoke(value);
+    }
+}
+
+void LiveVar::var::invokeKeyEvent(const sf::Event& event)
+{
+    keyEvent.invoke(&value, event);
+}
+
 EventHelper::EventDynamic<std::string> LiveVar::onVarAdded;
 EventHelper::EventDynamic<std::string> LiveVar::onVarRemoved;
-std::unordered_map<std::string, std::pair<float, std::pair<EventHelper::EventDynamic<float>, funcHelper::funcDynamic2<float*, sf::Event>>>> LiveVar::m_vars;
+std::unordered_map<std::string, LiveVar::var> LiveVar::m_vars;
 
-float LiveVar::getVar(const std::string& name)
+float LiveVar::getValue(const std::string& name)
 {
     auto iter = m_vars.find(name);
 
     if (iter == m_vars.end()) return std::numeric_limits<float>::min();
 
-    return iter->second.first;
+    return iter->second.getValue();
 }
 
 EventHelper::EventDynamic<float>* LiveVar::getVarEvent(const std::string& name)
@@ -19,17 +40,16 @@ EventHelper::EventDynamic<float>* LiveVar::getVarEvent(const std::string& name)
 
     if (iter == m_vars.end()) return nullptr;
 
-    return &(iter->second.second.first);
+    return &(iter->second.onChanged);
 }
 
-bool LiveVar::setVar(const std::string& name, const float& value)
+bool LiveVar::setValue(const std::string& name, const float& value)
 {
     auto iter = m_vars.find(name);
 
     if (iter == m_vars.end()) return false;
 
-    iter->second.first = value;
-    iter->second.second.first.invoke(value);
+    iter->second.setValue(value);
     return true;
 }
 
@@ -37,7 +57,7 @@ bool LiveVar::initVar(const std::string& name, const float& value)
 {
     if (m_vars.find(name) == m_vars.end()) 
     {
-        m_vars.insert({name, {value, {{}, {[](){}}}}});
+        m_vars.insert({name, {value, [](){}}});
         onVarAdded.invoke(name);
         return true;
     }
@@ -49,7 +69,7 @@ bool LiveVar::initVar(const std::string& name, const float& value, funcHelper::f
 {
     if (m_vars.find(name) == m_vars.end()) 
     {
-        m_vars.insert({name, {value, {{}, func}}});
+        m_vars.insert({name, {value, func}});
         onVarAdded.invoke(name);
         return true;
     }
@@ -60,7 +80,7 @@ bool LiveVar::initVar(const std::string& name, const float& value, funcHelper::f
 bool LiveVar::initVar(const std::string& name, const float& value, const float& increment, const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey,
                         const float& min, const float& max)
 {
-    return initVar(name, value, {&updateValue, increaseKey, decreaseKey, increment, min, max});
+    return initVar(name, value, {&incrementKeys, increaseKey, decreaseKey, increment, min, max});
 }
 
 bool LiveVar::removeVar(const std::string& name)
@@ -77,16 +97,16 @@ void LiveVar::UpdateLiveVars(const sf::Event& event)
 {
     for (auto iter = m_vars.begin(); iter != m_vars.end(); iter++)
     {
-        float temp = iter->second.first;
-        iter->second.second.second.invoke(&iter->second.first, event);
-        if (temp != iter->second.first)
+        float temp = iter->second.getValue();
+        iter->second.invokeKeyEvent(event);
+        if (temp != iter->second.getValue())
         {
-            iter->second.second.first.invoke(iter->second.first);
+            iter->second.onChanged.invoke(iter->second.getValue());
         }
     }
 }
 
-void LiveVar::updateValue(const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey, const float& increment,
+void LiveVar::incrementKeys(const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey, const float& increment,
                             const float& min, const float& max, float* value, const sf::Event& event)
 {
     if (event.type != sf::Event::KeyPressed) return;
@@ -100,7 +120,7 @@ void LiveVar::updateValue(const sf::Keyboard::Key& increaseKey, const sf::Keyboa
     }
 }
 
-void LiveVar::updateValue2(const std::list<std::pair<sf::Keyboard::Key, float>>& values, float* value, const sf::Event& event)
+void LiveVar::presetKeys(const std::list<std::pair<sf::Keyboard::Key, float>>& values, float* value, const sf::Event& event)
 {
     if (event.type != sf::Event::KeyPressed) return;
 
