@@ -42,3 +42,5 @@ To get a list of commands use the command "help"
 To find out more about a specific command type "help 'command'"
 
 ![Screenshot 2023-12-22 120330](https://github.com/finjosh/cpp-Utilities/assets/109707607/4bb83900-17a1-48e3-807f-225d1c03b468)
+
+![ezgif com-optimize](https://github.com/finjosh/cpp-Utilities/assets/109707607/9786e255-aeed-453c-b2d4-42be619531f5)
