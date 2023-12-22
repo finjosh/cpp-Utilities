@@ -29,3 +29,16 @@ TGUI:
 | LiveVar.h | EventHelper.h, funcHelper.h, SFML Events |
 | VarDisplay.h | LiveVar.h, TGUI, (optinal) CommandHandler.h |
 
+# Command Prompt
+
+Firstly, to open and close the command prompt you can use the tilda key (~)
+
+![Screenshot 2023-12-22 105606](https://github.com/finjosh/cpp-Utilities/assets/109707607/b2e0ddac-76d3-40de-bfeb-456b96416b92)
+
+To get a list of commands use the command "help"
+
+![Screenshot 2023-12-22 105639](https://github.com/finjosh/cpp-Utilities/assets/109707607/74438a7b-c2be-46dc-8fc5-285086b4b321)
+
+To find out more about a specific command type "help 'command'"
+
+![Screenshot 2023-12-22 120330](https://github.com/finjosh/cpp-Utilities/assets/109707607/4bb83900-17a1-48e3-807f-225d1c03b468)
