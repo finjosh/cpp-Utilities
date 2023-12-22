@@ -14,30 +14,18 @@ TGUI:
   - Version: 1.0
 
 # Ultilies breakdown
-
-EventHelper.h
-
-funcHelper.h
-
-iniPareser.h
-
-Input.h
-
-Log.h
-
-Stopwatch.h
-
-StringHelper.h
-
-TerminatingFunction.h
-
-UpdateLimiter.h
-
-CommandHandler.h
-
-CommandPrompt.h
-
-LiveVar.h
-
-VarDisplay.h
+| Class | Dependencies |
+| --- | --- |
+| funcHelper.h | None |
+| EventHelper.h | None |
+| StringHelper.h | None |
+| UpdateLimiter.h | None |
+| Stopwatch.h | None |
+| Log.h | None |
+| iniPareser.h | StringHelper.h |
+| CommandHandler.h | funcHelper.h, StringHelper.h |
+| CommandPrompt.h | CommandHandler.h, StringHelper.h, TGUI |
+| TerminatingFunction.h | funcHelper.h, (optinal) CommandHandler.h, (optinal) CommandPrompt.h |
+| LiveVar.h | EventHelper.h, funcHelper.h, SFML Events |
+| VarDisplay.h | LiveVar.h, TGUI, (optinal) CommandHandler.h |
 
