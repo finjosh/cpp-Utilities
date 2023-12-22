@@ -59,14 +59,7 @@ void TerminatingFunction::remove(const std::string& functionTypeid)
 std::list<std::string> TerminatingFunction::getStringData()
 {
     std::list<std::string> rtn;
-    rtn.push_back("Total Time");
-    size_t floatSize = std::to_string(7.f).size() - rtn.back().size();
-    std::string spacing = "";
-    for (int i = 0; i < floatSize/2; i++)
-    {
-        spacing += " ";
-    }
-    rtn.back().insert(rtn.size()-1, spacing + "|" + spacing + "Function Name");
+    rtn.push_back("Total Time | Function Name");
 
     for (auto func: terminatingFunctions)
     {
