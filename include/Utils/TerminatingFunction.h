@@ -8,6 +8,13 @@
 
 #include "funcHelper.h"
 
+#if __has_include("include/Utils/Debug/CommandHandler.h")
+#include "include/Utils/Debug/CommandHandler.h" 
+#endif
+#if __has_include("include/Utils/Debug/CommandPrompt.h")
+#include "include/Utils/Debug/CommandPrompt.h" 
+#endif
+
 struct TerminatingFunction 
 {
 public:
@@ -38,6 +45,23 @@ public:
     /// @warning removes all functions with the same functionTypeid
     static void remove(const std::string& functionTypeid);
 
+    /// @brief gets the string data from ever terminating function at the moment
+    /// @return a list where each item is the data for a function
+    static std::list<std::string> getStringData();
+
+    #ifdef COMMANDPROMPT_H
+        /// @brief prints the string data to the command prompt every frame
+        /// @param print if turn prints every frame
+        static void printToPrompt(const bool& print = false);
+        /// @brief prints the string data to the command prompt once
+        static void printToPromptOnce();
+    #endif
+
+    #ifdef COMMANDHANDLER_H
+        // must be called separately ass static classes are not initalized in any specific order
+        static void initCommands();
+    #endif 
+
 protected:
     struct _tFunc
     {
@@ -46,9 +70,14 @@ protected:
         funcHelper::funcDynamic<data*> func;
         float totalTime = 0.f;
 
-        bool operator== (const _tFunc& tFunc)
+        inline bool operator== (const _tFunc& tFunc)
         {
             return func.getTypeid() == tFunc.func.getTypeid();
+        }
+
+        inline std::string toString()
+        {
+            return std::to_string(totalTime) + " " + func.getTypeid();
         }
     };
 
@@ -56,6 +85,9 @@ protected:
     static std::list<_tFunc> terminatingFunctions;
 private:
     inline TerminatingFunction() = default;
+    #ifdef COMMANDPROMPT_H
+    static bool _printToPrompt;
+    #endif
 };
 
 // use this for typedefs that shorten names
@@ -64,6 +96,7 @@ namespace TerminatingFunctions
     typedef TerminatingFunction TermFunc;
     typedef funcHelper::funcDynamic<TermFunc::data*> TFunction;
     typedef TerminatingFunction::data TData;
+    typedef TerminatingFunction::State TState;
 }
 
 #endif // TERMINATINGFUNCTION_H

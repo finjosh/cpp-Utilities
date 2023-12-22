@@ -3,6 +3,9 @@
 
 #pragma once
 
+// Used for testing
+#include "include/Utils/TerminatingFunction.h"
+
 //! Depends on SFML Graphics, StringHelper, and CommandHandler
 #include "include/Utils/Debug/CommandPrompt.h"
 

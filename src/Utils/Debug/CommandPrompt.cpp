@@ -193,6 +193,8 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
     _parent->onClosing(&CommandPrompt::closePrompt);
     _parent->setMaximumSize(_parent->getParentGui()->getView().getSize());
     _parent->onMaximize(&CommandPrompt::MaximizePrompt);
+
+    closePrompt(nullptr);
 }
 
 void CommandPrompt::close()
@@ -279,15 +281,20 @@ void CommandPrompt::closePrompt(bool* abortTguiClose)
         (*abortTguiClose) = true;
 }
 
-void CommandPrompt::print(const std::string& str)
+void CommandPrompt::print(const std::string& str, const Command::color& color)
 {
     if (_chatBox && _allowPrint)
-        _chatBox->addLine(str);
+        _chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
 }
 
 bool CommandPrompt::isPrintAllowed()
 {
     return _allowPrint;
+}
+
+void CommandPrompt::allowPrint(const bool& print)
+{
+    _allowPrint = print;
 }
 
 void CommandPrompt::MaximizePrompt()

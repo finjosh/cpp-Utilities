@@ -22,6 +22,10 @@ using namespace sf;
 
 int main()
 {
+    //! If you want Terminating functions to be attached to the CommandHandler you need to call the initializer
+    TerminatingFunction::initCommands();
+    //! --------------------------
+
     funcHelperTest::test();
     EventHelperTest::test();
     StopwatchTest::test();

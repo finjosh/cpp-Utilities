@@ -6,6 +6,8 @@
 #include <iostream>
 
 //! Depends on funcHelper
+// can be used with command prompt and command handler
+//      - adds a command to print all current terminating functions
 #include "include/Utils/TerminatingFunction.h"
 
 class TerminatingFunctionTest
