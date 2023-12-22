@@ -22,7 +22,7 @@ TGUI:
 | UpdateLimiter.h | None |
 | Stopwatch.h | None |
 | Log.h | None |
-| iniPareser.h | StringHelper.h |
+| iniParser.h | StringHelper.h |
 | CommandHandler.h | funcHelper.h, StringHelper.h |
 | CommandPrompt.h | CommandHandler.h, StringHelper.h, TGUI |
 | TerminatingFunction.h | funcHelper.h, (optinal) CommandHandler.h, (optinal) CommandPrompt.h |
