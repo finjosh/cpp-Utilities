@@ -81,7 +81,7 @@ void VarDisplay::init(tgui::Gui& gui)
         Command::command("create", "[Name] [initValue = 0] | Creates a new live variable", {[](Command::Data* data){
             float value = StringHelper::toFloat(data->getToken(1), 0);
             
-            if (data->getToken(0) != "" && LiveVar::initVar(data->getToken(0), value))
+            if (data->getToken(0) != "" && !LiveVar::initVar(data->getToken(0), value))
             {
                 data->setReturnStr("Variable already exists");
                 data->setReturnColor(Command::INVALID_INPUT_COLOR);
