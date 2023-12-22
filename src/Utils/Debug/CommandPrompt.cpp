@@ -148,7 +148,8 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
         auto listRender = _autoFillList->getRenderer();
         listRender->setBackgroundColor(tgui::Color::Black);
         listRender->setSelectedBackgroundColor({50,50,50,255});
-        listRender->setBackgroundColorHover({50,50,50,255});
+        listRender->setBackgroundColorHover(tgui::Color::Black);
+        listRender->setSelectedBackgroundColorHover({50,50,50,255});
         listRender->setBorderColor({50,50,50,255});
         listRender->setTextColor(tgui::Color::White);
         listRender->setTextColorHover(tgui::Color::White);
@@ -348,7 +349,9 @@ void CommandPrompt::UpdateAutoFill()
 
 void CommandPrompt::AutoFill()
 {
+    _textBox->onFocus.setEnabled(false);
     _textBox->setFocused(true);
+    _textBox->onFocus.setEnabled(true);
     tgui::String temp = _textBox->getText();
     size_t subCommandPos = temp.find_last_of('('); // if there is a sub command
     size_t lastSpace = temp.find_last_of(' ');
