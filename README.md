@@ -16,18 +16,19 @@ TGUI:
 # Ultilies breakdown
 | Class | Dependencies |
 | --- | --- |
-| funcHelper.h | None |
-| EventHelper.h | None |
-| StringHelper.h | None |
-| UpdateLimiter.h | None |
-| Stopwatch.h | None |
-| Log.h | None |
-| iniParser.h | StringHelper.h |
-| CommandHandler.h | funcHelper.h, StringHelper.h |
-| CommandPrompt.h | CommandHandler.h, StringHelper.h, TGUI |
-| TerminatingFunction.h | funcHelper.h, (optinal) CommandHandler.h, (optinal) CommandPrompt.h |
-| LiveVar.h | EventHelper.h, funcHelper.h, SFML Events |
-| VarDisplay.h | LiveVar.h, TGUI, (optinal) CommandHandler.h |
+| funcHelper.hpp | None |
+| EventHelper.hpp | None |
+| StringHelper.hpp | None |
+| UpdateLimiter.hpp | None |
+| Stopwatch.hpp | None |
+| Log.hpp | None |
+| iniParser.hpp | StringHelper.hpp |
+| CommandHandler.hpp | funcHelper.hpp, StringHelper.hpp |
+| CommandPrompt.hpp | CommandHandler.hpp, StringHelper.hpp, TGUI |
+| TerminatingFunction.hpp | funcHelper.hpp, (optional) CommandHandler.hpp, (optional) CommandPrompt.hpp |
+| TFuncDisplay.hpp | TerminatingFunction.hpp, TGUI, (optional) CommandHandler.hpp |
+| LiveVar.hpp | EventHelper.hpp, funcHelper.hpp, SFML Events |
+| VarDisplay.hpp | LiveVar.hpp, TGUI, (optional) CommandHandler.hpp |
 
 # A preview of a few utilities
 
@@ -58,3 +59,7 @@ Example:
 Example usage with command prompt:
 
 https://github.com/finjosh/cpp-Utilities/assets/109707607/58003d68-5a51-4cf6-a753-c7578461bf1c
+
+## Terminating Functions Display
+
+
