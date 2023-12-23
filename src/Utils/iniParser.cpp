@@ -1,4 +1,4 @@
-#include "include\Utils\iniParser.h"
+#include "include\Utils\iniParser.hpp"
 
 const std::map<std::string, std::string> iniParser::InvalidSectionData;
 

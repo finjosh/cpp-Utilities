@@ -1,4 +1,4 @@
-#include "include/Utils/Debug/CommandPrompt.h"
+#include "include/Utils/Debug/CommandPrompt.hpp"
 
 tgui::ChildWindow::Ptr CommandPrompt::_parent{nullptr};
 tgui::EditBox::Ptr CommandPrompt::_textBox{nullptr};
@@ -21,8 +21,8 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
     // * setup of child window
     _parent->setTitleAlignment(tgui::ChildWindow::TitleAlignment::Left);
     _parent->setResizable();
-    _parent->setSize({"25%","25%"});
-    _parent->setPosition({"100% - 25%","100% - 25%"});
+    _parent->setSize({"40%","35%"});
+    _parent->setPosition({"60%","65%"});
     {
         auto renderer = _parent->getRenderer();
         renderer->setTitleColor(tgui::Color::White);

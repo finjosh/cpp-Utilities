@@ -1,4 +1,4 @@
-#include "include\Examples\TerminatingFunction.h"
+#include "include\Examples\TerminatingFunction.hpp"
 
 void TerminatingFunctionTest::test()
 {
@@ -9,8 +9,6 @@ void TerminatingFunctionTest::test()
 
     //! Depends on FuncHelper
     cout << "Outputs for Terminating Functions" << endl;
-
-    using namespace TerminatingFunctions;
 
     // By default the data will have a state of finished
     TerminatingFunction::Add([](TData* data){ cout << "Terminating after first run" << endl; });
@@ -30,7 +28,7 @@ void TerminatingFunctionTest::test()
         cout << "Total Time Running: " << data->totalTime << endl;
         if (data->totalTime <= 2) 
         {
-            data->state = TermFunc::State::Running;
+            data->setRunning();
         }
     });
 }

@@ -1,4 +1,4 @@
-#include "include/Examples/Stopwatch.h"
+#include "include/Examples/Stopwatch.hpp"
 
 void StopwatchTest::test()
 {

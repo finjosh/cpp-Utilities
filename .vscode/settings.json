@@ -102,5 +102,8 @@
         }
     ],
     "makefile.makefilePath": "Makefile",
-    "C_Cpp.default.compilerPath": "V:\\VSCodeFolder\\MSYS2\\mingw64\\bin\\gcc.exe"
+    "C_Cpp.default.compilerPath": "V:\\VSCodeFolder\\MSYS2\\mingw64\\bin\\gcc.exe",
+    "cSpell.words": [
+        "tgui"
+    ]
 }

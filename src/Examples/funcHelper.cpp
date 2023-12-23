@@ -1,4 +1,4 @@
-#include "include/Examples/funcHelper.h"
+#include "include/Examples/funcHelper.hpp"
 
 void funcHelperTest::test()
 {

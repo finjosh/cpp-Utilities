@@ -4,18 +4,19 @@
 #include "TGUI/TGUI.hpp"
 #include "TGUI/Backend/SFML-Graphics.hpp"
 
-#include "include/Examples/funcHelper.h"
-#include "include/Examples/EventHelper.h"
-#include "include/Examples/Stopwatch.h"
-#include "include/Examples/StringHelper.h"
-#include "include/Examples/UpdateLimiter.h"
-#include "include/Examples/Log.h"
-#include "include/Examples/iniParser.h"
-#include "include/Examples/TerminatingFunction.h"
-#include "include/Examples/LiveVar.h"
-#include "include/Examples/VarDisplay.h"
-#include "include/Examples/CommandHandler.h"
-#include "include/Examples/CommandPrompt.h"
+#include "include/Examples/funcHelper.hpp"
+#include "include/Examples/EventHelper.hpp"
+#include "include/Examples/Stopwatch.hpp"
+#include "include/Examples/StringHelper.hpp"
+#include "include/Examples/UpdateLimiter.hpp"
+#include "include/Examples/Log.hpp"
+#include "include/Examples/iniParser.hpp"
+#include "include/Examples/TerminatingFunction.hpp"
+#include "include/Examples/LiveVar.hpp"
+#include "include/Examples/VarDisplay.hpp"
+#include "include/Examples/CommandHandler.hpp"
+#include "include/Examples/CommandPrompt.hpp"
+#include "include/Examples/TFuncDisplay.hpp"
 
 using namespace std;
 using namespace sf;
@@ -53,9 +54,13 @@ int main()
     VarDisplay::init(gui); 
     // creates the UI for the CommandPrompt
     CommandPrompt::init(gui);
+    // create the UI for the TFuncDisplay
+    TFuncDisplay::init(gui);
     //! ---------------------------------------------------
     //* CommandPromptTest
     CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
+    //* TFuncDisplayTest
+    TFuncDisplayTest::test();
 
     //* LiveVarTest
     LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
@@ -85,6 +90,8 @@ int main()
         //! ------------------------------=-----
         //! Updates all Terminating Functions
         TerminatingFunction::UpdateFunctions(deltaTime);
+        //* Updates for the terminating functions display
+        TFuncDisplay::update();
         //! ------------------------------
 
         // draw for tgui
@@ -96,6 +103,7 @@ int main()
     //! Required so that VarDisplay and CommandPrompt release all data
     VarDisplay::close();
     CommandPrompt::close();
+    TFuncDisplay::close();
     //! --------------------------------------------------------------
 
     return 0;

@@ -1,4 +1,4 @@
-#include "include/Utils/Debug/LiveVar.h"
+#include "include/Utils/Debug/LiveVar.hpp"
 
 LiveVar::var::var(const float& value, funcHelper::funcDynamic2<float*, sf::Event> keyEvent) : value(value), keyEvent(keyEvent) {}
 

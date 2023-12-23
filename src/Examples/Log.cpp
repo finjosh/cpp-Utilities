@@ -1,4 +1,4 @@
-#include "include/Examples/Log.h"
+#include "include/Examples/Log.hpp"
 
 void LogTest::test()
 {

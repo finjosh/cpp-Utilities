@@ -1,4 +1,4 @@
-#include "include/Examples/UpdateLimiter.h"
+#include "include/Examples/UpdateLimiter.hpp"
 
 void UpdateLimiterTest::test()
 {

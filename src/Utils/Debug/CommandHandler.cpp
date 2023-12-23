@@ -1,4 +1,4 @@
-#include "include/Utils/Debug/CommandHandler.h"
+#include "include/Utils/Debug/CommandHandler.hpp"
 
 using namespace Command;
 
@@ -224,8 +224,25 @@ void command::invoke(Data& data)
 
 void Handler::addCommand(const command& command)
 {
-    _commands.push_back(command);
-    _commands.sort();
+    _addCommand(command, _commands);
+}
+
+void Handler::_addCommand(const command& cmd, std::list<command>& _commands)
+{
+    auto lastCommand = std::find(_commands.begin(), _commands.end(), cmd);
+    // if the command is not already in the list add it
+    if (lastCommand == _commands.end())
+    {
+        _commands.push_back(cmd);
+        _commands.sort();
+        return;
+    }
+
+    // if the command is in the list try adding its sub commands to the current ones sub commands
+    for (auto subCommand: cmd._subCommands)
+    {
+        _addCommand(subCommand, lastCommand->_subCommands);
+    }
 }
 
 std::list<std::string> Handler::autoFillSearch(const std::string& search)

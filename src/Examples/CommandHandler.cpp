@@ -1,4 +1,4 @@
-#include "include/Examples/CommandHandler.h"
+#include "include/Examples/CommandHandler.hpp"
 
 void CommandHandlerTest::test()
 {

@@ -1,4 +1,4 @@
-#include "include/Examples/StringHelper.h"
+#include "include/Examples/StringHelper.hpp"
 
 void StringHelperTest::test()
 {

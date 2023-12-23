@@ -1,4 +1,4 @@
-#include "include/Examples/iniParser.h"
+#include "include/Examples/iniParser.hpp"
 
 void iniParserTest::test()
 {

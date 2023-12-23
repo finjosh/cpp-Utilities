@@ -1,4 +1,4 @@
-#include "include/Examples/VarDisplay.h"
+#include "include/Examples/VarDisplay.hpp"
 
 void VarDisplayTest::test()
 {
@@ -13,41 +13,40 @@ void VarDisplayTest::test()
     
     // I'm going to use terminating functions to show what each function does
 
-    using namespace TerminatingFunctions;
-    TermFunc::Add([](TData* data)
+    TFunc::Add([](TData* data)
     {
         if (data->totalTime >= 2)
         {
             VarDisplay::openWindow();
             return;
         }
-        data->state = TermFunc::State::Running;
+        data->setRunning();
     });
-    TermFunc::Add([](TData* data)
+    TFunc::Add([](TData* data)
     {
         if (data->totalTime >= 4)
         {
             VarDisplay::minimizeWindow();
             return;
         }
-        data->state = TermFunc::State::Running;
+        data->setRunning();
     });
-    TermFunc::Add([](TData* data)
+    TFunc::Add([](TData* data)
     {
         if (data->totalTime >= 6)
         {
             VarDisplay::maximizeWindow();
             return;
         }
-        data->state = TermFunc::State::Running;
+        data->setRunning();
     });
-    TermFunc::Add([](TData* data)
+    TFunc::Add([](TData* data)
     {
         if (data->totalTime >= 8)
         {
             VarDisplay::closeWindow();
             return;
         }
-        data->state = TermFunc::State::Running;
+        data->setRunning();
     });
 }

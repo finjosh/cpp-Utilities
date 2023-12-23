@@ -1,4 +1,4 @@
-#include "include\Utils\TerminatingFunction.h"
+#include "include\Utils\TerminatingFunction.hpp"
 
 std::list<TerminatingFunction::_tFunc> TerminatingFunction::terminatingFunctions;
 #ifdef COMMANDPROMPT_H
@@ -28,10 +28,7 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
     #ifdef COMMANDPROMPT_H
     if (_printToPrompt)
     {
-        for (std::string str: TerminatingFunction::getStringData())
-        {
-            CommandPrompt::print(str);
-        }
+        printToPromptOnce();
     }
     #endif
 }
@@ -56,10 +53,9 @@ void TerminatingFunction::remove(const std::string& functionTypeid)
     return;
 }
 
-std::list<std::string> TerminatingFunction::getStringData()
+std::list<std::pair<std::string, std::string>> TerminatingFunction::getStringData()
 {
-    std::list<std::string> rtn;
-    rtn.push_back("Total Time | Function Name");
+    std::list<std::pair<std::string, std::string>> rtn;
 
     for (auto func: terminatingFunctions)
     {
@@ -78,9 +74,10 @@ void TerminatingFunction::printToPrompt(const bool& print)
 
 void TerminatingFunction::printToPromptOnce()
 {
-    for (std::string str: TerminatingFunction::getStringData())
+    CommandPrompt::print("Function Name | Total Time");
+    for (std::pair<std::string, std::string> funcData: TerminatingFunction::getStringData())
     {
-        CommandPrompt::print(str);
+        CommandPrompt::print(funcData.first + " | " + funcData.second);
     }
 }
 
@@ -89,9 +86,9 @@ void TerminatingFunction::printToPromptOnce()
 #ifdef COMMANDHANDLER_H
 void TerminatingFunction::initCommands()
 {
-    Command::Handler::addCommand({"TermFunc", "Any commands for Terminating Functions", {Command::print, "Try using \"help\" fore more info"},
+    Command::Handler::addCommand({"TFunc", "Any commands for Terminating Functions", {Command::print, "Try using \"help\" fore more info"},
     { {"getData", "Prints the current terminating functions data (printing must be allowed)", {[](){ TerminatingFunction::printToPromptOnce(); }}}
-    , {"printData", "[print = false] | Prints the terminating functions data every frame", {[](Command::Data* data)
+    , {"printData", "[print = false] | Prints the terminating functions data every frame (printing must be allowed)", {[](Command::Data* data)
     {  
         bool temp = TerminatingFunction::printToPrompt;
         if (!Command::isValidInput<bool>("Invalid input", *data, data->getToken(), temp, temp))

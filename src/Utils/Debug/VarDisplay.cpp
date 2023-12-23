@@ -1,4 +1,4 @@
-#include "include/Utils/Debug/VarDisplay.h"
+#include "include/Utils/Debug/VarDisplay.hpp"
 
 std::map<std::string, float> VarDisplay::_vars;
 bool VarDisplay::_varChanged = false;
@@ -36,7 +36,15 @@ void VarDisplay::init(tgui::Gui& gui)
     _parent->onMaximize(&VarDisplay::maximizeWindow);
     _parent->add(tgui::ScrollablePanel::create({_parent->getSize() - tgui::Vector2f(0, _parent->getRenderer()->getTitleBarHeight())}));
     _scrollPanel = _parent->getWidgets().back()->cast<tgui::ScrollablePanel>();
-    _parent->onSizeChange([](){ VarDisplay::_scrollPanel->setSize(VarDisplay::_parent->getSize() - tgui::Vector2f(0, _parent->getRenderer()->getTitleBarHeight())); });
+    _parent->onSizeChange([]()
+    { 
+        _scrollPanel->setSize(_parent->getSize() - tgui::Vector2f(0, _parent->getRenderer()->getTitleBarHeight())); 
+        if (int(_parent->getSize().y) > int(_parent->getRenderer()->getTitleBarHeight()))
+        {    
+            _parentHeight = _parent->getRenderer()->getTitleBarHeight();
+            _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
+        }
+    });
 
     _varLabel = tgui::RichTextLabel::create();
     _scrollPanel->add(_varLabel);
@@ -53,8 +61,8 @@ void VarDisplay::init(tgui::Gui& gui)
     Command::Handler::addCommand(Command::command("lVars", "Contains commands for live variables", {Command::print, "Invalid command\nTrying using \"help lVars\""}, 
         //* sub commands for the lVars
         {
-        Command::command("display", "Displays the live variables", {VarDisplay::openWindow}),
-        Command::command("hide", "Hides the display for live variables", {VarDisplay::_closeWindow, nullptr}),
+        Command::command("open", "Displays the live variables", {VarDisplay::openWindow}),
+        Command::command("close", "Hides the display for live variables", {VarDisplay::_closeWindow, nullptr}),
         Command::command("get", "[Name] | Gets the value for the given variable", {[](Command::Data* data){
             float temp = LiveVar::getValue(data->getToken());
             if (temp == std::numeric_limits<float>::min())

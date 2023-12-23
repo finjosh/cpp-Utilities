@@ -1,4 +1,4 @@
-#include "include\Examples\EventHelper.h"
+#include "include\Examples\EventHelper.hpp"
 
 void EventHelperTest::test()
 {
