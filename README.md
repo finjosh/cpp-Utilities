@@ -8,10 +8,10 @@ Tested with:
   - Version: g++.exe (Rev3, Built by MSYS2 project) 12.1.0
 
 SFML:
-  - Version: 2.6.0
+  - Version: 2.6.1
 
 TGUI:
-  - Version: 1.0
+  - Version: 1.1
 
 # Ultilies breakdown
 | Class | Dependencies |
