@@ -2,7 +2,7 @@
 
 using namespace EventHelper;
 
-std::set<Event*> ThreadSafeEvent::_events;
+std::multiset<Event*> ThreadSafeEvent::_events;
 
 void ThreadSafeEvent::addEvent(Event* event)
 {
