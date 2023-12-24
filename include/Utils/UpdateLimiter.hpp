@@ -23,6 +23,11 @@ public:
         time_between_frames = std::chrono::duration<double>((double)1/(double)MaxUpdates);
     }
 
+    std::intmax_t getUpdateLimit()
+    {
+        return this->MaxUpdates;
+    }
+
     void wait() {
         // add to time point
         tp += time_between_frames;
