@@ -69,6 +69,9 @@ int main()
     sf::Clock deltaClock;
     while (window.isOpen())
     {
+        //! should be called first thing every frame
+        EventHelper::ThreadSafeEvent::update();
+        //! ----------------------------------------
         window.clear();
         // updating the delta time var
         deltaTime = deltaClock.restart().asSeconds();

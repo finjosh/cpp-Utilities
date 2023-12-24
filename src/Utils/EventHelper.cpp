@@ -2,6 +2,27 @@
 
 using namespace EventHelper;
 
+std::set<Event*> ThreadSafeEvent::_events;
+
+void ThreadSafeEvent::addEvent(Event* event)
+{
+    _events.insert({event});
+}
+
+void ThreadSafeEvent::update()
+{
+    for (auto event: _events)
+    {
+        event->invoke();
+    }
+    _events.clear();
+}
+
+void ThreadSafeEvent::removeEvent(Event* event)
+{
+    _events.erase(event);
+}
+
 std::deque<const void*> Event::m_parameters(5, nullptr);
 
 Event::Event(const Event& other) :
@@ -31,8 +52,14 @@ void Event::disconnectAll()
     m_functions.clear();
 }
 
-bool Event::invoke()
+bool Event::invoke(bool threadSafe)
 {
+    if (threadSafe)
+    {
+        ThreadSafeEvent::addEvent(this);
+        return true;
+    }
+
     if (m_functions.empty() || !m_enabled)
         return false;
 

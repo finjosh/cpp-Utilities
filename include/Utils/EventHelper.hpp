@@ -4,6 +4,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <set>
 #include <deque>
 #include <memory>
 #include <functional>
@@ -11,12 +12,33 @@
 namespace EventHelper
 {
 
+class Event;
+
+class ThreadSafeEvent
+{
+public:
+    /// @note if event was already added it will not be added again
+    static void addEvent(Event* event);
+    /// @brief Call this first thing every frame
+    static void update();
+    /// @brief used when an event is destroyed in case its still in the queue
+    static void removeEvent(Event* event);
+
+private:
+    inline ThreadSafeEvent() = default;
+
+    static std::set<Event*> _events;
+};
+
 class Event
 {
 public:
 
-    /// @brief Default destructor
-    virtual ~Event() = default;
+    virtual ~Event() 
+    {
+        // removing pointer to this event in thread safe in case it is still in queue
+        ThreadSafeEvent::removeEvent(this);
+    }
 
     Event() {}
 
@@ -75,8 +97,11 @@ public:
 
     /// @brief Call all connected functions
     ///
+    /// @param threadSafe if true the event is called on event update 
+    /// @note when thread safe always returns true
+    ///
     /// @return True when at least one function was called
-    bool invoke();
+    bool invoke(bool threadSafe = false);
 
     /// @brief Changes whether this signal calls the connected functions when triggered
     ///
@@ -120,6 +145,7 @@ protected:
     bool m_enabled = true;
     std::unordered_map<unsigned int, std::function<void()>> m_functions;
 
+    // Possible issue if event are constantly removed and added
     unsigned int m_lastSignalId;
     static std::deque<const void*> m_parameters;
 };
@@ -175,15 +201,17 @@ public:
     ///
     /// @param widget  Widget that is triggering the signal
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
+    /// @param threadSafe if true the event is called on event update 
+    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param)
+    bool invoke(T param, bool threadSafe = false)
     {
         if (m_functions.empty())
             return false;
 
         m_parameters[0] = static_cast<const void*>(&param);
-        return Event::invoke();
+        return Event::invoke(threadSafe);
     }
 };
 
@@ -244,16 +272,18 @@ public:
     ///
     /// @param widget  Widget that is triggering the signal
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
+    /// @param threadSafe if true the event is called on event update 
+    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2)
+    bool invoke(T param, T2 param2, bool threadSafe = false)
     {
         if (m_functions.empty())
             return false;
 
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
-        return Event::invoke();
+        return Event::invoke(threadSafe);
     }
 };
 
@@ -320,9 +350,11 @@ public:
     ///
     /// @param widget  Widget that is triggering the signal
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
+    /// @param threadSafe if true the event is called on event update 
+    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3)
+    bool invoke(T param, T2 param2, T3 param3, bool threadSafe = false)
     {
         if (m_functions.empty())
             return false;
@@ -330,7 +362,7 @@ public:
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
-        return Event::invoke();
+        return Event::invoke(threadSafe);
     }
 };
 
@@ -403,9 +435,11 @@ public:
     ///
     /// @param widget  Widget that is triggering the signal
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
+    /// @param threadSafe if true the event is called on event update 
+    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, T4 param4)
+    bool invoke(T param, T2 param2, T3 param3, T4 param4, bool threadSafe = false)
     {
         if (m_functions.empty())
             return false;
@@ -414,7 +448,7 @@ public:
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
         m_parameters[3] = static_cast<const void*>(&param4);
-        return Event::invoke();
+        return Event::invoke(threadSafe);
     }
 };
 
@@ -493,9 +527,11 @@ public:
     ///
     /// @param widget  Widget that is triggering the signal
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
+    /// @param threadSafe if true the event is called on event update 
+    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, T4 param4, T5 param5)
+    bool invoke(T param, T2 param2, T3 param3, T4 param4, T5 param5, bool threadSafe = false)
     {
         if (m_functions.empty())
             return false;
@@ -505,7 +541,7 @@ public:
         m_parameters[2] = static_cast<const void*>(&param3);
         m_parameters[3] = static_cast<const void*>(&param4);
         m_parameters[4] = static_cast<const void*>(&param5);
-        return Event::invoke();
+        return Event::invoke(threadSafe);
     }
 };
 
