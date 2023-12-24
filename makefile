@@ -1,24 +1,27 @@
+# directory that the makefile was called from
+mkfile_path:=$(abspath $(lastword $(MAKEFILE_LIST)))
+project_name:=$(strip $(notdir $(patsubst %/,%,$(dir $(mkfile_path)))))
+project_dir:=$(patsubst %/makefile,%, $(mkfile_path))
+#! DONT EDIT ABOVE THIS
+
 # exe name
 PROJECT:=main
 # the directory in which all .o and .d files will be made
 OBJ_O_DIR:=bin
 # assumes that source directories are the same as include
-SRCDIRS=. src src/Utils src/Utils/Debug src/Examples
+SRCDIRS:=. src src/Utils src/Utils/Debug src/Examples
 # the include flags for compilation
-INCLUDES=-I /VSCodeFolder/Libraries/SFML-2.6.1/include -D SFML_STATIC -I /VSCodeFolder/Libraries/TGUI-1.1/include -I $(project_dir)
+INCLUDES:=-I /VSCodeFolder/Libraries/SFML-2.6.1/include -D SFML_STATIC -I /VSCodeFolder/Libraries/TGUI-1.1/include -I $(project_dir)
 # the paths to libs for linking
 LIBS=-L /VSCodeFolder/Libraries/SFML-2.6.1/lib -L /VSCodeFolder/Libraries/TGUI-1.1/lib -L $(project_dir)
 
+# the directory for lib files
+LIB_DIR:=lib
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
 # any of the dirs for source files
 # DIRS:=dir /AD /B /S	
 # findSubDirs=$(shell ${DIRS} $1)
-
-# directory that the makefile was called from
-mkfile_path:=$(abspath $(lastword $(MAKEFILE_LIST)))
-project_name:=$(strip $(notdir $(patsubst %/,%,$(dir $(mkfile_path)))))
-project_dir:=$(patsubst %/makefile,%, $(mkfile_path))
 
 # all .cpp file paths
 SRC:=$(foreach D,$(SRCDIRS),$(wildcard $(D)/*.cpp))
@@ -41,8 +44,7 @@ STATIC_BUILD=-static
 DEBUG_BUILD=-g
 # linker flags for compilation
 # add "-mwindows" to disable the terminal
-LINKERFLAGS=$(DEBUG_BUILD) \
-			$(LIBS) \
+LINKERFLAGS=$(LIBS) \
 			-ltgui-s -lsfml-graphics-s -lsfml-window-s \
 			-lsfml-system-s -lsfml-audio-s -lsfml-network-s \
 			-lws2_32 -lflac -lvorbisenc -lvorbisfile -lvorbis \
@@ -55,9 +57,18 @@ COMPILE_OPTIONS=-std=c++20 $(DEBUG_BUILD) $(STATIC_BUILD) $(INCLUDES) $(DEPFLAGS
 
 all: $(OUTPATHS) $(PROJECT)
 
+libs: $(patsubst $(OBJ_O_DIR)/%,$(LIB_DIR)/%,$(OUTPATHS)) $(patsubst $(OBJ_O_DIR)/%.o,$(LIB_DIR)/%.a,$(OBJECTS))
+	@echo Libs created
+
+$(LIB_DIR)/%.a:$(OBJ_O_DIR)/%.o
+	ar rcs $@ $^
+
+$(LIB_DIR)/%/:
+	$(call makeDir,$(patsubst %/,%,$@))
+
 # try interlacing the objects and header files
 $(PROJECT): $(OBJECTS)
-	$(CC) -o $@ $(STATIC_BUILD) $^ $(LINKERFLAGS)
+	$(CC) -o $@ $(STATIC_BUILD) $^ $(DEBUG_BUILD) $(LINKERFLAGS)
 
 $(OBJ_O_DIR)/%.o:%.cpp
 	$(CC) $(COMPILE_OPTIONS) -c -o $@ $<
