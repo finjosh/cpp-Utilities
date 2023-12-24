@@ -25,32 +25,32 @@ TGUI:
 | iniParser.hpp | StringHelper.hpp |
 | CommandHandler.hpp | funcHelper.hpp, StringHelper.hpp |
 | CommandPrompt.hpp | CommandHandler.hpp, StringHelper.hpp, TGUI |
-| TerminatingFunction.hpp | funcHelper.hpp, (optional) CommandHandler.hpp, (optional) CommandPrompt.hpp |
-| TFuncDisplay.hpp | TerminatingFunction.hpp, TGUI, (optional) CommandHandler.hpp |
-| LiveVar.hpp | EventHelper.hpp, funcHelper.hpp, SFML Events |
-| VarDisplay.hpp | LiveVar.hpp, TGUI, (optional) CommandHandler.hpp |
+| TerminatingFunction.hpp | funcHelper.hpp, CommandHandler.hpp (optional), CommandPrompt.hpp (optional) |
+| TFuncDisplay.hpp | TerminatingFunction.hpp, TGUI, CommandHandler.hpp (optional) |
+| LiveVar.hpp | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
+| VarDisplay.hpp | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
 
 # A preview of a few utilities
 
 ## Command Prompt
 
-Firstly, to open and close the command prompt you can use the tilda key (~)
+Firstly, to open and close the command prompt, you can use the tilde key (~)
 
 ![Screenshot 2023-12-22 105606](https://github.com/finjosh/cpp-Utilities/assets/109707607/b2e0ddac-76d3-40de-bfeb-456b96416b92)
 
-To get a list of commands use the command "help"
+To get a list of commands, use the command "help"
 
 ![Screenshot 2023-12-22 105639](https://github.com/finjosh/cpp-Utilities/assets/109707607/74438a7b-c2be-46dc-8fc5-285086b4b321)
 
-To find out more about a specific command type "help 'command'"
+To find out more about a specific command, type "help 'command'"
 
 ![Screenshot 2023-12-22 120330](https://github.com/finjosh/cpp-Utilities/assets/109707607/4bb83900-17a1-48e3-807f-225d1c03b468)
 
 ![ezgif com-optimize](https://github.com/finjosh/cpp-Utilities/assets/109707607/9786e255-aeed-453c-b2d4-42be619531f5)
 
-## Var Display
+## Var Display and Live Var
 
-Live vars can have keybinds set to them for specific values or to incremenet them
+Live vars can have key binds set to them for specific values or to incremenet them.
 
 Example:
 
@@ -62,4 +62,9 @@ https://github.com/finjosh/cpp-Utilities/assets/109707607/58003d68-5a51-4cf6-a75
 
 ## Terminating Functions Display
 
+Display for seeing the name and total time of each terminating function
+
+![Screenshot 2023-12-23 165722](https://github.com/finjosh/cpp-Utilities/assets/109707607/e9649332-6aa2-4803-aa5f-f84c1e2fb868)
+
+![TFuncDisplay](https://github.com/finjosh/cpp-Utilities/assets/109707607/02feac9a-3e17-4246-978f-5aca69cb8229)
 
