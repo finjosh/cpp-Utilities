@@ -14,21 +14,21 @@ TGUI:
   - Version: 1.1
 
 # Ultilies breakdown
-| Class | Dependencies |
-| --- | --- |
-| funcHelper.hpp | None |
-| EventHelper.hpp | None |
-| StringHelper.hpp | None |
-| UpdateLimiter.hpp | None |
-| Stopwatch.hpp | None |
-| Log.hpp | None |
-| iniParser.hpp | StringHelper.hpp |
-| CommandHandler.hpp | funcHelper.hpp, StringHelper.hpp |
-| CommandPrompt.hpp | CommandHandler.hpp, StringHelper.hpp, TGUI |
-| TerminatingFunction.hpp | funcHelper.hpp, CommandHandler.hpp (optional), CommandPrompt.hpp (optional) |
-| TFuncDisplay.hpp | TerminatingFunction.hpp, TGUI, CommandHandler.hpp (optional) |
-| LiveVar.hpp | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
-| VarDisplay.hpp | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
+| File | Dependencies | Breif Description |
+| --- | --- | --- |
+| funcHelper.hpp | Makes taking, storing, and using functions as variables easier. Functions set can have dynamic data given to them when the function is invoked. | None |
+| EventHelper.hpp | Event class with thread-safety. Functions set to an event can have dynamic data given when the event is invoked. | None |
+| StringHelper.hpp | Simple class for common string operations like trimming and converting char to lowercase. Includes functions for converting a string to float, int, etc. | None |
+| UpdateLimiter.hpp | Used to limit the speed of a thread | None |
+| Stopwatch.hpp | Used to check how long operations take | None |
+| Log.hpp | Simple class that prints logs into a file | None |
+| iniParser.hpp | Easy to use ini parser | StringHelper.hpp |
+| CommandHandler.hpp | Used to create and use commands. The command handler also has the ability to search commands. | funcHelper.hpp, StringHelper.hpp |
+| CommandPrompt.hpp | Simple command prompt that uses the command handler as its backend | CommandHandler.hpp, StringHelper.hpp, TGUI |
+| TerminatingFunction.hpp | Functions that will be called every frame until it says it is done running | funcHelper.hpp, CommandHandler.hpp (optional), CommandPrompt.hpp (optional) |
+| TFuncDisplay.hpp | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI, CommandHandler.hpp (optional) |
+| LiveVar.hpp | Live variables are used for debugging and testing | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
+| VarDisplay.hpp | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
 
 # A preview of a few utilities
 
