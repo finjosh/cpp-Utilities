@@ -61,6 +61,7 @@ void TFuncDisplay::update()
     float scrollPositionV = _list->getVerticalScrollbarValue();
     float scrollPositionH = _list->getHorizontalScrollbarValue();
 
+    // TODO UPDATE THIS
     _list->removeAllItems();
     for (auto funcData: TerminatingFunction::getStringData())
     {
