@@ -13,8 +13,8 @@ SFML:
 TGUI:
   - Version: 1.1
 
-# Ultilies breakdown
-| File | Dependencies | Breif Description |
+# Utilities breakdown
+| File | Dependencies | Brief Description |
 | --- | --- | --- |
 | funcHelper.hpp | Makes taking, storing, and using functions as variables easier. Functions set can have dynamic data given to them when the function is invoked. | None |
 | EventHelper.hpp | Event class with thread-safety. Functions set to an event can have dynamic data given when the event is invoked. | None |
@@ -50,7 +50,7 @@ To find out more about a specific command, type "help 'command'"
 
 ## Var Display and Live Var
 
-Live vars can have key binds set to them for specific values or to incremenet them.
+Live vars can have key binds set to them for specific values or to increment them.
 
 Example:
 
