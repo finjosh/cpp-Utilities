@@ -61,8 +61,8 @@ void VarDisplay::init(tgui::Gui& gui)
     Command::Handler::addCommand(Command::command("lVars", "Contains commands for live variables", {Command::print, "Invalid command\nTrying using \"help lVars\""}, 
         //* sub commands for the lVars
         {
-        Command::command("open", "Displays the live variables", {VarDisplay::openWindow}),
-        Command::command("close", "Hides the display for live variables", {VarDisplay::_closeWindow, nullptr}),
+        Command::command("open", "Displays the live variables", {VarDisplay::setVisible}),
+        Command::command("close", "Hides the display for live variables", {VarDisplay::setVisible, false}),
         Command::command("get", "[Name] | Gets the value for the given variable", {[](Command::Data* data){
             float temp = LiveVar::getValue(data->getToken());
             if (temp == std::numeric_limits<float>::min())
@@ -141,17 +141,18 @@ void VarDisplay::Update()
     }
 }
 
-void VarDisplay::openWindow()
+void VarDisplay::setVisible(bool visible)
 {
-    _parent->setEnabled(true);
-    _parent->setVisible(true);
-    _parent->moveToFront();
-}
-
-void VarDisplay::closeWindow()
-{
-    _parent->setEnabled(false);
-    _parent->setVisible(false);
+    if (visible)
+    {
+        _parent->setVisible(true);
+        _parent->setEnabled(true);
+    }
+    else
+    {
+        _parent->setVisible(false);
+        _parent->setEnabled(false);
+    }
 }
 
 void VarDisplay::addVar(const std::string& name, const float& value)
@@ -190,7 +191,7 @@ void VarDisplay::_closeWindow(bool* abortTguiClose)
 
 void VarDisplay::minimizeWindow()
 {
-    openWindow();
+    setVisible();
 
     // adding the ability to maximize the VarDisplay without using shortcut
     _parentHeight = _parent->getSize().y;

@@ -191,11 +191,11 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
 
     // * events
     _parent->onSizeChange(&CommandPrompt::ResizePrompt);
-    _parent->onClosing(&CommandPrompt::closePrompt);
+    _parent->onClosing(&CommandPrompt::_close);
     _parent->setMaximumSize(_parent->getParentGui()->getView().getSize());
     _parent->onMaximize(&CommandPrompt::MaximizePrompt);
 
-    closePrompt(nullptr);
+    _close(nullptr);
 }
 
 void CommandPrompt::close()
@@ -214,11 +214,10 @@ void CommandPrompt::UpdateEvent(const sf::Event& event)
         {
             if (_parent->isEnabled())
             {
-                bool temp;
-                closePrompt(&temp);
+                setVisible(false);
             }
             else
-                openPrompt();
+                setVisible();
         }
 
         if (event.key.code == sf::Keyboard::Key::Escape)
@@ -266,14 +265,21 @@ void CommandPrompt::UpdateEvent(const sf::Event& event)
     }
 }
 
-void CommandPrompt::openPrompt()
+void CommandPrompt::setVisible(bool visible)
 {
-    _parent->setEnabled(true);
-    _parent->setVisible(true);
-    _parent->moveToFront();
+    if (visible)
+    {
+        _parent->setVisible(true);
+        _parent->setEnabled(true);
+    }
+    else
+    {
+        _parent->setVisible(false);
+        _parent->setEnabled(false);
+    }
 }
 
-void CommandPrompt::closePrompt(bool* abortTguiClose)
+void CommandPrompt::_close(bool* abortTguiClose)
 {
     _parent->setEnabled(false);
     _parent->setVisible(false);

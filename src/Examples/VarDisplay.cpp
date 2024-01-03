@@ -17,7 +17,7 @@ void VarDisplayTest::test()
     {
         if (data->totalTime >= 2)
         {
-            VarDisplay::openWindow();
+            VarDisplay::setVisible();
             return;
         }
         data->setRunning();
@@ -44,7 +44,7 @@ void VarDisplayTest::test()
     {
         if (data->totalTime >= 8)
         {
-            VarDisplay::closeWindow();
+            VarDisplay::setVisible(false);
             return;
         }
         data->setRunning();
