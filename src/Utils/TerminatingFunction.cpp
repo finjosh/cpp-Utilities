@@ -66,7 +66,6 @@ std::list<std::pair<std::string, std::string>> TerminatingFunction::getStringDat
 }
 
 #ifdef COMMANDPROMPT_H
-
 void TerminatingFunction::printToPrompt(const bool& print)
 {
     _printToPrompt = print;
@@ -80,7 +79,6 @@ void TerminatingFunction::printToPromptOnce()
         CommandPrompt::print(funcData.first + " | " + funcData.second);
     }
 }
-
 #endif
 
 #ifdef COMMANDHANDLER_H

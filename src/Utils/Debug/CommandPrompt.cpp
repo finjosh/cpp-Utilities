@@ -23,14 +23,6 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
     _parent->setResizable();
     _parent->setSize({"40%","35%"});
     _parent->setPosition({"60%","65%"});
-    {
-        auto renderer = _parent->getRenderer();
-        renderer->setTitleColor(tgui::Color::White);
-        renderer->setBorderColor({50,50,50,255});
-        renderer->setBorderColorFocused({75,75,75,255});
-        renderer->setTitleBarColor(tgui::Color::Black);
-        renderer->setBackgroundColor(tgui::Color::Black);
-    }
 
     // * setup for edit box
     {
@@ -38,14 +30,6 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
         _parent->add(_textBox);
         _textBox->setSize({"100%", "25"});
         _textBox->setPosition({0, "100% - 25"});
-        auto _textBoxRender = _textBox->getRenderer();
-        _textBoxRender->setTextColor(tgui::Color::White);
-        _textBoxRender->setCaretColor({100,100,100,255});
-        _textBoxRender->setCaretColorFocused(tgui::Color::White);
-        _textBoxRender->setBorderColor({50,50,50,255});
-        _textBoxRender->setBorderColorFocused({75,75,75,255});
-        _textBoxRender->setBackgroundColor(tgui::Color::Black);
-        _textBoxRender->setBackgroundColorHover({50,50,50,255});
 
         // * setup for auto closing _autoFillList when focus is lost
         _textBox->onUnfocus([]()
@@ -62,10 +46,6 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
         _chatBox->setSize({"100%", "100%-25"});
         _chatBox->setLinesStartFromTop();
         _chatBox->setLineLimit(1028);
-        auto chatRender = _chatBox->getRenderer();
-        chatRender->setBorderColor(tgui::Color::Transparent);
-        chatRender->setBackgroundColor({15,15,15,255});
-        chatRender->setPadding(5);
         _chatBox->setTextColor(tgui::Color::White);
         _chatBox->setFocusable(false);
 
@@ -145,14 +125,6 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
         _parent->add(_autoFillList);
         _autoFillList->setSize({"100%", "0"});
         _autoFillList->setAutoScroll(false);
-        auto listRender = _autoFillList->getRenderer();
-        listRender->setBackgroundColor(tgui::Color::Black);
-        listRender->setSelectedBackgroundColor({50,50,50,255});
-        listRender->setBackgroundColorHover(tgui::Color::Black);
-        listRender->setSelectedBackgroundColorHover({50,50,50,255});
-        listRender->setBorderColor({50,50,50,255});
-        listRender->setTextColor(tgui::Color::White);
-        listRender->setTextColorHover(tgui::Color::White);
         _autoFillList->setOrigin(0,1);
         _autoFillList->setPosition({"0"}, {"100%-" + std::to_string(_textBox->getSize().y)});
         _autoFillList->setFocusable(false);
@@ -171,18 +143,20 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
 
         _textBox->onReturnKeyPress([]()
         {
+            Command::color tColor;
+
             if (_textBox->getText().size() == 0 && _autoFillList->isVisible())
                 _textBox->setText(_autoFillList->getSelectedItem());
 
-            _chatBox->addLine("> " + _textBox->getText(), tgui::Color::White, tgui::TextStyle::Bold);
+            _chatBox->addLine("> " + _textBox->getText(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a), tgui::TextStyle::Bold);
 
             auto commandData = Command::Handler::callCommand(_textBox->getText().toStdString());
             CommandPrompt::addHistory(_textBox->getText().toStdString());
             
             if (commandData.getReturnStr() != "")
             {
-                auto& color = commandData.getReturnColor();
-                _chatBox->addLine(commandData.getReturnStr(), tgui::Color(color.r, color.g, color.b, color.a));
+                tColor = commandData.getReturnColor();
+                _chatBox->addLine(commandData.getReturnStr(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a));
             }
 
             _textBox->setText("");

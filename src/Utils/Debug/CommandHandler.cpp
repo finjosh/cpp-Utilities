@@ -2,6 +2,8 @@
 
 using namespace Command;
 
+color Command::color::_default_text_color = color(0,0,0,255);
+
 void Command::print(const std::string& str, Data* input)
 {
     input->setReturnStr(str);
