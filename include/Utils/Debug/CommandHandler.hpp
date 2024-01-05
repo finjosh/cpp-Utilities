@@ -24,12 +24,12 @@ struct color
         r(r), b(b), g(g), a(a)
     {}
 
-    inline void setDefaultColor(const color& color)
+    inline static void setDefaultColor(const color& color)
     {
         _default_text_color = color;
     }
 
-    inline color getDefaultColor()
+    inline static color getDefaultColor()
     {
         return _default_text_color;
     }
