@@ -128,7 +128,7 @@ void VarDisplay::Update()
         bool altColor = false;
         std::for_each(_vars.begin(), _vars.end(), [&str, &altColor](const std::pair<std::string, float>& i)
         { 
-            str += (altColor == true ? "<color=" + ALT_COLOR + ">" : "<color=#000000>");
+            str += (altColor == true ? "<color=" + ALT_COLOR + ">" : "<color=" + DEFAULT_COLOR + ">");
             str += ("<b><i>" + i.first + "</i></b></color> = " + std::to_string(i.second) + "\n"); 
             altColor = !altColor;
         });
