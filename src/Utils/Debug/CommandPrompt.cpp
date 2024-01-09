@@ -1,19 +1,19 @@
 #include "include/Utils/Debug/CommandPrompt.hpp"
 
-tgui::ChildWindow::Ptr CommandPrompt::_parent{nullptr};
-tgui::EditBox::Ptr CommandPrompt::_textBox{nullptr};
-tgui::ListBox::Ptr CommandPrompt::_autoFillList{nullptr};
-tgui::ChatBox::Ptr CommandPrompt::_chatBox{nullptr};
+tgui::ChildWindow::Ptr Command::Prompt::_parent{nullptr};
+tgui::EditBox::Ptr Command::Prompt::_textBox{nullptr};
+tgui::ListBox::Ptr Command::Prompt::_autoFillList{nullptr};
+tgui::ChatBox::Ptr Command::Prompt::_chatBox{nullptr};
 
-std::list<std::string> CommandPrompt::_commandHistory;
-size_t CommandPrompt::_maxHistory = 64;
+std::list<std::string> Command::Prompt::_commandHistory;
+size_t Command::Prompt::_maxHistory = 64;
 
-bool CommandPrompt::_allowPrint = true;
+bool Command::Prompt::_allowPrint = true;
 
-tgui::Layout2d CommandPrompt::_parentSize{"25%", "25%"};
-tgui::Layout2d CommandPrompt::_parentPos{0,0};
+tgui::Layout2d Command::Prompt::_parentSize{"25%", "25%"};
+tgui::Layout2d Command::Prompt::_parentPos{0,0};
 
-void CommandPrompt::init(tgui::Gui& sfmlGui)
+void Command::Prompt::init(tgui::Gui& sfmlGui)
 {
     _parent = tgui::ChildWindow::create("Command Prompt", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
     sfmlGui.add(_parent);
@@ -83,13 +83,13 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
                 {
                     input->setReturnStr(_allowPrint ? "True" : "False");
                 }}),
-                Command::command("clearHistory", "clears the command history", {[](Command::Data* data){ CommandPrompt::clearHistory(); data->setReturnStr("History Cleared"); data->setReturnColor({0,255,0}); }}),
-                Command::command("getMaxHistory", "prints the max number of commands in history", {[](Command::Data* data){ Command::print(std::to_string(CommandPrompt::getMaxHistory()), data); }}),
+                Command::command("clearHistory", "clears the command history", {[](Command::Data* data){ Command::Prompt::clearHistory(); data->setReturnStr("History Cleared"); data->setReturnColor({0,255,0}); }}),
+                Command::command("getMaxHistory", "prints the max number of commands in history", {[](Command::Data* data){ Command::print(std::to_string(Command::Prompt::getMaxHistory()), data); }}),
                 Command::command("setMaxHistory", "sets the max number of commands in history", {[](Command::Data* data){
                     unsigned long temp = 0;
                     if (!Command::isValidInput<unsigned long>("Invalid max entered", *data, data->getToken(), temp, 64))
                         return;
-                    CommandPrompt::setMaxHistory(temp);
+                    Command::Prompt::setMaxHistory(temp);
                     data->setReturnStr("Max history set successfully");
                     data->setReturnColor({0,255,0});
                 }}),
@@ -129,10 +129,10 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
         _autoFillList->setPosition({"0"}, {"100%-" + std::to_string(_textBox->getSize().y)});
         _autoFillList->setFocusable(false);
 
-        _textBox->onTextChange(CommandPrompt::UpdateAutoFill);
+        _textBox->onTextChange(Command::Prompt::UpdateAutoFill);
         _textBox->onFocus([]()
         {
-            CommandPrompt::UpdateAutoFill(); 
+            Command::Prompt::UpdateAutoFill(); 
             _textBox->onFocus.setEnabled(false);
         });
         _textBox->onUnfocus([]()
@@ -143,15 +143,14 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
 
         _textBox->onReturnKeyPress([]()
         {
-            Command::color tColor;
-
             if (_textBox->getText().size() == 0 && _autoFillList->isVisible())
                 _textBox->setText(_autoFillList->getSelectedItem());
 
-            _chatBox->addLine("> " + _textBox->getText(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a), tgui::TextStyle::Bold);
-
             auto commandData = Command::Handler::callCommand(_textBox->getText().toStdString());
-            CommandPrompt::addHistory(_textBox->getText().toStdString());
+            Command::Prompt::addHistory(_textBox->getText().toStdString());
+
+            Command::color tColor;
+            _chatBox->addLine("> " + _textBox->getText(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a), tgui::TextStyle::Bold);
             
             if (commandData.getReturnStr() != "")
             {
@@ -164,15 +163,15 @@ void CommandPrompt::init(tgui::Gui& sfmlGui)
     }
 
     // * events
-    _parent->onSizeChange(&CommandPrompt::ResizePrompt);
-    _parent->onClosing(&CommandPrompt::_close);
+    _parent->onSizeChange(&Command::Prompt::ResizePrompt);
+    _parent->onClosing(&Command::Prompt::_close);
     _parent->setMaximumSize(_parent->getParentGui()->getView().getSize());
-    _parent->onMaximize(&CommandPrompt::MaximizePrompt);
+    _parent->onMaximize(&Command::Prompt::MaximizePrompt);
 
     _close(nullptr);
 }
 
-void CommandPrompt::close()
+void Command::Prompt::close()
 {
     _parent = nullptr;
     _textBox = nullptr;
@@ -180,7 +179,7 @@ void CommandPrompt::close()
     _chatBox = nullptr;
 }
 
-void CommandPrompt::UpdateEvent(const sf::Event& event)
+void Command::Prompt::UpdateEvent(const sf::Event& event)
 {
     if (event.type == sf::Event::KeyPressed)
     {
@@ -239,7 +238,7 @@ void CommandPrompt::UpdateEvent(const sf::Event& event)
     }
 }
 
-void CommandPrompt::setVisible(bool visible)
+void Command::Prompt::setVisible(bool visible)
 {
     if (visible)
     {
@@ -253,7 +252,7 @@ void CommandPrompt::setVisible(bool visible)
     }
 }
 
-void CommandPrompt::_close(bool* abortTguiClose)
+void Command::Prompt::_close(bool* abortTguiClose)
 {
     _parent->setEnabled(false);
     _parent->setVisible(false);
@@ -262,23 +261,23 @@ void CommandPrompt::_close(bool* abortTguiClose)
         (*abortTguiClose) = true;
 }
 
-void CommandPrompt::print(const std::string& str, const Command::color& color)
+void Command::Prompt::print(const std::string& str, const Command::color& color)
 {
     if (_chatBox && _allowPrint)
         _chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
 }
 
-bool CommandPrompt::isPrintAllowed()
+bool Command::Prompt::isPrintAllowed()
 {
     return _allowPrint;
 }
 
-void CommandPrompt::allowPrint(const bool& print)
+void Command::Prompt::allowPrint(const bool& print)
 {
     _allowPrint = print;
 }
 
-void CommandPrompt::MaximizePrompt()
+void Command::Prompt::MaximizePrompt()
 {
     if (_parent->getFullSize() == _parentSize.getValue())
     {
@@ -299,13 +298,13 @@ void CommandPrompt::MaximizePrompt()
     }
 }
 
-void CommandPrompt::ResizePrompt()
+void Command::Prompt::ResizePrompt()
 {
     if (_parent->getSizeLayout().x.toString() != "100%")
         _parentSize = _parent->getFullSize();
 }
 
-void CommandPrompt::UpdateAutoFill()
+void Command::Prompt::UpdateAutoFill()
 {
     std::list<std::string> commands = Command::Handler::autoFillSearch(_textBox->getText().toStdString());;
     _autoFillList->removeAllItems();
@@ -327,7 +326,7 @@ void CommandPrompt::UpdateAutoFill()
     _autoFillList->setSelectedItemByIndex(0);
 }
 
-void CommandPrompt::AutoFill()
+void Command::Prompt::AutoFill()
 {
     _textBox->onFocus.setEnabled(false);
     _textBox->setFocused(true);
@@ -346,7 +345,7 @@ void CommandPrompt::AutoFill()
     UpdateAutoFill();
 }
 
-void CommandPrompt::addHistory(const std::string& command)
+void Command::Prompt::addHistory(const std::string& command)
 {
     if (StringHelper::trim_copy(command).size() == 0) return;
     if (_maxHistory > _commandHistory.size())
@@ -361,17 +360,17 @@ void CommandPrompt::addHistory(const std::string& command)
     }
 }
 
-void CommandPrompt::setMaxHistory(const size_t& size)
+void Command::Prompt::setMaxHistory(const size_t& size)
 {
     _maxHistory = size;
 }
 
-size_t CommandPrompt::getMaxHistory()
+size_t Command::Prompt::getMaxHistory()
 {
     return _maxHistory;
 }
 
-void CommandPrompt::clearHistory()
+void Command::Prompt::clearHistory()
 {
     _commandHistory.clear();
 }

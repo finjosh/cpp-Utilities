@@ -27,18 +27,18 @@ int main()
     TerminatingFunction::initCommands();
     //! --------------------------
 
-    funcHelperTest::test();
-    EventHelperTest::test();
-    StopwatchTest::test();
-    StringHelperTest::test();
-    UpdateLimiterTest::test();
-    LogTest::test();
-    iniParserTest::test();
-    //* uncomment the next line for the Terminating function tests (may disrupt output order)
-    // TerminatingFunctionTest::test(); 
-    // live var test is put after the VarDisplay is initalized so the vars will be in the display
-    VarDisplayTest::test();
-    CommandHandlerTest::test();
+    // funcHelperTest::test();
+    // EventHelperTest::test();
+    // StopwatchTest::test();
+    // StringHelperTest::test();
+    // UpdateLimiterTest::test();
+    // LogTest::test();
+    // iniParserTest::test();
+    // //* uncomment the next line for the Terminating function tests (may disrupt output order)
+    // // TerminatingFunctionTest::test(); 
+    // // live var test is put after the VarDisplay is initalized so the vars will be in the display
+    // VarDisplayTest::test();
+    // CommandHandlerTest::test();
 
     // setup for sfml and tgui
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "C++ Utilities");
@@ -49,21 +49,51 @@ int main()
     gui.setRelativeView({0, 0, 1920/(float)window.getSize().x, 1080/(float)window.getSize().y});
     // -----------------------
 
+    //! Adding a command for showing off the different themes
+    Command::Handler::addCommand(Command::command{"setTheme", "Function used to set the theme of the UI (The previous outputs in the command prompt will not get updated color)", 
+        {Command::print, "Trying calling one of the sub commands"},
+        std::list<Command::command>{
+            Command::command{"default", "Sets the theme back to default", {[](){ 
+                tgui::Theme::setDefault("");
+                // Note that command color does not update with theme so you have to set the default color
+                Command::color::setDefaultColor({0,0,0,255}); // black
+            }}},
+            // Dark theme is a custom theme made by me 
+            // It can be found here: https://github.com/finjosh/TGUI-DarkTheme
+            Command::command{"dark", "Sets the them to the dark theme", {[](){ 
+                tgui::Theme::getDefault()->load("themes/Dark.txt"); 
+                // Note that command color does not update with theme so you have to set the default color
+                Command::color::setDefaultColor({255,255,255,255}); // white
+            }}}, 
+            Command::command{"black", "Sets the them to the black theme", {[](){ 
+                tgui::Theme::getDefault()->load("themes/Black.txt"); 
+                // Note that command color does not update with theme so you have to set the default color
+                Command::color::setDefaultColor({255,255,255,255}); // white
+            }}},
+            Command::command{"grey", "Sets the them to the transparent grey theme", {[](){ 
+                tgui::Theme::getDefault()->load("themes/TransparentGrey.txt"); 
+                // Note that command color does not update with theme so you have to set the default color
+                Command::color::setDefaultColor({0,0,0,255}); // black
+            }}}
+        }
+    });
+    //! -----------------------------------------------------
+
     //! Required to initialize VarDisplay and CommandPrompt
     // creates the UI for the VarDisplay
     VarDisplay::init(gui); 
     // creates the UI for the CommandPrompt
-    CommandPrompt::init(gui);
+    Command::Prompt::init(gui);
     // create the UI for the TFuncDisplay
     TFuncDisplay::init(gui);
     //! ---------------------------------------------------
     //* CommandPromptTest
-    CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
+    // CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
     //* TFuncDisplayTest
-    TFuncDisplayTest::test();
+    // TFuncDisplayTest::test();
 
     //* LiveVarTest
-    LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
+    // LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
 
     float deltaTime = 0;
     sf::Clock deltaClock;
@@ -82,7 +112,7 @@ int main()
 
             //! Required for LiveVar and CommandPrompt to work as intended
             LiveVar::UpdateLiveVars(event);
-            CommandPrompt::UpdateEvent(event);
+            Command::Prompt::UpdateEvent(event);
             //! ----------------------------------------------------------
 
             if (event.type == sf::Event::Closed)
@@ -105,7 +135,7 @@ int main()
 
     //! Required so that VarDisplay and CommandPrompt release all data
     VarDisplay::close();
-    CommandPrompt::close();
+    Command::Prompt::close();
     TFuncDisplay::close();
     //! --------------------------------------------------------------
 

@@ -73,10 +73,10 @@ void TerminatingFunction::printToPrompt(const bool& print)
 
 void TerminatingFunction::printToPromptOnce()
 {
-    CommandPrompt::print("Function Name | Total Time");
+    Command::Prompt::print("Function Name | Total Time");
     for (std::pair<std::string, std::string> funcData: TerminatingFunction::getStringData())
     {
-        CommandPrompt::print(funcData.first + " | " + funcData.second);
+        Command::Prompt::print(funcData.first + " | " + funcData.second);
     }
 }
 #endif

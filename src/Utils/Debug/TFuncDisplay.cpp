@@ -11,9 +11,9 @@ void TFuncDisplay::init(tgui::Gui& gui)
     
     _parent->onSizeChange([]()
     { 
-        if (int(_parent->getSize().y) > int(_parent->getRenderer()->getTitleBarHeight()))
+        if (int(_parent->getSize().y) > int(_parent->getSharedRenderer()->getTitleBarHeight()))
         {    
-            _parentHeight = _parent->getRenderer()->getTitleBarHeight();
+            _parentHeight = _parent->getSharedRenderer()->getTitleBarHeight();
             _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
         }
     });
@@ -36,8 +36,6 @@ void TFuncDisplay::init(tgui::Gui& gui)
     _list->setAutoScroll(false);
     _list->setFocusable(false);
     _list->setMultiSelect(false);
-    auto listRenderer = _list->getRenderer();
-    listRenderer->setSelectedBackgroundColorHover(listRenderer->getBackgroundColor());
 
     // if command handler is also in use then we add some commands for using the var display
     #ifdef COMMANDHANDLER_H
@@ -100,7 +98,7 @@ void TFuncDisplay::minimize()
     _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
 
     // reducing the height of the window
-    _parent->setHeight(_parent->getRenderer()->getTitleBarHeight());
+    _parent->setHeight(_parent->getSharedRenderer()->getTitleBarHeight());
 }
 
 void TFuncDisplay::maximize()
@@ -111,7 +109,7 @@ void TFuncDisplay::maximize()
 
 bool TFuncDisplay::isMinimized()
 {
-    return int(_parent->getSize().y) == int(_parent->getRenderer()->getTitleBarHeight());
+    return int(_parent->getSize().y) == int(_parent->getSharedRenderer()->getTitleBarHeight());
 }
 
 void TFuncDisplay::_close(bool* abortTguiClose)

@@ -34,14 +34,14 @@ void VarDisplay::init(tgui::Gui& gui)
     _parent->setResizable(true);
     _parent->onMinimize(&VarDisplay::minimizeWindow);
     _parent->onMaximize(&VarDisplay::maximizeWindow);
-    _parent->add(tgui::ScrollablePanel::create({_parent->getSize() - tgui::Vector2f(0, _parent->getRenderer()->getTitleBarHeight())}));
+    _parent->add(tgui::ScrollablePanel::create({_parent->getSize() - tgui::Vector2f(0, _parent->getSharedRenderer()->getTitleBarHeight())}));
     _scrollPanel = _parent->getWidgets().back()->cast<tgui::ScrollablePanel>();
     _parent->onSizeChange([]()
     { 
-        _scrollPanel->setSize(_parent->getSize() - tgui::Vector2f(0, _parent->getRenderer()->getTitleBarHeight())); 
-        if (int(_parent->getSize().y) > int(_parent->getRenderer()->getTitleBarHeight()))
+        _scrollPanel->setSize(_parent->getSize() - tgui::Vector2f(0, _parent->getSharedRenderer()->getTitleBarHeight())); 
+        if (int(_parent->getSize().y) > int(_parent->getSharedRenderer()->getTitleBarHeight()))
         {    
-            _parentHeight = _parent->getRenderer()->getTitleBarHeight();
+            _parentHeight = _parent->getSharedRenderer()->getTitleBarHeight();
             _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
         }
     });
@@ -50,7 +50,6 @@ void VarDisplay::init(tgui::Gui& gui)
     _scrollPanel->add(_varLabel);
     _varLabel->setAutoSize(true);
     _varLabel->onSizeChange([](){ VarDisplay::_scrollPanel->setContentSize(VarDisplay::_varLabel->getSize()); });
-    _varLabel->getRenderer()->setTextColor(tgui::Color::Black);
 
     bool temp;
     _closeWindow(&temp);
@@ -125,13 +124,10 @@ void VarDisplay::Update()
     if (_varChanged)
     {
         std::string str = "";
-        bool altColor = false;
-        std::for_each(_vars.begin(), _vars.end(), [&str, &altColor](const std::pair<std::string, float>& i)
-        { 
-            str += (altColor == true ? "<color=" + ALT_COLOR + ">" : "<color=" + DEFAULT_COLOR + ">");
-            str += ("<b><i>" + i.first + "</i></b></color> = " + std::to_string(i.second) + "\n"); 
-            altColor = !altColor;
-        });
+        for (auto i: _vars)
+        {
+            str += ("<b><i>" + i.first + "</i></b> = " + std::to_string(i.second) + "\n"); 
+        }
         if (str.length() > 0)
             str.erase(--str.end());
         
@@ -198,7 +194,7 @@ void VarDisplay::minimizeWindow()
     _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
 
     // reducing the height of the window
-    _parent->setHeight(_parent->getRenderer()->getTitleBarHeight());
+    _parent->setHeight(_parent->getSharedRenderer()->getTitleBarHeight());
 }
 
 void VarDisplay::maximizeWindow()
