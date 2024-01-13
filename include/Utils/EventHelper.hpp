@@ -80,13 +80,12 @@ public:
     /// @brief Call all connected functions
     ///
     /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
-    /// @note always returns true if thread safe = true
     ///
     /// @return True when at least one function was called
-    bool invoke(bool threadSafe);
+    bool invoke(bool threadSafe = false);
 
     /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
-    void invokeThreadSafe();
+    // void invokeThreadSafe();
 
     /// @brief Changes whether this event calls the connected functions when triggered
     ///
@@ -115,36 +114,27 @@ public:
     public:
         /// @brief Call this first thing every frame
         static void update();
-    protected:
         /// @brief used when an event is destroyed in case its still in the queue
         static void removeEvent(Event* event);
         /// @brief adds the given event to the thread safe queue and copys any data needed to call it
-        /// @param T the params for the event if needed
-        /// @param T2 the params for the event if needed
-        /// @param T3 the params for the event if needed
-        /// @param T4 the params for the event if needed
-        /// @param T5 the params for the event if needed
-        template <typename T = void*, typename T2 = void*, typename T3 = void*, typename T4 = void*, typename T5 = void*>
-        static void addEvent(Event* event, T param = nullptr, T2 param2 = nullptr, T3 param3 = nullptr, T4 param4 = nullptr, T5 param5 = nullptr)
+        /// @note dont use this 
+        /// @note set threadSafe = true when invoking from the event
+        static void addEvent(Event* event, std::function<void()>&& func)
         {
-            // copying all the params for later use
-            _events.push_back({event, 
-                {static_cast<void*>(new T(param)), 
-                static_cast<void*>(new T2(param2)), 
-                static_cast<void*>(new T3(param3)), 
-                static_cast<void*>(new T4(param4)), 
-                static_cast<void*>(new T5(param5))}
-            });
+            _events.push_back({event, func});
         }
 
     private:
         inline ThreadSafe() = default;
 
-        static std::list<std::pair<Event*, std::deque<void*>>> _events; // TODO check if making this a lambda would work
+        // static std::list<std::pair<Event*, std::deque<void*>>> _events; // TODO check if making this a lambda would work
+        static std::list<std::pair<Event*, std::function<void()>>> _events;
         friend Event;
     };
 
 protected:
+
+    void _invoke();
 
     /// @brief Turns the void* parameters back into its original type right before calling the callback function
     template <typename Type>
@@ -218,22 +208,22 @@ public:
     ///
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
     /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
-    /// @note always returns true if thread safe = true
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, bool threadSafe)
+    bool invoke(T param, bool threadSafe = false)
     {
-        if (m_functions.empty())
+        if (m_functions.empty() || !m_enabled)
             return false;
 
-        m_parameters[0] = static_cast<const void*>(&param);
-        return Event::invoke();
-    }
+        if (threadSafe)
+        {
+            Event::ThreadSafe::addEvent(this, [this, param]{ Event::invokeFunc(&EventDynamic::invoke, this, param, false); });
+            return true;
+        }
 
-    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
-    void invokeThreadSafe(T param)
-    {
-        Event::ThreadSafe::addEvent(this, param);
+        m_parameters[0] = static_cast<const void*>(&param);
+        Event::_invoke();
+        return true;
     }
 };
 
@@ -293,24 +283,24 @@ public:
     /// @brief Call all connected callbacks
     ///
     /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
-    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, bool threadSafe)
+    bool invoke(T param, T2 param2, bool threadSafe = false)
     {
-        if (m_functions.empty())
+        if (m_functions.empty() || !m_enabled)
             return false;
+
+        if (threadSafe)
+        {
+            Event::ThreadSafe::addEvent(this, [this, param, param2]{ Event::invokeFunc(&EventDynamic2::invoke, this, param, param2, false); });
+            return true;
+        }
 
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
-        return Event::invoke();
-    }
-
-    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
-    void invokeThreadSafe(T param, T2 param2)
-    {
-        Event::ThreadSafe::addEvent(this, param, param2);
+        Event::_invoke();
+        return true;
     }
 };
 
@@ -376,25 +366,25 @@ public:
     /// @brief Call all connected callbacks
     ///
     /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
-    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, bool threadSafe)
+    bool invoke(T param, T2 param2, T3 param3, bool threadSafe = false)
     {
-        if (m_functions.empty())
+        if (m_functions.empty() || !m_enabled)
             return false;
+
+        if (threadSafe)
+        {
+            Event::ThreadSafe::addEvent(this, [this, param, param2, param3]{ Event::invokeFunc(&EventDynamic3::invoke, this, param, param2, param3, false); });
+            return true;
+        }
 
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
-        return Event::invoke();
-    }
-
-    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
-    void invokeThreadSafe(T param, T2 param2, T3 param3)
-    {
-        Event::ThreadSafe::addEvent(this, param, param2, param3);
+        Event::_invoke();
+        return true;
     }
 };
 
@@ -466,26 +456,26 @@ public:
     /// @brief Call all connected callbacks
     ///
     /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
-    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, T4 param4, bool threadSafe)
+    bool invoke(T param, T2 param2, T3 param3, T4 param4, bool threadSafe = false)
     {
-        if (m_functions.empty())
+        if (m_functions.empty() || !m_enabled)
             return false;
+
+        if (threadSafe)
+        {
+            Event::ThreadSafe::addEvent(this, [this, param, param2, param3, param4]{ Event::invokeFunc(&EventDynamic4::invoke, this, param, param2, param3, param4, false); });
+            return true;
+        }
 
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
         m_parameters[3] = static_cast<const void*>(&param4);
-        return Event::invoke();
-    }
-    
-    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
-    void invokeThreadSafe(T param, T2 param2, T3 param3, T4 param4)
-    {
-        Event::ThreadSafe::addEvent(this, param, param2, param3, param4);
+        Event::_invoke();
+        return true;
     }
 };
 
@@ -563,27 +553,27 @@ public:
     /// @brief Call all connected callbacks
     ///
     /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
-    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, T4 param4, T5 param5, bool threadSafe)
+    bool invoke(T param, T2 param2, T3 param3, T4 param4, T5 param5, bool threadSafe = false)
     {
-        if (m_functions.empty())
+        if (m_functions.empty() || !m_enabled)
             return false;
+
+        if (threadSafe)
+        {
+            Event::ThreadSafe::addEvent(this, [this, param, param2, param3, param4, param5]{ Event::invokeFunc(&EventDynamic5::invoke, this, param, param2, param3, param4, param5, false); });
+            return true;
+        }
 
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
         m_parameters[3] = static_cast<const void*>(&param4);
         m_parameters[4] = static_cast<const void*>(&param5);
-        return Event::invoke();
-    }
-
-    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
-    void invokeThreadSafe(T param, T2 param2, T3 param3, T4 param4, T5 param5)
-    {
-        Event::ThreadSafe::addEvent(this, param, param2, param3, param4, param5);
+        Event::_invoke();
+        return true;
     }
 };
 

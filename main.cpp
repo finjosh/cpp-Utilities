@@ -95,11 +95,6 @@ int main()
     //* LiveVarTest
     // LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
 
-    EventHelper::EventDynamic<int> test;
-    test.connect([](const int& v){ cout << std::to_string(v) << endl; });
-    test.invoke(7);
-    test.invoke(127);
-
     float deltaTime = 0;
     sf::Clock deltaClock;
     while (window.isOpen())

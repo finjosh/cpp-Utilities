@@ -2,38 +2,39 @@
 
 using namespace EventHelper;
 
-std::list<std::pair<Event*, std::deque<void*>>> Event::ThreadSafe::_events;
+std::list<std::pair<Event*, std::function<void()>>> Event::ThreadSafe::_events;
 
 void Event::ThreadSafe::update()
 {
     for (auto event: _events)
     {
         // copying the stored vars to the events vars
-        event.first->m_parameters.insert(event.first->m_parameters.begin(), event.second.begin(), event.second.end());
-        event.first->invoke();
-        for (void* var: event.second)
-        {
-            delete(var);
-        }
+        // event.first->m_parameters.insert(event.first->m_parameters.begin(), event.second.begin(), event.second.end());
+        // event.first->_invoke(); // invoking the function
+        event.second();
+        // for (void* var: event.second) // freeing memory from stored vars
+        // {
+        //     delete(var);
+        // }
     }
-    _events.clear();
+    _events.clear(); // removing all the events in the queue
 }
 
 void Event::ThreadSafe::removeEvent(Event* event)
 {
     // trying to find the event with the same pointer
     auto temp = std::find_if(_events.begin(), _events.end(), 
-        [event](const std::pair<EventHelper::Event *, std::deque<void*>>& v){
+        [event](const std::pair<EventHelper::Event *, std::function<void()>>& v){
             return v.first == event;
         });
     // making sure the event is in the list
     if (temp == _events.end()) return;
 
     // freeing all memory from the temp params
-    for (void* var: temp->second)
-    {
-        delete(var);
-    }
+    // for (void* var: temp->second)
+    // {
+    //     delete(var);
+    // }
     // removing from list
     _events.erase(temp);
 }
@@ -69,21 +70,26 @@ void Event::disconnectAll()
 
 bool Event::invoke(bool threadSafe)
 {
-    if (threadSafe)
-    {
-        Event::ThreadSafe::addEvent(this);
-    }
-
     if (m_functions.empty() || !m_enabled)
         return false;
 
-    for (const auto& function : m_functions)
-        function.second();
+    if (threadSafe)
+    {
+        Event::ThreadSafe::addEvent(this, [this]{ Event::invokeFunc(&Event::_invoke, this); });
+        return true;
+    }
 
+    _invoke();
     return true;
 }
 
-void Event::invokeThreadSafe()
+void Event::_invoke()
 {
-    Event::ThreadSafe::addEvent(this);
+    for (const auto& function : m_functions)
+        function.second();
 }
+
+// void Event::invokeThreadSafe()
+// {
+//     Event::ThreadSafe::addEvent(this);
+// }
