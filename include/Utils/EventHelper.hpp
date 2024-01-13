@@ -4,30 +4,13 @@
 #pragma once
 
 #include <unordered_map>
-#include <set>
+#include <list>
 #include <deque>
 #include <memory>
 #include <functional>
 
 namespace EventHelper
 {
-
-class Event;
-
-class ThreadSafeEvent
-{
-public:
-    static void addEvent(Event* event);
-    /// @brief Call this first thing every frame
-    static void update();
-    /// @brief used when an event is destroyed in case its still in the queue
-    static void removeEvent(Event* event);
-
-private:
-    inline ThreadSafeEvent() = default;
-
-    static std::multiset<Event*> _events;
-};
 
 class Event
 {
@@ -36,7 +19,7 @@ public:
     virtual ~Event() 
     {
         // removing pointer to this event in thread safe in case it is still in queue
-        ThreadSafeEvent::removeEvent(this);
+        Event::ThreadSafe::removeEvent(this);
     }
 
     Event() {}
@@ -53,7 +36,7 @@ public:
     /// @brief Default move assignment operator
     Event& operator=(Event&& other) noexcept = default;
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -65,7 +48,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function
     /// @param args  Additional arguments to pass to the function
@@ -74,7 +57,7 @@ public:
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
     unsigned int connect(const Func& func, const BoundArgs&... args)
     {
-        const auto id = ++m_lastSignalId;
+        const auto id = ++m_lastId;
         if constexpr(sizeof...(BoundArgs) == 0)
             m_functions[id] = func;
         else
@@ -84,45 +67,82 @@ public:
         return id;
     }
 
-    /// @brief Disconnect a signal handler from this signal
+    /// @brief Disconnect a function from this event
     ///
     /// @param id  Unique id of the connection returned by the connect function
     ///
     /// @return True when a connection with this id existed and was removed
     bool disconnect(unsigned int id);
 
-    /// @brief Disconnect all signal handler from this signal
+    /// @brief Disconnect all function from this event
     void disconnectAll();
 
     /// @brief Call all connected functions
     ///
-    /// @param threadSafe if true the event is called on event update 
-    /// @note when thread safe always returns true
+    /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
+    /// @note always returns true if thread safe = true
     ///
     /// @return True when at least one function was called
-    bool invoke(bool threadSafe = false);
+    bool invoke(bool threadSafe);
 
-    /// @brief Changes whether this signal calls the connected functions when triggered
+    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
+    void invokeThreadSafe();
+
+    /// @brief Changes whether this event calls the connected functions when triggered
     ///
-    /// @param enabled  Is the signal enabled?
+    /// @param enabled  Is the event enabled?
     ///
-    /// Signals are enabled by default. Temporarily disabling the signal is the better alternative to disconnecting the
+    /// events are enabled by default. Temporarily disabling the event is the better alternative to disconnecting the
     /// handler and connecting it again a few lines later.
     void setEnabled(bool enabled)
     {
         m_enabled = enabled;
     }
 
-    /// @brief Returns whether this signal calls the connected functions when triggered
+    /// @brief Returns whether this event calls the connected functions when triggered
     ///
-    /// @return Is the signal enabled?
+    /// @return Is the event enabled?
     ///
-    /// Signals are enabled by default. Temporarily disabling the signal is the better alternative to disconnecting the
+    /// events are enabled by default. Temporarily disabling the event is the better alternative to disconnecting the
     /// handler and connecting it again a few lines later.
     bool isEnabled() const
     {
         return m_enabled;
     }
+
+    class ThreadSafe
+    {
+    public:
+        /// @brief Call this first thing every frame
+        static void update();
+    protected:
+        /// @brief used when an event is destroyed in case its still in the queue
+        static void removeEvent(Event* event);
+        /// @brief adds the given event to the thread safe queue and copys any data needed to call it
+        /// @param T the params for the event if needed
+        /// @param T2 the params for the event if needed
+        /// @param T3 the params for the event if needed
+        /// @param T4 the params for the event if needed
+        /// @param T5 the params for the event if needed
+        template <typename T = void*, typename T2 = void*, typename T3 = void*, typename T4 = void*, typename T5 = void*>
+        static void addEvent(Event* event, T param = nullptr, T2 param2 = nullptr, T3 param3 = nullptr, T4 param4 = nullptr, T5 param5 = nullptr)
+        {
+            // copying all the params for later use
+            _events.push_back({event, 
+                {static_cast<void*>(new T(param)), 
+                static_cast<void*>(new T2(param2)), 
+                static_cast<void*>(new T3(param3)), 
+                static_cast<void*>(new T4(param4)), 
+                static_cast<void*>(new T5(param5))}
+            });
+        }
+
+    private:
+        inline ThreadSafe() = default;
+
+        static std::list<std::pair<Event*, std::deque<void*>>> _events; // TODO check if making this a lambda would work
+        friend Event;
+    };
 
 protected:
 
@@ -139,13 +159,11 @@ protected:
         std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
     }
 
-protected:
-
     bool m_enabled = true;
     std::unordered_map<unsigned int, std::function<void()>> m_functions;
 
     // Possible issue if event are constantly removed and added
-    unsigned int m_lastSignalId;
+    unsigned int m_lastId;
     static std::deque<const void*> m_parameters;
 };
 
@@ -160,7 +178,7 @@ public:
     EventDynamic()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -172,7 +190,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -184,7 +202,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -198,19 +216,24 @@ public:
 
     /// @brief Call all connected callbacks
     ///
-    /// @param widget  Widget that is triggering the signal
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
-    /// @param threadSafe if true the event is called on event update 
-    /// @note threadSafe does not call the event immediately 
+    /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
+    /// @note always returns true if thread safe = true
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, bool threadSafe = false)
+    bool invoke(T param, bool threadSafe)
     {
         if (m_functions.empty())
             return false;
 
         m_parameters[0] = static_cast<const void*>(&param);
-        return Event::invoke(threadSafe);
+        return Event::invoke();
+    }
+
+    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
+    void invokeThreadSafe(T param)
+    {
+        Event::ThreadSafe::addEvent(this, param);
     }
 };
 
@@ -225,7 +248,7 @@ public:
     EventDynamic2()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -237,7 +260,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -249,7 +272,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -269,20 +292,25 @@ public:
 
     /// @brief Call all connected callbacks
     ///
-    /// @param widget  Widget that is triggering the signal
+    /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
+    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
-    /// @param threadSafe if true the event is called on event update 
-    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, bool threadSafe = false)
+    bool invoke(T param, T2 param2, bool threadSafe)
     {
         if (m_functions.empty())
             return false;
 
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
-        return Event::invoke(threadSafe);
+        return Event::invoke();
+    }
+
+    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
+    void invokeThreadSafe(T param, T2 param2)
+    {
+        Event::ThreadSafe::addEvent(this, param, param2);
     }
 };
 
@@ -297,7 +325,7 @@ public:
     EventDynamic3()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -309,7 +337,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -321,7 +349,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -347,13 +375,12 @@ public:
 
     /// @brief Call all connected callbacks
     ///
-    /// @param widget  Widget that is triggering the signal
+    /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
+    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
-    /// @param threadSafe if true the event is called on event update 
-    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, bool threadSafe = false)
+    bool invoke(T param, T2 param2, T3 param3, bool threadSafe)
     {
         if (m_functions.empty())
             return false;
@@ -361,7 +388,13 @@ public:
         m_parameters[0] = static_cast<const void*>(&param);
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
-        return Event::invoke(threadSafe);
+        return Event::invoke();
+    }
+
+    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
+    void invokeThreadSafe(T param, T2 param2, T3 param3)
+    {
+        Event::ThreadSafe::addEvent(this, param, param2, param3);
     }
 };
 
@@ -376,7 +409,7 @@ public:
     EventDynamic4()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -388,7 +421,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -400,7 +433,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -432,13 +465,12 @@ public:
 
     /// @brief Call all connected callbacks
     ///
-    /// @param widget  Widget that is triggering the signal
+    /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
+    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
-    /// @param threadSafe if true the event is called on event update 
-    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, T4 param4, bool threadSafe = false)
+    bool invoke(T param, T2 param2, T3 param3, T4 param4, bool threadSafe)
     {
         if (m_functions.empty())
             return false;
@@ -447,7 +479,13 @@ public:
         m_parameters[1] = static_cast<const void*>(&param2);
         m_parameters[2] = static_cast<const void*>(&param3);
         m_parameters[3] = static_cast<const void*>(&param4);
-        return Event::invoke(threadSafe);
+        return Event::invoke();
+    }
+    
+    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
+    void invokeThreadSafe(T param, T2 param2, T3 param3, T4 param4)
+    {
+        Event::ThreadSafe::addEvent(this, param, param2, param3, param4);
     }
 };
 
@@ -462,7 +500,7 @@ public:
     EventDynamic5()
     {}
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that can be passed to the connect function
     /// @param args  Additional arguments to pass to the function
@@ -474,7 +512,7 @@ public:
         return connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function without unbound parameters
     /// @param args  Additional arguments to pass to the function
@@ -486,7 +524,7 @@ public:
         return Event::connect(func, args...);
     }
 
-    /// @brief Connects a signal handler that will be called when this signal is invoked
+    /// @brief Connects a function that will be called when this event is invoked
     ///
     /// @param func  Callback function that have their last parameter unbound of type T
     /// @param args  Additional arguments to pass to the function
@@ -524,13 +562,12 @@ public:
 
     /// @brief Call all connected callbacks
     ///
-    /// @param widget  Widget that is triggering the signal
+    /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
+    /// @note always returns true if thread safe = true
     /// @param param   Parameter that will be passed to callback function if it has an unbound parameter
-    /// @param threadSafe if true the event is called on event update 
-    /// @note threadSafe does not call the event immediately 
     ///
     /// @return True when a callback function was executed, false when there weren't any connected callback functions
-    bool invoke(T param, T2 param2, T3 param3, T4 param4, T5 param5, bool threadSafe = false)
+    bool invoke(T param, T2 param2, T3 param3, T4 param4, T5 param5, bool threadSafe)
     {
         if (m_functions.empty())
             return false;
@@ -540,7 +577,13 @@ public:
         m_parameters[2] = static_cast<const void*>(&param3);
         m_parameters[3] = static_cast<const void*>(&param4);
         m_parameters[4] = static_cast<const void*>(&param5);
-        return Event::invoke(threadSafe);
+        return Event::invoke();
+    }
+
+    /// @brief Calls all connected functions at: EventHelper::Event::ThreadSafe::update()
+    void invokeThreadSafe(T param, T2 param2, T3 param3, T4 param4, T5 param5)
+    {
+        Event::ThreadSafe::addEvent(this, param, param2, param3, param4, param5);
     }
 };
 
