@@ -31,22 +31,23 @@ TGUI:
 | VarDisplay.hpp | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
 
 # A preview of a few utilities
+Note that the theme can be set to any TGUI theme, and the utilities UI will update accordingly. 
 
 ## Command Prompt
 
 Firstly, to open and close the command prompt, you can use the tilde key (~)
 
-![Screenshot 2023-12-22 105606](https://github.com/finjosh/cpp-Utilities/assets/109707607/b2e0ddac-76d3-40de-bfeb-456b96416b92)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/990e7045-e504-4d80-b135-ae33b1eaf529)
 
 To get a list of commands, use the command "help"
 
-![Screenshot 2023-12-22 105639](https://github.com/finjosh/cpp-Utilities/assets/109707607/74438a7b-c2be-46dc-8fc5-285086b4b321)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/199cc998-220e-43eb-b51b-314a8216f380)
 
 To find out more about a specific command, type "help 'command'"
 
-![Screenshot 2023-12-22 120330](https://github.com/finjosh/cpp-Utilities/assets/109707607/4bb83900-17a1-48e3-807f-225d1c03b468)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/2ab067a8-ab5e-428e-bdf8-98fbda065fe0)
 
-![ezgif com-optimize](https://github.com/finjosh/cpp-Utilities/assets/109707607/9786e255-aeed-453c-b2d4-42be619531f5)
+![Untitledvideo-MadewithClipchamp-ezgif com-video-to-gif-converter](https://github.com/finjosh/cpp-Utilities/assets/109707607/0b10f62a-a905-44c3-ab3f-91f41092c9d2)
 
 ## Var Display and Live Var
 
@@ -54,17 +55,16 @@ Live vars can have key binds set to them for specific values or to increment the
 
 Example:
 
-![ezgif com-video-to-gif-converted](https://github.com/finjosh/cpp-Utilities/assets/109707607/cdb428d4-5b0c-455b-911b-3e4023e45b8c)
+![2024-01-1419-44-59-ezgif com-video-to-gif-converter](https://github.com/finjosh/cpp-Utilities/assets/109707607/de21c7f9-2e3f-4d26-a9f4-829ef0962d87)
 
 Example usage with command prompt:
 
-https://github.com/finjosh/cpp-Utilities/assets/109707607/58003d68-5a51-4cf6-a753-c7578461bf1c
+https://github.com/finjosh/cpp-Utilities/assets/109707607/cb718067-b088-4c1c-b04a-90767adf1ef5
 
 ## Terminating Functions Display
 
 Display for seeing the name and total time of each terminating function
 
-![Screenshot 2023-12-23 165722](https://github.com/finjosh/cpp-Utilities/assets/109707607/e9649332-6aa2-4803-aa5f-f84c1e2fb868)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/6ccbe7e5-0fef-4375-9220-54400852c50b)
 
-![TFuncDisplay](https://github.com/finjosh/cpp-Utilities/assets/109707607/02feac9a-3e17-4246-978f-5aca69cb8229)
-
+![Untitledvideo-MadewithClipchamp1-ezgif com-video-to-gif-converter](https://github.com/finjosh/cpp-Utilities/assets/109707607/4f17ab5c-f637-49df-9c19-fdf6f4ec5ca4
