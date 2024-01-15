@@ -146,11 +146,11 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
             if (_textBox->getText().size() == 0 && _autoFillList->isVisible())
                 _textBox->setText(_autoFillList->getSelectedItem());
 
-            auto commandData = Command::Handler::callCommand(_textBox->getText().toStdString());
-            Command::Prompt::addHistory(_textBox->getText().toStdString());
-
             Command::color tColor;
             _chatBox->addLine("> " + _textBox->getText(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a), tgui::TextStyle::Bold);
+
+            auto commandData = Command::Handler::callCommand(_textBox->getText().toStdString());
+            Command::Prompt::addHistory(_textBox->getText().toStdString());
             
             if (commandData.getReturnStr() != "")
             {

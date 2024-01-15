@@ -27,18 +27,18 @@ int main()
     TerminatingFunction::initCommands();
     //! --------------------------
 
-    // funcHelperTest::test();
-    // EventHelperTest::test();
-    // StopwatchTest::test();
-    // StringHelperTest::test();
-    // UpdateLimiterTest::test();
-    // LogTest::test();
-    // iniParserTest::test();
-    // //* uncomment the next line for the Terminating function tests (may disrupt output order)
-    // // TerminatingFunctionTest::test(); 
-    // // live var test is put after the VarDisplay is initalized so the vars will be in the display
-    // VarDisplayTest::test();
-    // CommandHandlerTest::test();
+    funcHelperTest::test();
+    EventHelperTest::test();
+    StopwatchTest::test();
+    StringHelperTest::test();
+    UpdateLimiterTest::test();
+    LogTest::test();
+    iniParserTest::test();
+    //* uncomment the next line for the Terminating function tests (may disrupt output order)
+    // TerminatingFunctionTest::test(); 
+    // live var test is put after the VarDisplay is initalized so the vars will be in the display
+    VarDisplayTest::test();
+    CommandHandlerTest::test();
 
     // setup for sfml and tgui
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "C++ Utilities");
@@ -47,6 +47,8 @@ int main()
 
     tgui::Gui gui{window};
     gui.setRelativeView({0, 0, 1920/(float)window.getSize().x, 1080/(float)window.getSize().y});
+    Command::color::setDefaultColor({255,255,255,255}); // white
+    tgui::Theme::getDefault()->load("themes/Dark.txt");
     // -----------------------
 
     //! Adding a command for showing off the different themes
@@ -88,12 +90,12 @@ int main()
     TFuncDisplay::init(gui);
     //! ---------------------------------------------------
     //* CommandPromptTest
-    // CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
+    CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
     //* TFuncDisplayTest
-    // TFuncDisplayTest::test();
+    TFuncDisplayTest::test();
 
     //* LiveVarTest
-    // LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
+    LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
 
     float deltaTime = 0;
     sf::Clock deltaClock;
