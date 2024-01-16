@@ -14,7 +14,7 @@ TGUI:
   - Version: 1.1
 
 # Utilities breakdown
-| File | Dependencies | Brief Description |
+| File | Brief Description | Dependencies |
 | --- | --- | --- |
 | funcHelper.hpp | Makes taking, storing, and using functions as variables easier. Functions set can have dynamic data given to them when the function is invoked. | None |
 | EventHelper.hpp | Event class with thread-safety. Functions set to an event can have dynamic data given when the event is invoked. | None |
