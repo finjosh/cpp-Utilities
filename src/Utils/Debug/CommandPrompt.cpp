@@ -63,7 +63,7 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
                 { 
                     unsigned long t;
                     if (Command::isValidInput<unsigned long>("Please enter a valid number (min - 50)", *input, input->getToken(0), t, 0, 
-                            [](const unsigned long& i){ return i < 50; }))
+                            [](const unsigned long& i){ return i >= 50; }))
                     {
                         temp->setLineLimit(t);
                         input->setReturnStr("Max lines was successfully set to: " + input->getToken(0));
