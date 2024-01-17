@@ -12,7 +12,7 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
     {
         function->totalTime += deltaTime;
         data rtnData(deltaTime, function->totalTime);
-        if (function->func.valid()) function->func.invoke(&rtnData);
+        function->func.invoke(&rtnData);
 
         if (rtnData.state == TerminatingFunction::State::Finished)
         {
