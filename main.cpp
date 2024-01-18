@@ -24,7 +24,7 @@ using namespace sf;
 int main()
 {
     //! If you want Terminating functions to be attached to the CommandHandler you need to call the initializer
-    TerminatingFunction::initCommands();
+    // TerminatingFunction::initCommands();
     //! --------------------------
 
     funcHelperTest::test();
@@ -96,6 +96,10 @@ int main()
 
     //* LiveVarTest
     LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
+
+    TFunc::Add({[](TData* data){         
+        data->setRunning();
+    }});
 
     float deltaTime = 0;
     sf::Clock deltaClock;

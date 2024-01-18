@@ -1,9 +1,6 @@
 #include "include\Utils\TerminatingFunction.hpp"
 
 std::list<TerminatingFunction::_tFunc> TerminatingFunction::terminatingFunctions;
-#ifdef COMMANDPROMPT_H
-bool TerminatingFunction::_printToPrompt = false;
-#endif
 
 void TerminatingFunction::UpdateFunctions(float deltaTime)
 {
@@ -24,13 +21,6 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
         }
         function++;
     }
-
-    #ifdef COMMANDPROMPT_H
-    if (_printToPrompt)
-    {
-        printToPromptOnce();
-    }
-    #endif
 }
 
 std::string TerminatingFunction::Add(funcHelper::funcDynamic<data*> function)
@@ -64,38 +54,3 @@ std::list<std::pair<std::string, std::string>> TerminatingFunction::getStringDat
 
     return rtn;
 }
-
-#ifdef COMMANDPROMPT_H
-void TerminatingFunction::printToPrompt(const bool& print)
-{
-    _printToPrompt = print;
-}
-
-void TerminatingFunction::printToPromptOnce()
-{
-    Command::Prompt::print("Function Name | Total Time");
-    for (std::pair<std::string, std::string> funcData: TerminatingFunction::getStringData())
-    {
-        Command::Prompt::print(funcData.first + " | " + funcData.second);
-    }
-}
-#endif
-
-#ifdef COMMANDHANDLER_H
-void TerminatingFunction::initCommands()
-{
-    Command::Handler::addCommand({"TFunc", "Any commands for Terminating Functions", {Command::print, "Try using \"help\" fore more info"},
-    { {"getData", "Prints the current terminating functions data (printing must be allowed)", {[](){ TerminatingFunction::printToPromptOnce(); }}}
-    , {"printData", "[print = false] | Prints the terminating functions data every frame (printing must be allowed)", {[](Command::Data* data)
-    {  
-        bool temp = TerminatingFunction::printToPrompt;
-        if (!Command::isValidInput<bool>("Invalid input", *data, data->getToken(), temp, temp))
-            return;
-        TerminatingFunction::_printToPrompt = temp;
-        data->setReturnStr("Now Printing is ");
-        data->addReturnStrLine(temp ? "Enabled" : "Disabled");
-        data->setReturnColor(temp ? Command::color(0,255,0) : Command::color(255,0,0));
-    }}}
-    }});
-}
-#endif
