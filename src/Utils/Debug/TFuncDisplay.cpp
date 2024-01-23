@@ -1,4 +1,4 @@
-#include "include/Utils/Debug/TFuncDisplay.hpp"
+#include "Utils/Debug/TFuncDisplay.hpp"
 
 tgui::ChildWindow::Ptr TFuncDisplay::_parent = nullptr;
 tgui::ListView::Ptr TFuncDisplay::_list = nullptr;

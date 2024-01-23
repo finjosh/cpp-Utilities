@@ -11,12 +11,12 @@ OBJ_O_DIR:=bin
 # assumes that source directories are the same as include
 SRCDIRS:=. src src/Utils src/Utils/Debug src/Examples
 # the include flags for compilation
-INCLUDES:=-I /VSCodeFolder/Libraries/SFML-2.6.1/include -D SFML_STATIC -I /VSCodeFolder/Libraries/TGUI-1.1/include -I $(project_dir)
+INCLUDES:=-I /VSCodeFolder/Libraries/SFML-2.6.1/include -D SFML_STATIC -I /VSCodeFolder/Libraries/TGUI-1.1/include -I $(project_dir) -I $(project_dir)/include
 # the paths to libs for linking
 LIBS=-L /VSCodeFolder/Libraries/SFML-2.6.1/lib -L /VSCodeFolder/Libraries/TGUI-1.1/lib -L $(project_dir)
 
 # the directory for lib files
-LIB_DIR:=lib
+LIB_DIR:=libs
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
 # any of the dirs for source files

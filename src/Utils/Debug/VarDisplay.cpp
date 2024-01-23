@@ -1,4 +1,4 @@
-#include "include/Utils/Debug/VarDisplay.hpp"
+#include "Utils/Debug/VarDisplay.hpp"
 
 std::map<std::string, float> VarDisplay::_vars;
 bool VarDisplay::_varChanged = false;

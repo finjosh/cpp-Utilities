@@ -1,4 +1,4 @@
-#include "include\Utils\Log.hpp"
+#include "Utils\Log.hpp"
 
 std::string Log::LogFile = "Log.txt";
 std::ofstream Log::file = std::ofstream(Log::LogFile, std::ios_base::out | std::ios_base::app);

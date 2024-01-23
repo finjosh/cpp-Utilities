@@ -1,4 +1,4 @@
-#include "include/Utils/Debug/CommandPrompt.hpp"
+#include "Utils/Debug/CommandPrompt.hpp"
 
 tgui::ChildWindow::Ptr Command::Prompt::_parent{nullptr};
 tgui::EditBox::Ptr Command::Prompt::_textBox{nullptr};

@@ -1,4 +1,4 @@
-#include "include\Utils\TerminatingFunction.hpp"
+#include "Utils\TerminatingFunction.hpp"
 
 std::list<TerminatingFunction::_tFunc> TerminatingFunction::terminatingFunctions;
 

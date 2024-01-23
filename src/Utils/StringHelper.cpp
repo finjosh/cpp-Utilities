@@ -1,4 +1,4 @@
-#include "include\Utils\StringHelper.hpp"
+#include "Utils\StringHelper.hpp"
 
 const char *const StringHelper::whitespaceDelimiters = " \t\n\r\f\v";
 
