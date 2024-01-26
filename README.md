@@ -16,19 +16,19 @@ TGUI:
 # Utilities breakdown
 | File | Brief Description | Dependencies |
 | --- | --- | --- |
-| funcHelper.hpp | Makes taking, storing, and using functions as variables easier. Functions set can have dynamic data given to them when the function is invoked. | None |
-| EventHelper.hpp | Event class with thread-safety. Functions set to an event can have dynamic data given when the event is invoked. | None |
-| StringHelper.hpp | Simple class for common string operations like trimming and converting char to lowercase. Includes functions for converting a string to float, int, etc. | None |
-| UpdateLimiter.hpp | Used to limit the speed of a thread | None |
-| Stopwatch.hpp | Used to check how long operations take | None |
-| Log.hpp | Simple class that prints logs into a file | None |
-| iniParser.hpp | Easy to use ini parser | StringHelper.hpp |
-| CommandHandler.hpp | Used to create and use commands. The command handler also has the ability to search commands. | funcHelper.hpp, StringHelper.hpp |
-| CommandPrompt.hpp | Simple command prompt that uses the command handler as its backend | CommandHandler.hpp, StringHelper.hpp, TGUI |
-| TerminatingFunction.hpp | Functions that will be called every frame until it says it is done running | funcHelper.hpp, CommandHandler.hpp (optional), CommandPrompt.hpp (optional) |
-| TFuncDisplay.hpp | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI (dev build from 12/30/2023 or later), CommandHandler.hpp (optional) |
-| LiveVar.hpp | Live variables are used for debugging and testing | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
-| VarDisplay.hpp | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
+| `funcHelper.hpp` | Makes taking, storing, and using functions as variables easier. Functions set can have dynamic data given to them when the function is invoked. | None |
+| `EventHelper.hpp` | Event class with thread-safety. Functions set to an event can have dynamic data given when the event is invoked. | None |
+| `StringHelper.hpp` | Simple class for common string operations like trimming and converting char to lowercase. Includes functions for converting a string to float, int, etc. | None |
+| `UpdateLimiter.hpp` | Used to limit the speed of a thread | None |
+| `Stopwatch.hpp` | Used to check how long operations take | None |
+| `Log.hpp` | Simple class that prints logs into a file | None |
+| `iniParser.hpp` | Easy to use ini parser | StringHelper.hpp |
+| `CommandHandler.hpp` | Used to create and use commands. The command handler also has the ability to search commands. | funcHelper.hpp, StringHelper.hpp |
+| `CommandPrompt.hpp` | Simple command prompt that uses the command handler as its backend | CommandHandler.hpp, StringHelper.hpp, TGUI |
+| `TerminatingFunction.hpp` | Functions that will be called every frame until it says it is done running | funcHelper.hpp, CommandHandler.hpp (optional), CommandPrompt.hpp (optional) |
+| `TFuncDisplay.hpp` | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI (dev build from 12/30/2023 or later), CommandHandler.hpp (optional) |
+| `LiveVar.hpp` | Live variables are used for debugging and testing | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
+| `VarDisplay.hpp` | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
 
 # A preview of a few utilities
 Note that the theme can be set to any TGUI theme, and the utilities UI will update accordingly. 
@@ -39,11 +39,11 @@ Firstly, to open and close the command prompt, you can use the tilde key (~)
 
 ![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/990e7045-e504-4d80-b135-ae33b1eaf529)
 
-To get a list of commands, use the command "help"
+To get a list of commands, use the command `help`
 
 ![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/199cc998-220e-43eb-b51b-314a8216f380)
 
-To find out more about a specific command, type "help 'command'"
+To find out more about a specific command, type `help 'command'`
 
 ![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/2ab067a8-ab5e-428e-bdf8-98fbda065fe0)
 
