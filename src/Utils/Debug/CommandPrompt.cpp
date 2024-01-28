@@ -193,6 +193,10 @@ void Command::Prompt::UpdateEvent(const sf::Event& event)
                 setVisible();
         }
 
+        // checking after checking the open and close key
+        if (!_parent->isFocused())
+            return;
+
         if (event.key.code == sf::Keyboard::Key::Escape)
         {
             if (_autoFillList->isVisible() && (_textBox->isFocused() || _autoFillList->isFocused()))
