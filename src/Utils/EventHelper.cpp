@@ -8,35 +8,18 @@ void Event::ThreadSafe::update()
 {
     for (auto event: _events)
     {
-        // copying the stored vars to the events vars
-        // event.first->m_parameters.insert(event.first->m_parameters.begin(), event.second.begin(), event.second.end());
-        // event.first->_invoke(); // invoking the function
         event.second();
-        // for (void* var: event.second) // freeing memory from stored vars
-        // {
-        //     delete(var);
-        // }
     }
     _events.clear(); // removing all the events in the queue
 }
 
 void Event::ThreadSafe::removeEvent(Event* event)
 {
-    // trying to find the event with the same pointer
-    auto temp = std::find_if(_events.begin(), _events.end(), 
+    // removing from list
+    _events.remove_if(
         [event](const std::pair<EventHelper::Event *, std::function<void()>>& v){
             return v.first == event;
         });
-    // making sure the event is in the list
-    if (temp == _events.end()) return;
-
-    // freeing all memory from the temp params
-    // for (void* var: temp->second)
-    // {
-    //     delete(var);
-    // }
-    // removing from list
-    _events.erase(temp);
 }
 
 std::deque<const void*> Event::m_parameters(5, nullptr);
@@ -68,13 +51,14 @@ void Event::disconnectAll()
     m_functions.clear();
 }
 
-bool Event::invoke(bool threadSafe)
+bool Event::invoke(bool threadSafe, bool removeOtherInstances)
 {
     if (m_functions.empty() || !m_enabled)
         return false;
 
     if (threadSafe)
     {
+        if (removeOtherInstances) Event::ThreadSafe::removeEvent(this);
         Event::ThreadSafe::addEvent(this, [this]{ Event::invokeFunc(&Event::_invoke, this); });
         return true;
     }
