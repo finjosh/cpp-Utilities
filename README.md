@@ -1,5 +1,5 @@
 # cpp-Utilities
-C++ utility classes that I made while working on a personal project
+C++ utility classes that I have made during other projects and think would be useful for other applications
 
 NOTE: Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFML](https://www.sfml-dev.org/index.php)) and the "Texus' Graphical User Interface" ([TGUI](https://tgui.eu/))
 
