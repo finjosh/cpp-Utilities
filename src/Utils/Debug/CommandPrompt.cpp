@@ -265,7 +265,7 @@ void Command::Prompt::_close(bool* abortTguiClose)
         (*abortTguiClose) = true;
 }
 
-void Command::Prompt::print(const std::string& str, const Command::color& color)
+void Command::Prompt::print(const tgui::String& str, const Command::color& color)
 {
     if (_chatBox && _allowPrint)
         _chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
