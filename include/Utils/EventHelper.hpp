@@ -44,7 +44,7 @@ public:
     ///
     /// @return Unique id of the connection (specific to this event)
     template <typename Func, typename... BoundArgs>
-    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    size_t operator()(const Func& func, const BoundArgs&... args)
     {
         return connect(func, args...);
     }
@@ -56,7 +56,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         const auto id = ++m_lastId;
         if constexpr(sizeof...(BoundArgs) == 0)
@@ -73,7 +73,7 @@ public:
     /// @param id  Unique id of the connection returned by the connect function
     ///
     /// @return True when a connection with this id existed and was removed
-    bool disconnect(unsigned int id);
+    bool disconnect(size_t id);
 
     /// @brief Disconnect all function from this event
     void disconnectAll();
@@ -152,10 +152,10 @@ protected:
     }
 
     bool m_enabled = true;
-    std::unordered_map<unsigned int, std::function<void()>> m_functions;
+    std::unordered_map<size_t, std::function<void()>> m_functions;
 
     // Possible issue if event are constantly removed and added
-    unsigned int m_lastId = 0;
+    size_t m_lastId = 0;
     static std::deque<const void*> m_parameters;
 };
 
@@ -177,7 +177,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs>
-    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    size_t operator()(const Func& func, const BoundArgs&... args)
     {
         return connect(func, args...);
     }
@@ -189,7 +189,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect(func, args...);
     }
@@ -201,7 +201,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); });
     }
@@ -248,7 +248,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs>
-    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    size_t operator()(const Func& func, const BoundArgs&... args)
     {
         return connect(func, args...);
     }
@@ -260,7 +260,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect(func, args...);
     }
@@ -272,13 +272,13 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
     }
@@ -326,7 +326,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs>
-    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    size_t operator()(const Func& func, const BoundArgs&... args)
     {
         return connect(func, args...);
     }
@@ -338,7 +338,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect(func, args...);
     }
@@ -350,19 +350,19 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2)); });
     }
@@ -411,7 +411,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs>
-    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    size_t operator()(const Func& func, const BoundArgs&... args)
     {
         return connect(func, args...);
     }
@@ -423,7 +423,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect(func, args...);
     }
@@ -435,25 +435,25 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3)); });
     }
@@ -503,7 +503,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs>
-    unsigned int operator()(const Func& func, const BoundArgs&... args)
+    size_t operator()(const Func& func, const BoundArgs&... args)
     {
         return connect(func, args...);
     }
@@ -515,7 +515,7 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect(func, args...);
     }
@@ -527,31 +527,31 @@ public:
     ///
     /// @return Unique id of the connection
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3)); });
     }
 
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4, T5)>>::value>* = nullptr>
-    unsigned int connect(const Func& func, const BoundArgs&... args)
+    size_t connect(const Func& func, const BoundArgs&... args)
     {
         return Event::connect([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3), dereferenceParam<T5>(4)); });
     }

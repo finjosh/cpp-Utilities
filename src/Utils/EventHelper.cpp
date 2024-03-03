@@ -41,7 +41,7 @@ Event& Event::operator=(const Event& other)
     return *this;
 }
 
-bool Event::disconnect(unsigned int id)
+bool Event::disconnect(size_t id)
 {
     return (m_functions.erase(id) != 0);
 }
