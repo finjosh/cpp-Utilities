@@ -408,3 +408,8 @@ bool iniParser::addValue_ToEnd(std::string SectionName, std::string keyName, std
 
     return false;
 }
+
+void iniParser::createFile(const std::string& filePath)
+{
+    std::ofstream(filePath, std::ios_base::binary);
+}

@@ -167,6 +167,9 @@ public:
     /// @returns false if the data was not able to be saved
     bool addValue_ToEnd(std::string SectionName, std::string keyName, std::string keyValue);
 
+    /// @brief attempts to create the given file
+    void createFile(const std::string& filePath);
+
     /// @brief Used to check if the returned Section Data is valid
     static const std::map<std::string, std::string> InvalidSectionData;
 
