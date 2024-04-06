@@ -4,7 +4,7 @@
 #pragma once
 
 //! Depends on TerminatingFunction, SFML Graphics, TGUI, and can be used in combination with CommandHandler and CommandPrompt
-#include "include/Utils/Debug/TFuncDisplay.hpp"
+#include "include/Utils/Debug/TFuncDisplaySFML.hpp"
 
 class TFuncDisplayTest
 {

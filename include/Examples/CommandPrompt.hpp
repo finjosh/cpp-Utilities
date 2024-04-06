@@ -7,7 +7,7 @@
 #include "include/Utils/TerminatingFunction.hpp"
 
 //! Depends on SFML Graphics, StringHelper, and CommandHandler
-#include "include/Utils/Debug/CommandPrompt.hpp"
+#include "include/Utils/Debug/CommandPromptSFML.hpp"
 
 class CommandPromptTest
 {

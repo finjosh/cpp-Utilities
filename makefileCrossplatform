@@ -1,0 +1,65 @@
+# directory that the makefile was called from
+mkfile_path:=$(abspath $(lastword $(MAKEFILE_LIST)))
+project_name:=$(strip $(notdir $(patsubst %/,%,$(dir $(mkfile_path)))))
+project_dir:=$(patsubst %/makefile,%, $(mkfile_path))
+#! DONT EDIT ABOVE THIS
+
+# exe name
+PROJECT:=main
+# the directory in which all .o and .d files will be made
+OBJ_O_DIR:=bin
+# the include flags for compilation
+INCLUDES:=-I \VSCodeFolder\Libraries\raylib-master\src -I /VSCodeFolder/Libraries/TGUI-1.2.0/include
+# the paths to libs for linking
+LIBS=-L \VSCodeFolder\Libraries\raylib-master\src -L /VSCodeFolder/Libraries/TGUI-1.2.0/lib -L $(project_dir)
+
+SRC=src
+MAIN=main
+
+# the directory for lib files
+LIB_DIR:=libs
+
+#! DONT EDIT ANYTHING FROM HERE DOWN
+
+ifeq ($(OS),Windows_NT)
+	EXE := .exe
+	FIXPATH = $(subst /,\,$1)
+	SOURCEDIRS := $(shell dir $(SRC) /s /b /ad) $(call FIXPATH,$(project_dir)/$(SRC))
+	INCLUDEDIRS := $(INCLUDE)
+	LIBDIRS	:= $(LIB)
+	RM := del /q /f
+	MD := mkdir
+else
+	EXE :=
+	SOURCEDIRS := $(shell find "$$PWD" -type d -path "*$(project_dir)/$(SRC)*")
+	INCLUDEDIRS	:= $(INCLUDE)
+	LIBDIRS	:= $(LIB)
+	FIXPATH = $(subst \,/,$1)
+	RM = rm -r --preserve-root
+	MD := mkdir -p
+endif
+
+# all .cpp file paths
+SRC:=$(foreach D,$(SOURCEDIRS),$(wildcard $(D)/*.cpp))
+# Create an object file of every cpp file
+OBJECTS=$(addprefix $(OBJ_O_DIR)/,$(patsubst %.cpp,%.o,$(SRC)))
+# Creating dependency files
+DEPFILES=$(patsubst %.o,%.d,$(OBJECTS))
+
+OUTPATHS:=$(foreach d,$(filter-out ./,$(SOURCEDIRS)),$(OBJ_O_DIR)/$(d)/)
+
+# so there is no file that gets mistaked with the tasks listed
+.PHONY = all info clean
+
+clean:
+	$(shell ${RM} $(OBJ_O_DIR) $(PROJECT).exe)
+	$(call makeBinDir)
+
+# makes a dir for the given path
+makeDir=$(shell ${MD} $(FIXPATH $1))
+# make bin directories 
+# TODO redo this as fixpath is not being used
+makeBinDir=$(foreach d,$(filter-out ./,$(SOURCEDIRS)),$(call makeDir,$(patsubst $(OBJ_O_DIR)/%/,$(OBJ_O_DIR)/%,$(OBJ_O_DIR)/$(d)))) 
+
+info:
+	@echo Source directories: $(SOURCEDIRS)
