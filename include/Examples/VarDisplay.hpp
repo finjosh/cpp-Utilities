@@ -7,7 +7,7 @@
 #include "include/Utils/TerminatingFunction.hpp"
 
 //! Depends on LiveVar, SFML Graphics, TGUI, and can be used in combination with CommandHandler and CommandPrompt
-#include "include/Utils/Debug/VarDisplaySFML.hpp"
+#include "include/Utils/Debug/VarDisplay.hpp"
 
 class VarDisplayTest
 {

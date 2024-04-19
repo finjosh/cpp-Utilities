@@ -11,7 +11,7 @@ SFML:
   - Version: 2.6.1
 
 TGUI:
-  - Version: 1.1
+  - Version: 1.2
 
 # Utilities breakdown
 | File | Brief Description | Dependencies |

@@ -5,7 +5,8 @@
             "includePath": [
                 "${default}",
                 "${workspaceFolder}",
-                "${workspaceFolder}/include"
+                "${workspaceFolder}/include",
+                "V:/VSCodeFolder/Libraries/TGUI-1.2/include"
             ],
             "defines": [
                 "_DEBUG",

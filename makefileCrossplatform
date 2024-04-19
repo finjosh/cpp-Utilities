@@ -1,7 +1,7 @@
 # directory that the makefile was called from
-mkfile_path:=$(abspath $(lastword $(MAKEFILE_LIST)))
-project_name:=$(strip $(notdir $(patsubst %/,%,$(dir $(mkfile_path)))))
-project_dir:=$(patsubst %/makefile,%, $(mkfile_path))
+MKFILE_PATH:=$(abspath $(lastword $(MAKEFILE_LIST)))
+PROJECT_FOLDER_NAME:=$(strip $(notdir $(patsubst %/,%,$(dir $(MKFILE_PATH)))))
+PROJECT_DIR:=$(patsubst %/makefile,%, $(MKFILE_PATH))
 #! DONT EDIT ABOVE THIS
 
 # exe name
@@ -11,7 +11,7 @@ OBJ_O_DIR:=bin
 # the include flags for compilation
 INCLUDES:=-I \VSCodeFolder\Libraries\raylib-master\src -I /VSCodeFolder/Libraries/TGUI-1.2.0/include
 # the paths to libs for linking
-LIBS=-L \VSCodeFolder\Libraries\raylib-master\src -L /VSCodeFolder/Libraries/TGUI-1.2.0/lib -L $(project_dir)
+LIBS=-L \VSCodeFolder\Libraries\raylib-master\src -L /VSCodeFolder/Libraries/TGUI-1.2.0/lib -L $(PROJECT_DIR)
 
 SRC=src
 MAIN=main
@@ -24,14 +24,14 @@ LIB_DIR:=libs
 ifeq ($(OS),Windows_NT)
 	EXE := .exe
 	FIXPATH = $(subst /,\,$1)
-	SOURCEDIRS := $(shell dir $(SRC) /s /b /ad) $(call FIXPATH,$(project_dir)/$(SRC))
+	SOURCEDIRS := $(shell dir $(SRC) /s /b /ad) $(call FIXPATH,$(PROJECT_DIR)/$(SRC))
 	INCLUDEDIRS := $(INCLUDE)
 	LIBDIRS	:= $(LIB)
 	RM := del /q /f
 	MD := mkdir
 else
 	EXE :=
-	SOURCEDIRS := $(shell find "$$PWD" -type d -path "*$(project_dir)/$(SRC)*")
+	SOURCEDIRS := $(shell find "$$PWD" -type d -path "*$(PROJECT_DIR)/$(SRC)*")
 	INCLUDEDIRS	:= $(INCLUDE)
 	LIBDIRS	:= $(LIB)
 	FIXPATH = $(subst \,/,$1)
@@ -40,7 +40,7 @@ else
 endif
 
 # all .cpp file paths
-SRC:=$(foreach D,$(SOURCEDIRS),$(wildcard $(D)/*.cpp))
+SRC:=$(foreach D,$(SOURCEDIRS) $(PROJECT_DIR),$(wildcard $(D)/*.cpp))
 # Create an object file of every cpp file
 OBJECTS=$(addprefix $(OBJ_O_DIR)/,$(patsubst %.cpp,%.o,$(SRC)))
 # Creating dependency files
@@ -52,14 +52,19 @@ OUTPATHS:=$(foreach d,$(filter-out ./,$(SOURCEDIRS)),$(OBJ_O_DIR)/$(d)/)
 .PHONY = all info clean
 
 clean:
-	$(shell ${RM} $(OBJ_O_DIR) $(PROJECT).exe)
 	$(call makeBinDir)
+# $(shell ${RM} $(OBJ_O_DIR) $(PROJECT).exe)
 
 # makes a dir for the given path
-makeDir=$(shell ${MD} $(FIXPATH $1))
+makeDir=$(shell ${MD} $(call FIXPATH,$1))
 # make bin directories 
 # TODO redo this as fixpath is not being used
-makeBinDir=$(foreach d,$(filter-out ./,$(SOURCEDIRS)),$(call makeDir,$(patsubst $(OBJ_O_DIR)/%/,$(OBJ_O_DIR)/%,$(OBJ_O_DIR)/$(d)))) 
+makeBinDir=$(foreach d,$(filter-out ./,$(call FIXPATH,$(SOURCEDIRS))),$(call makeDir,$(patsubst $(call FIXPATH,$(OBJ_O_DIR)/%/),$(call FIXPATH,$(OBJ_O_DIR)/%),$(call FIXPATH,$(OBJ_O_DIR)/$(patsubst $(call FIXPATH,$(PROJECT_DIR)/%),%,$(d))))))
 
 info:
-	@echo Source directories: $(SOURCEDIRS)
+	@echo Project Directory: $(PROJECT_DIR)
+	@echo Project Folder Name: $(PROJECT_FOLDER_NAME)
+	@echo Makefile Directory: $(MKFILE_PATH)
+	@echo Source Directories: $(SOURCEDIRS) 
+# @echo Source Files: $(SRC)
+	@echo Debug: $(foreach d,$(filter-out ./,$(call FIXPATH,$(SOURCEDIRS))),$(patsubst $(call FIXPATH,$(OBJ_O_DIR)/%/),$(call FIXPATH,$(OBJ_O_DIR)/%),$(call FIXPATH,$(OBJ_O_DIR)/$(patsubst $(call FIXPATH,$(PROJECT_DIR)/%),%,$(d)))))

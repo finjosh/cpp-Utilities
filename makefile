@@ -9,19 +9,16 @@ PROJECT:=main
 # the directory in which all .o and .d files will be made
 OBJ_O_DIR:=bin
 # assumes that source directories are the same as include
-SRCDIRS:=.
+SRCDIRS:=. src src/Utils src/Utils/Debug src/Examples
 # the include flags for compilation
-INCLUDES:=-I \VSCodeFolder\Libraries\raylib-master\src -I /VSCodeFolder/Libraries/TGUI-1.2.0/include -I $(project_dir) -I $(project_dir)/include
+INCLUDES:=-I /VSCodeFolder/Libraries/SFML-2.6.1/include -D SFML_STATIC -I /VSCodeFolder/Libraries/TGUI-1.2/include -I $(project_dir) -I $(project_dir)/include
 # the paths to libs for linking
-LIBS=-L \VSCodeFolder\Libraries\raylib-master\build\raylib -L /VSCodeFolder/Libraries/TGUI-1.2.0/lib -L $(project_dir)
+LIBS=-L /VSCodeFolder/Libraries/SFML-2.6.1/lib -L /VSCodeFolder/Libraries/TGUI-1.2/lib -L $(project_dir)
 
 # the directory for lib files
 LIB_DIR:=libs
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
-# any of the dirs for source files
-# DIRS:=dir /AD /B /S	
-# findSubDirs=$(shell ${DIRS} $1)
 
 # all .cpp file paths
 SRC:=$(foreach D,$(SRCDIRS),$(wildcard $(D)/*.cpp))
@@ -45,8 +42,11 @@ DEBUG_BUILD=-g
 # linker flags for compilation
 # add "-mwindows" to disable the terminal
 LINKERFLAGS=$(LIBS) \
-			-ltgui-s \
-			-lraylib -lglfw3 -lgdi32 -lwinmm -lopengl32 -lfreetype \
+			-ltgui-s -lsfml-graphics-s -lsfml-window-s \
+			-lsfml-system-s -lsfml-audio-s -lsfml-network-s \
+			-lws2_32 -lflac -lvorbisenc -lvorbisfile -lvorbis \
+			-logg -lopenal32 -lopengl32 -lwinmm -lgdi32 -lfreetype \
+			-lstdc++ 
 # flags to generate dependencies for all .o files
 DEPFLAGS=-MP -MD
 # any compiler options
