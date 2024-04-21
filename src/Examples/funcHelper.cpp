@@ -47,9 +47,9 @@ void funcHelperTest::test()
     cout << function.getTypeid() << endl;
     function.setFunction([](int i){}, 3);
     cout << function.getTypeid() << endl;
-    function.setFunction(testingClass::function2, &temp, 1);
+    function.setFunction(&testingClass::function2, &temp, 1);
     cout << function.getTypeid() << endl;
-    function.setFunction(testingClass::function2, &temp, 2);
+    function.setFunction(&testingClass::function2, &temp, 2);
     cout << function.getTypeid() << endl;
     // The summary of how function type ids work is the following:
     //      - No matter what you input into the function it will have the same name

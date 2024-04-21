@@ -1,4 +1,4 @@
-#include "include\Examples\TerminatingFunction.hpp"
+#include "include/Examples/TerminatingFunction.hpp"
 
 void TerminatingFunctionTest::test()
 {
