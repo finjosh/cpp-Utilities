@@ -55,8 +55,9 @@ int main()
     Command::Handler::addCommand(Command::command{"setTheme", "Function used to set the theme of the UI (The previous outputs in the command prompt will not get updated color)", 
         {Command::print, "Trying calling one of the sub commands"},
         std::list<Command::command>{
-            Command::command{"white", "Sets the theme back to the white theme", {[](){ 
-                tgui::Theme::getDefault()->replace(tgui::Theme());
+            Command::command{"white", "(NOT WORKING) Sets the theme back to the white theme", {[](){ 
+                tgui::Theme::setDefault(nullptr);
+                tgui::Theme::getDefault()->replace(*tgui::Theme::getDefault().get());
                 // Note that command color does not update with theme so you have to set the default color
                 Command::color::setDefaultColor({0,0,0,255}); // black
             }}},
