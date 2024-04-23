@@ -20,24 +20,16 @@ namespace Command
 struct color
 {
     /// @brief default color is white 
-    inline color(uint8_t r = _default_text_color.r, uint8_t g = _default_text_color.g, uint8_t b = _default_text_color.b, uint8_t a = _default_text_color.a) :
-        r(r), b(b), g(g), a(a)
-    {}
+    color(uint8_t r = _default_text_color.r, uint8_t g = _default_text_color.g, uint8_t b = _default_text_color.b, uint8_t a = _default_text_color.a);
 
-    inline static void setDefaultColor(const color& color)
-    {
-        _default_text_color = color;
-    }
+    static void setDefaultColor(const color& color);
 
-    inline static color getDefaultColor()
-    {
-        return _default_text_color;
-    }
+    static color getDefaultColor();
 
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-    uint8_t a;
+    uint8_t r = _default_text_color.g;
+    uint8_t g = _default_text_color.g;
+    uint8_t b = _default_text_color.g;
+    uint8_t a = _default_text_color.g;
 
 protected:
     static color _default_text_color;

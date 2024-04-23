@@ -14,9 +14,9 @@ void CommandHandlerTest::test()
     // this is primarily used by command prompt
     Command::color color(155,145,123,5);
     // There are some pre-made colors which might be useful
-    Command::WARNING_COLOR;
-    Command::ERROR_COLOR;
-    Command::INVALID_INPUT_COLOR;
+    // Command::WARNING_COLOR;
+    // Command::ERROR_COLOR;
+    // Command::INVALID_INPUT_COLOR;
 
     // With the command handler each part of a command is a "Token"
     // i.e. the command: "cp getRandom 5 7" has 4 tokens which are "cp", "getRandom", "5", "7"

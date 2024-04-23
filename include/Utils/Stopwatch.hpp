@@ -100,13 +100,13 @@ constexpr Stopwatch::TimeFormat milliseconds = Stopwatch::TimeFormat::MILLISECON
 constexpr Stopwatch::TimeFormat seconds = Stopwatch::TimeFormat::SECONDS;
 
 
-static std::string show_times( const std::vector<std::uint64_t>& times ){
-    std::string result("{");
-    for( const auto& t : times ){
+static std::string show_times(const std::vector<std::uint64_t>& times){
+   std::string result("{");
+   for(const auto& t : times){
         result += std::to_string(t) + ",";
-    }
-    result.back() = static_cast<char>('}');
-    return result;
+   }
+   result.back() = static_cast<char>('}');
+   return result;
 }
 
 

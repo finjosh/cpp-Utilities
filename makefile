@@ -31,7 +31,7 @@ LINKERFLAGS:=-ltgui-s -lsfml-graphics-s -lsfml-window-s \
 # flags to generate dependencies for all .o files
 DEPFLAGS:=-MP -MD
 # any compiler options
-COMPILE_OPTIONS:=-std=c++20 -g -static -Wextra
+COMPILE_OPTIONS:=-std=c++20 -g -static -Wextra -Wall
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
 
