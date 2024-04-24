@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 #include <stdexcept>
+#include <list>
 
 class StringHelper
 {
@@ -86,7 +87,58 @@ public:
      *  @param decimalRoundingPlace is the number of decimals to round to
      *  @warning max rounding of 6
     */
-    static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
+    static std::string FloatToStringRound(const float& value, const unsigned int& decimalRoundingPlace = 1);
+
+    template <typename T = float, typename ConvertFunc = T(const std::string&, const T&)>
+    static inline std::list<T> toList(std::string str, ConvertFunc convFunc = &StringHelper::toFloat, T defaultValue = 0)
+    {
+        std::list<T> rtn;
+        trim(str); // getting rid of extra white space
+        size_t pos = str.find_first_of('[');
+        if (pos != std::string::npos) 
+            str.erase(0,pos+1); // removing opening bracket
+        pos = str.find_first_of(']');
+        if (pos != std::string::npos) 
+            str[pos] = ','; // replacing the end bracket for comma
+        else
+            str += ',';
+        while (str.size() > 0)
+        {
+            size_t pos = str.find_first_of(','); // finding first comma
+            if (pos == std::string::npos) break;
+            std::string temp = str.substr(0,pos); // getting string between comma
+            str.erase(0,pos+1);
+            trim(temp);
+            rtn.emplace_back(convFunc(temp, defaultValue));
+        }
+        return rtn;
+    }
+
+    template <typename T = float, typename ConvertFunc = std::string(T)>
+    static inline std::string fromList(std::list<T> list, ConvertFunc convFunc)
+    {
+        std::string rtn = "[";
+        for (auto i: list)
+        {
+            rtn += convFunc(i) + ',';
+        }
+        if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
+        rtn += ']';
+        return rtn;
+    }
+
+    template <typename T = float>
+    static inline std::string fromList(std::list<T> list)
+    {
+        std::string rtn = "[";
+        for (auto i: list)
+        {
+            rtn += std::to_string(i) + ',';
+        }
+        if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
+        rtn += ']';
+        return rtn;
+    }
 
 private:
     inline StringHelper() = default;

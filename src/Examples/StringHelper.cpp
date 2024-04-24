@@ -1,8 +1,29 @@
 #include "include/Examples/StringHelper.hpp"
 
+template <typename T>
+void printList(std::list<T> list)
+{
+    for (auto i: list)
+    {
+        std::cout << std::to_string(i) << ",";
+    }
+    std::cout << "\n";
+}
+
 void StringHelperTest::test()
 {
     using namespace std;
+
+    printList<float>(StringHelper::toList<float>("[7,6,5]", StringHelper::toFloat));
+    printList<float>(StringHelper::toList<float>("7,6,5]", StringHelper::toFloat));
+    printList<float>(StringHelper::toList<float>("7,6,5", StringHelper::toFloat));
+    printList<float>(StringHelper::toList<float>("[7 ,6,5] ", StringHelper::toFloat));
+    printList<float>(StringHelper::toList<float>("[7,6 , 5,4,34,5,6,645,45,45,45,645,45,64,56,,456,4,56,45,6456, ]", StringHelper::toFloat));
+    printList<float>(StringHelper::toList<float>(StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}), StringHelper::toFloat));
+
+    cout << StringHelper::fromList<float>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl;
+    cout << StringHelper::fromList<std::string>({"7","6","5","34","4","5","67","7","4","3","4","5","76"}, [](std::string str){ str.insert(str.begin(),'\"'); str.push_back('\"'); return str; }) << endl;
+    cout << StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl;    
 
     cout << "Outputs for StringHelper: " << endl;
     // the main function continued in StringHelper are the following: 

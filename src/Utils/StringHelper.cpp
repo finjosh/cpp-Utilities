@@ -118,7 +118,7 @@ bool StringHelper::toBool(const std::string& string, const bool& defaultValue)
         return defaultValue;
 }
 
-std::string StringHelper::FloatToStringRound(float value, unsigned int decimalRoundingPlace)
+std::string StringHelper::FloatToStringRound(const float& value, const unsigned int& decimalRoundingPlace)
 { 
     std::string temp = std::to_string(value); 
     return temp.substr(0, temp.length() - (decimalRoundingPlace == 0 ? 7 : 6 - decimalRoundingPlace));
