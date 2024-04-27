@@ -1,7 +1,7 @@
 # cpp-Utilities
 C++ utility classes that I have made during other projects and think would be useful for other applications
 
-NOTE: Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFML](https://www.sfml-dev.org/index.php)) and the "Texus' Graphical User Interface" ([TGUI](https://tgui.eu/))
+Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFML](https://www.sfml-dev.org/index.php)) and the "Texus' Graphical User Interface" ([TGUI](https://tgui.eu/))
 
 Tested with: 
   - Compiler: MSYS2
@@ -26,7 +26,7 @@ TGUI:
 | `CommandHandler.hpp` | Used to create and use commands. The command handler also has the ability to search commands. | funcHelper.hpp, StringHelper.hpp |
 | `CommandPrompt.hpp` | Simple command prompt that uses the command handler as its backend | CommandHandler.hpp, StringHelper.hpp, TGUI |
 | `TerminatingFunction.hpp` | Functions that will be called every frame until it says it is done running | funcHelper.hpp, CommandHandler.hpp (optional), CommandPrompt.hpp (optional) |
-| `TFuncDisplay.hpp` | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI (dev build from 12/30/2023 or later), CommandHandler.hpp (optional) |
+| `TFuncDisplay.hpp` | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI, CommandHandler.hpp (optional) |
 | `LiveVar.hpp` | Live variables are used for debugging and testing | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
 | `VarDisplay.hpp` | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
 | `GraphData.hpp` | Used to store data used with Graph.hpp | SFML Color and Vector2, StringHelper.hpp |
