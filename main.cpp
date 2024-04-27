@@ -18,6 +18,9 @@
 #include "include/Examples/CommandPrompt.hpp"
 #include "include/Examples/TFuncDisplay.hpp"
 
+//! TEMP
+#include "include/Utils/Graph.hpp"
+
 using namespace std;
 using namespace sf;
 
@@ -102,6 +105,20 @@ int main()
         data->setRunning();
     }});
 
+    //! TEMP
+    // TODO remove this
+    sf::Font font;
+    font.loadFromFile("JetBrainsMono-Regular.ttf");
+    GraphData data({0,1,2,3,4,5,6,7}, {4,3,2,7,14,3,9,0}, sf::Color::Magenta, "Random Data", GraphType::Line);
+    Graph graph({0,0}, {500,500}, font, "X data label", "Y data label");
+    graph.AddDataSet(data);
+    data.SetColor(sf::Color::Green);
+    data.SetGraphType(GraphType::Bar);
+    graph.AddDataSet(data);
+    graph.SetupAxes();
+    graph.Update();
+    //! --------------
+
     float deltaTime = 0;
     sf::Clock deltaClock;
     while (window.isOpen())
@@ -133,6 +150,11 @@ int main()
         //* Updates for the terminating functions display
         TFuncDisplay::update();
         //! ------------------------------
+
+        //! TEMP 
+        // TODO remove this
+        window.draw(graph);
+        //! --------------
 
         // draw for tgui
         gui.draw();

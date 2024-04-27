@@ -29,6 +29,8 @@ TGUI:
 | `TFuncDisplay.hpp` | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI (dev build from 12/30/2023 or later), CommandHandler.hpp (optional) |
 | `LiveVar.hpp` | Live variables are used for debugging and testing | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
 | `VarDisplay.hpp` | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
+| `GraphData.hpp` | Used to store data used with Graph.hpp | SFML Color and Vector2, StringHelper.hpp |
+| `Graph.hpp` | A simple graph drawing class. Draws graphs can draw any of the following Histogram, Bar, Scatter, and Line graphs. Can draw to a SFML texture or straight to the window | GraphData.hpp, StringHelper.hpp, Spline.hpp ([from here](https://github.com/Hapaxia/SelbaWard)) |
 
 # A preview of a few utilities
 Note that the theme can be set to any TGUI theme, and the utilities UI will update accordingly. 
