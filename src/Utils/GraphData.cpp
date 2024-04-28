@@ -29,7 +29,7 @@ size_t GraphData::getID() const
     return this->_ID;
 }
 
-const std::vector<float>& GraphData::GetXValues() const
+const std::vector<float>& GraphData::getXValues() const
 {
     return this->_xValues;
 }
@@ -40,7 +40,7 @@ void GraphData::setXValues(const std::vector<float>& xValues)
     this->_xValues = xValues;
 }
 
-const std::vector<float>& GraphData::GetYValues() const
+const std::vector<float>& GraphData::getYValues() const
 {
     return this->_yValues;
 }
@@ -51,59 +51,59 @@ void GraphData::setYValues(const std::vector<float>& yValues)
     this->_yValues = yValues;
 }
 
-size_t GraphData::GetDataLength() const
+size_t GraphData::getDataLength() const
 {
     return _xValues.size();
 }
 
-sf::Vector2f GraphData::GetDataValue(const size_t& i) const
+sf::Vector2f GraphData::getDataValue(const size_t& i) const
 {
     return sf::Vector2f{_xValues[i], _yValues[i]};
 }
 
-void GraphData::SetDataValue(const size_t& i, const sf::Vector2f& valuePair)
+void GraphData::setDataValue(const size_t& i, const sf::Vector2f& valuePair)
 {
     this->_xValues[i] = valuePair.x;
     this->_yValues[i] = valuePair.y;
 }
 
-sf::Color GraphData::GetColor() const
+sf::Color GraphData::getColor() const
 {
     return this->_color;
 }
 
-void GraphData::SetColor(const sf::Color& color)
+void GraphData::setColor(const sf::Color& color)
 {
     this->_color = color;
 }
 
-const std::string& GraphData::GetLabel() const
+const std::string& GraphData::getLabel() const
 {
     return this->_label;
 }
 
-void GraphData::SetLabel(const std::string& label)
+void GraphData::setLabel(const std::string& label)
 {
     this->_label = label;
 }
 
-GraphType GraphData::GetGraphType() const
+GraphType GraphData::getGraphType() const
 {
     return this->_graphType;
 }
 
-void GraphData::SetGraphType(const GraphType& type)
+void GraphData::setGraphType(const GraphType& type)
 {
     this->_graphType = type;
 }
 
-void GraphData::PushPair_back(const sf::Vector2f& pair)
+void GraphData::push_back(const sf::Vector2f& pair)
 {
     _xValues.push_back(pair.x);
     _yValues.push_back(pair.y);
 }
 
-void GraphData::PopFront(const size_t n)
+void GraphData::popFront(const size_t n)
 {
     size_t erase_count = std::min(n, _xValues.size());
 
@@ -114,8 +114,18 @@ void GraphData::PopFront(const size_t n)
     }
 }
 
-void GraphData::ClearPairValues()
+void GraphData::clearPairValues()
 {
     this->_xValues.clear();
     this->_yValues.clear();
+}
+
+void GraphData::setThickness(const float& value)
+{
+    _thickness = value;
+}
+
+float GraphData::getThickness() const
+{
+    return _thickness;
 }

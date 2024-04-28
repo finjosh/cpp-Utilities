@@ -30,18 +30,18 @@ int main()
     // TerminatingFunction::initCommands();
     //! --------------------------
 
-    funcHelperTest::test();
-    EventHelperTest::test();
-    StopwatchTest::test();
-    StringHelperTest::test();
-    UpdateLimiterTest::test();
-    LogTest::test();
-    iniParserTest::test();
-    //* uncomment the next line for the Terminating function tests (may disrupt output order)
-    // TerminatingFunctionTest::test(); 
-    // live var test is put after the VarDisplay is initalized so the vars will be in the display
-    VarDisplayTest::test();
-    CommandHandlerTest::test();
+    // funcHelperTest::test();
+    // EventHelperTest::test();
+    // StopwatchTest::test();
+    // StringHelperTest::test();
+    // UpdateLimiterTest::test();
+    // LogTest::test();
+    // iniParserTest::test();
+    // //* uncomment the next line for the Terminating function tests (may disrupt output order)
+    // // TerminatingFunctionTest::test(); 
+    // // live var test is put after the VarDisplay is initalized so the vars will be in the display
+    // VarDisplayTest::test();
+    // CommandHandlerTest::test();
 
     // setup for sfml and tgui
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "C++ Utilities");
@@ -93,13 +93,13 @@ int main()
     // create the UI for the TFuncDisplay
     TFuncDisplay::init(gui);
     //! ---------------------------------------------------
-    //* CommandPromptTest
-    CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
-    //* TFuncDisplayTest
-    TFuncDisplayTest::test();
+    // //* CommandPromptTest
+    // CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
+    // //* TFuncDisplayTest
+    // TFuncDisplayTest::test();
 
-    //* LiveVarTest
-    LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
+    // //* LiveVarTest
+    // LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
 
     TFunc::Add({[](TData* data){         
         data->setRunning();
@@ -107,15 +107,16 @@ int main()
 
     //! TEMP
     // TODO remove this
+    VarDisplay::setVisible();
     sf::Font font;
     font.loadFromFile("JetBrainsMono-Regular.ttf");
     GraphData data({0,1,2,3,4,5,6,7}, {4,3,2,7,14,3,9,0}, sf::Color::Magenta, "Random Data", GraphType::Line);
-    Graph graph({0,0}, {500,500}, font, "X data label", "Y data label");
-    graph.AddDataSet(data);
-    data.SetColor(sf::Color::Green);
-    data.SetGraphType(GraphType::Bar);
-    graph.AddDataSet(data);
-    graph.SetupAxes();
+    Graph graph({0,0}, {1000,1000}, font, "X data label", "Y data label");
+    graph.addDataSet(data);
+    data.setColor(sf::Color::Green);
+    data.setGraphType(GraphType::Bar);
+    graph.addDataSet(data);
+    graph.setupAxes();
     graph.Update();
     //! --------------
 
