@@ -17,6 +17,7 @@
 #include "include/Examples/CommandHandler.hpp"
 #include "include/Examples/CommandPrompt.hpp"
 #include "include/Examples/TFuncDisplay.hpp"
+#include "include/Examples/Graph.hpp"
 
 //! TEMP
 #include "include/Utils/Graph.hpp"
@@ -107,18 +108,31 @@ int main()
 
     //! TEMP
     // TODO remove this
-    VarDisplay::setVisible();
-    sf::Font font;
-    font.loadFromFile("JetBrainsMono-Regular.ttf");
-    GraphData data({0,1,2,3,4,5,6,7}, {4,3,2,7,14,3,9,0}, sf::Color::Magenta, "Random Data", GraphType::Line);
-    Graph graph({0,0}, {1000,1000}, font, "X data label", "Y data label");
-    graph.addDataSet(data);
-    data.setColor(sf::Color::Green);
-    data.setGraphType(GraphType::Bar);
-    graph.addDataSet(data);
-    graph.setupAxes();
-    graph.Update();
+    // VarDisplay::setVisible();
+    // sf::Font font;
+    // font.loadFromFile("JetBrainsMono-Regular.ttf");
+    // GraphData data({1,2,3,4,5,6,7}, {3,2,7,14,3,9,0}, sf::Color::Magenta, "Random Data", GraphType::Line);
+    // Graph graph({0,0}, {1000,1000}, font, "X data label", "Y data label");
+    // graph.addDataSet(data);
+    // data.setColor(sf::Color::Green);
+    // data.setGraphType(GraphType::Bar);
+    // graph.addDataSet(data);
+    // LiveVar::initVar("PlaceHolder",0,1,sf::Keyboard::Key::Up,sf::Keyboard::Key::Down);
+    // LiveVar::getVarEvent("PlaceHolder")->connect([&graph](){ 
+    //     auto temp = graph.getDataSet(1);
+    //     temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
+    //     temp = graph.getDataSet(2);
+    //     temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
+    // });
     //! --------------
+
+    GraphTest::test(gui);
+
+    // graph.Update();
+    // auto temp = tgui::Picture::create({graph.getGraphTexture()}, true);
+    // temp->setPosition({1000,0});
+    // temp->setSize({500,500});
+    // gui.add(temp);
 
     float deltaTime = 0;
     sf::Clock deltaClock;
@@ -154,7 +168,8 @@ int main()
 
         //! TEMP 
         // TODO remove this
-        window.draw(graph);
+        // graph.Update();
+        // window.draw(graph);
         //! --------------
 
         // draw for tgui
@@ -169,5 +184,5 @@ int main()
     TFuncDisplay::close();
     //! --------------------------------------------------------------
 
-    return 0;
+    return EXIT_SUCCESS;
 }

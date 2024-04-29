@@ -17,6 +17,8 @@
 class Graph : public sf::Drawable
 {
 private:
+    static size_t _lastID;
+
     //* obj data
 
     /// @brief the size of the image when drawn to the main window
@@ -45,6 +47,8 @@ private:
     unsigned int _axesThickness = 10;
     unsigned int _backgroundLinesThickness = 3;
     unsigned int _margin = 75;
+    float _xTextRotation = 45;
+    float _yTextRotation = 45;
     unsigned int _antialiasingLevel = 0;
     /// @brief min, max
     std::pair<float, float> _xBounds;
@@ -57,6 +61,7 @@ private:
 
     /// @brief used to reduce the amount of times that the graph is redrawn
     bool _wasChanged = true;
+    bool _axisSetup = false;
 
     /// @brief SFML Function override
     /// @param target sf::RenderTarget
@@ -69,6 +74,8 @@ private:
     /// @brief updates the given spline to work with the given data
     /// @param splineData should be empty
     void updateSpline(std::list<sw::Spline>& splineData, const GraphData& dataset);
+
+    float roundTo(const float& value, unsigned int precision = 0);
 
 public:
 
@@ -145,31 +152,44 @@ public:
     /// @brief the thickness of the the background indicator lines
     void setBackgroundLinesThickness(const unsigned int& thickness = 3);
     unsigned int getBackgroundLinesThickness() const;
+    /// @brief sets the rotation of the x axis text indicators
+    /// @note default = 45
+    void setXTextRotation(const float& rotation);
+    /// @returns the rotation of the x axis text indicators
+    float getXTextRotation() const;
+    /// @brief sets the rotation of the y axis text indicators
+    /// @note default = 45
+    void setYTextRotation(const float& rotation);
+    /// @returns the rotation of the y axis text indicators
+    float getYTextRotation() const;
 
-    sf::Texture getGraphTexture_copy() const;
+    sf::Texture getTexture_copy() const;
     /// @note this is a reference to the stored texture and should not be stored
-    sf::Texture& getGraphTexture();
+    sf::Texture& getTexture();
 
     /// @brief Function for automatically deducing axes labeling
+    /// @note this will update when ever something is changed
     void setupAxes();
 
     /// @brief Function for setting axes labeling manually
     /// @param xSteps    x number of steps
     /// @param ySteps    y number of steps
     /// @param axesColor color of axes
+    /// @warning this will force the axes to stay constant even if something is changed (to undo call the setupAxes without any inputs)
     void setupAxes(const sf::Color& axesColor, const unsigned int& xSteps = 10, const unsigned int& ySteps = 10);
 
     /// @brief Function for adding a dataset to the plot
     /// @param set the set to be added
-    /// @warning call "SetupAxes" if needed as they are not automatically updated
-    void addDataSet(const GraphData& data_set);
+    /// @returns the ID of the new data set
+    size_t addDataSet(const GraphData& data_set);
 
     void clearDataSets();
     void removeDataSet(const size_t& ID);
     /// @param ID the id of the wanted data set
-    /// @note dont edit the data
+    /// @note dont edit the graph type
+    /// @note if you call this the next time update is called the graph will be redrawn
     /// @returns nullptr if there was not dataSet with that ID 
-    const GraphData* getDataSet(const size_t& ID) const;
+    GraphData* getDataSet(const size_t& ID);
 };
 
 #endif

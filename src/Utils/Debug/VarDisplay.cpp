@@ -143,6 +143,7 @@ void VarDisplay::setVisible(bool visible)
     {
         _parent->setVisible(true);
         _parent->setEnabled(true);
+        _parent->moveToFront();
     }
     else
     {

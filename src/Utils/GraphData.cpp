@@ -1,23 +1,18 @@
 #include "Utils/GraphData.hpp"
 
-size_t GraphData::lastID = 0;
-
 GraphData::GraphData()
 {
     _color = sf::Color::White;
     _label = "Unlabeled";
     _graphType = GraphType::Scatter;
-    this->_ID = ++lastID;
 }
 
 GraphData::GraphData(const sf::Color& color, const std::string& label, const GraphType& type) : _color(color), _label(label), _graphType(type)
-{ this->_ID = ++lastID; }
+{}
 
 GraphData::GraphData(const std::vector<float>& xValues, const std::vector<float>& yValues, const sf::Color& color, const std::string& label, const GraphType& type)
                     : _xValues(xValues), _yValues(yValues), _color(color), _label(label), _graphType(type)
-{ 
-    this->_ID = ++lastID;
-}
+{}
 
 bool GraphData::isValid() const
 { 
@@ -128,4 +123,14 @@ void GraphData::setThickness(const float& value)
 float GraphData::getThickness() const
 {
     return _thickness;
+}
+
+void GraphData::setID(const size_t& id)
+{
+    _ID = id;
+}
+
+size_t GraphData::getID()
+{
+    return _ID;
 }

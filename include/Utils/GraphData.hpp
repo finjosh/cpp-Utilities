@@ -24,9 +24,7 @@ enum class GraphType //! add the case in graph.cpp for drawing the data sets whe
 class GraphData
 {
 protected:
-    static size_t lastID;
-
-    size_t _ID;
+    size_t _ID = 0;
 
     GraphType _graphType;
 
@@ -115,6 +113,10 @@ public:
     void setThickness(const float& value);
 
     float getThickness() const;
+
+    /// @brief dont use this unless you know what you are doing
+    void setID(const size_t& id);
+    size_t getID();
 };
 
 #endif
