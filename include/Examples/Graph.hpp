@@ -1,5 +1,5 @@
-#ifndef GRAPHTEST_H
-#define GRAPHTEST_H
+#ifndef GRAPH_TEST_H
+#define GRAPH_TEST_H
 
 #pragma once
 
@@ -7,6 +7,7 @@
 #include "TGUI/AllWidgets.hpp"
 #include "TGUI/Backend/SFML-Graphics.hpp"
 #include "Utils/Debug/CommandHandler.hpp"
+#include "Utils/TGUICommon.hpp"
 
 class GraphTest
 {
@@ -16,9 +17,7 @@ public:
 protected:
 
 private:
-    // static tgui::ChildWindow::Ptr _parent;
-    // static tgui::PanelListBox::Ptr _list;
-
+    static tguiCommon::ChildWindow _windowData;
 };
 
 #endif

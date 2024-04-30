@@ -108,31 +108,59 @@ int main()
 
     //! TEMP
     // TODO remove this
-    // VarDisplay::setVisible();
-    // sf::Font font;
-    // font.loadFromFile("JetBrainsMono-Regular.ttf");
-    // GraphData data({1,2,3,4,5,6,7}, {3,2,7,14,3,9,0}, sf::Color::Magenta, "Random Data", GraphType::Line);
-    // Graph graph({0,0}, {1000,1000}, font, "X data label", "Y data label");
-    // graph.addDataSet(data);
-    // data.setColor(sf::Color::Green);
-    // data.setGraphType(GraphType::Bar);
-    // graph.addDataSet(data);
-    // LiveVar::initVar("PlaceHolder",0,1,sf::Keyboard::Key::Up,sf::Keyboard::Key::Down);
-    // LiveVar::getVarEvent("PlaceHolder")->connect([&graph](){ 
-    //     auto temp = graph.getDataSet(1);
-    //     temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
-    //     temp = graph.getDataSet(2);
-    //     temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
-    // });
+    VarDisplay::setVisible();
+    sf::Font font;
+    font.loadFromFile("JetBrainsMono-Regular.ttf");
+    GraphData data({1,2,3,4,5,6,7}, {3,2,7,14,3,9,0}, sf::Color::Magenta, "Random Data", GraphType::Line);
+    Graph graph({0,0}, {1000,1000}, font, "X data label", "Y data label");
+    graph.addDataSet(data);
+    data.setColor(sf::Color::Green);
+    data.setGraphType(GraphType::Bar);
+    graph.addDataSet(data);
+    LiveVar::initVar("PlaceHolder",0,1,sf::Keyboard::Key::Up,sf::Keyboard::Key::Down);
+    LiveVar::initVar("Axis Thickness", graph.getAxesThickness(), 1, sf::Keyboard::Key::Num1,sf::Keyboard::Key::Q);
+    LiveVar::initVar("Background Line Thickness", graph.getBackgroundLinesThickness(), 1, sf::Keyboard::Key::Num2,sf::Keyboard::Key::W);
+    LiveVar::initVar("Decimal Precision", graph.getDecimalPrecision(), 1, sf::Keyboard::Key::Num3,sf::Keyboard::Key::E);
+    LiveVar::initVar("Margin", graph.getMargin(), 1, sf::Keyboard::Key::Num4,sf::Keyboard::Key::R);
+    LiveVar::initVar("Resolution (x and y)", graph.getResolution().x, 64, sf::Keyboard::Key::Num5,sf::Keyboard::Key::T);
+    LiveVar::initVar("X Axis Text Rotation", graph.getXTextRotation(), 1, sf::Keyboard::Key::Num6,sf::Keyboard::Key::Y);
+    LiveVar::initVar("Y Axis Text Rotation", graph.getYTextRotation(), 1, sf::Keyboard::Key::Num7,sf::Keyboard::Key::U);
+    LiveVar::getVarEvent("PlaceHolder")->connect([&graph](){ 
+        auto temp = graph.getDataSet(1);
+        temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
+        temp = graph.getDataSet(2);
+        temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
+    });
+    LiveVar::getVarEvent("Axis Thickness")->connect([&graph](const float& value){ 
+        graph.setAxesThickness(value);
+    });
+    LiveVar::getVarEvent("Background Line Thickness")->connect([&graph](const float& value){ 
+        graph.setBackgroundLinesThickness(value);
+    });
+    LiveVar::getVarEvent("Decimal Precision")->connect([&graph](const float& value){ 
+        graph.setDecimalPrecision(value);
+    });
+    LiveVar::getVarEvent("Margin")->connect([&graph](const float& value){ 
+        graph.setMargin(value);
+    });
+    LiveVar::getVarEvent("Resolution (x and y)")->connect([&graph](const float& value){ 
+        graph.setResolution({value,value});
+    });
+    LiveVar::getVarEvent("X Axis Text Rotation")->connect([&graph](const float& value){ 
+        graph.setXTextRotation(value);
+    });
+    LiveVar::getVarEvent("Y Axis Text Rotation")->connect([&graph](const float& value){ 
+        graph.setYTextRotation(value);
+    });
     //! --------------
 
     GraphTest::test(gui);
 
-    // graph.Update();
-    // auto temp = tgui::Picture::create({graph.getGraphTexture()}, true);
-    // temp->setPosition({1000,0});
-    // temp->setSize({500,500});
-    // gui.add(temp);
+    graph.Update();
+    auto temp = tgui::Picture::create({graph.getTexture()}, true);
+    temp->setPosition({1000,0});
+    temp->setSize({500,500});
+    gui.add(temp);
 
     float deltaTime = 0;
     sf::Clock deltaClock;
@@ -166,11 +194,11 @@ int main()
         TFuncDisplay::update();
         //! ------------------------------
 
-        //! TEMP 
+        //! TEMP
         // TODO remove this
-        // graph.Update();
-        // window.draw(graph);
-        //! --------------
+        graph.Update();
+        temp->getRenderer()->setTexture({graph.getTexture()});
+        // ----------------
 
         // draw for tgui
         gui.draw();

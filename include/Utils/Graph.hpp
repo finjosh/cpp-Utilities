@@ -145,6 +145,7 @@ public:
     void setFont(const sf::Font& font);
     void setBackgroundColor(const sf::Color& color);
     sf::Color getBackgroundColor() const;
+    /// @note max decimal precision is 6
     void setDecimalPrecision(const unsigned int& decimalPrecision = 2);
     unsigned int getDecimalPrecision() const;
     void setAxesThickness(const unsigned int& thickness = 10);

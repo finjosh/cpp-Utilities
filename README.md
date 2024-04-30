@@ -31,6 +31,7 @@ TGUI:
 | `VarDisplay.hpp` | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
 | `GraphData.hpp` | Used to store data used with Graph.hpp | SFML Color and Vector2, StringHelper.hpp |
 | `Graph.hpp` | A simple graph drawing class. Draws graphs can draw any of the following Histogram, Bar, Scatter, and Line graphs. Can draw to a SFML texture or straight to the window | GraphData.hpp, StringHelper.hpp, Spline.hpp ([from here](https://github.com/Hapaxia/SelbaWard)) |
+| `TGUICommon.hpp` | Simple classes with features that I find myself using often | TGUI |
 
 # A preview of a few utilities
 Note that the theme can be set to any TGUI theme, and the utilities UI will update accordingly. 

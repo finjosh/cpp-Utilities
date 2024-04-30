@@ -434,7 +434,7 @@ void Graph::setBackgroundColor(const sf::Color& color)
 
 void Graph::setDecimalPrecision(const unsigned int& decimalPrecision)
 {
-    _decimalPrecision = decimalPrecision;
+    _decimalPrecision = decimalPrecision < 6 ? decimalPrecision : 6;
     this->_wasChanged = true;
 }
 
@@ -513,7 +513,6 @@ void Graph::setupAxes()
 
 void Graph::setupAxes(const sf::Color& axesColor, const unsigned int& xSteps, const unsigned int& ySteps)
 {
-
     this->setupAxes(); // using the setupAxes to find bounds automatically
 
     _numSteps.x = xSteps;
@@ -636,13 +635,14 @@ sf::Texture& Graph::getTexture()
 
 float Graph::roundTo(const float& value, unsigned int precision)
 {
-    if (precision == 0) return value;
+    if (precision == 0) return round(value);
     return round(roundTo(value*10,precision-1))/10;
 }
 
 void Graph::setXTextRotation(const float& rotation)
 {
     _xTextRotation = rotation;
+    _wasChanged = true;
 }
 
 float Graph::getXTextRotation() const
@@ -653,6 +653,7 @@ float Graph::getXTextRotation() const
 void Graph::setYTextRotation(const float& rotation)
 {
     _yTextRotation = rotation;
+    _wasChanged = true;
 }
 
 float Graph::getYTextRotation() const

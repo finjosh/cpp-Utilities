@@ -1,11 +1,10 @@
 #include "Examples/Graph.hpp"
 
-// tgui::ChildWindow::Ptr GraphTest::_parent = nullptr;
-// tgui::PanelListBox::Ptr GraphTest::_list = nullptr;
+tguiCommon::ChildWindow GraphTest::_windowData;
 
 void GraphTest::test(tgui::Gui& gui)
 {
-    auto parent = tgui::ChildWindow::create("Graph Tests", tgui::ChildWindow::TitleButton::Close);
+    auto parent = tgui::ChildWindow::create("Graph Tests", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
     parent->setResizable();
     auto panel = tgui::ScrollablePanel::create();
     parent->add(panel);
@@ -27,10 +26,12 @@ void GraphTest::test(tgui::Gui& gui)
     list->add(tgui::Picture::create(texture));
     list->add(tgui::Picture::create(texture));
 
-    float height = 0;
-    for (auto widget: list->getWidgets())
-        height += widget->getFullSize().y;
-    list->setSize({list->getWidgets().front()->getFullSize().x > parent->getSize().x ? list->getWidgets().front()->getFullSize().x : parent->getSize().x, height});
+    list->getRenderer()->setSpaceBetweenWidgets(10);
+    list->setSize({"100% - 15", list->getWidgets().back()->getPosition().y + list->getWidgets().back()->getFullSize().y + 15});
+    list->onSizeChange([list](){list->setSize({"100% - 15", list->getWidgets().back()->getPosition().y + list->getWidgets().back()->getFullSize().y + 15});});
+
+    parent->onClosing(tguiCommon::ChildWindow::closeWindow, parent);
+    parent->onMaximize(tguiCommon::ChildWindow::maximizeWindow, &_windowData);
 
     gui.add(parent);
 }
