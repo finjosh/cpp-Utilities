@@ -4,6 +4,9 @@
 #pragma once
 
 #include "TGUI/Widgets/ChildWindow.hpp"
+#if __has_include("Utils/Debug/CommandHandler.hpp")
+#include "Utils/Debug/CommandHandler.hpp" 
+#endif
 
 namespace tguiCommon
 {
@@ -26,6 +29,17 @@ public:
     /// @note locks the window postion when maximized
     /// @warning if x and y layout is "100%" then assumes that the window is maximized
     void maximizeWindow(tgui::ChildWindow::Ptr window);
+    #ifdef COMMANDHANDLER_H
+    /// @brief creates the command for opening and closing this window
+    /// @note uses the set visible command (requires the window to always be in the GUI)
+    static inline void createOpenCloseCommand(const std::string& windowName, tgui::ChildWindow::Ptr window)
+    {
+        Command::Handler::addCommand(Command::command(windowName, "Commands for the " + windowName + " window", 
+                                    [windowName](Command::Data* data){ data->setReturnStr("Try using 'help " + windowName + "'"); },
+                                    {Command::command("open", "Opens the window", [window](){ ChildWindow::setVisible(window, true); }),
+                                     Command::command("close", "Opens the window", [window](){ ChildWindow::setVisible(window, false); })}));
+    }
+    #endif
 
 private:
     tgui::Layout2d m_position; // the position when the window was minimized

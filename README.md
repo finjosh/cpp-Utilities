@@ -25,13 +25,13 @@ TGUI:
 | `iniParser.hpp` | Easy to use ini parser | StringHelper.hpp |
 | `CommandHandler.hpp` | Used to create and use commands. The command handler also has the ability to search commands. | funcHelper.hpp, StringHelper.hpp |
 | `CommandPrompt.hpp` | Simple command prompt that uses the command handler as its backend | CommandHandler.hpp, StringHelper.hpp, TGUI |
-| `TerminatingFunction.hpp` | Functions that will be called every frame until it says it is done running | funcHelper.hpp, CommandHandler.hpp (optional), CommandPrompt.hpp (optional) |
+| `TerminatingFunction.hpp` | Functions that will be called every frame until it says it is done running | funcHelper.hpp |
 | `TFuncDisplay.hpp` | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI, CommandHandler.hpp (optional) |
 | `LiveVar.hpp` | Live variables are used for debugging and testing | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
 | `VarDisplay.hpp` | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
 | `GraphData.hpp` | Used to store data used with Graph.hpp | SFML Color and Vector2, StringHelper.hpp |
 | `Graph.hpp` | A simple graph drawing class. Draws graphs can draw any of the following Histogram, Bar, Scatter, and Line graphs. Can draw to a SFML texture or straight to the window | GraphData.hpp, StringHelper.hpp, Spline.hpp ([from here](https://github.com/Hapaxia/SelbaWard)) |
-| `TGUICommon.hpp` | Simple classes with features that I find myself using often | TGUI |
+| `TGUICommon.hpp` | Simple classes with features that I find myself using often | TGUI, CommandHandler.hpp (optional) |
 
 # A preview of a few utilities
 Note that the theme can be set to any TGUI theme, and the utilities UI will update accordingly. 

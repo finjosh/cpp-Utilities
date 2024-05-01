@@ -13,37 +13,31 @@
 #include "GraphData.hpp"
 #include "StringHelper.hpp"
 
-// TODO add a default constructor
 class Graph : public sf::Drawable
 {
 private:
     static size_t _lastID;
 
-    //* obj data
-
     /// @brief the size of the image when drawn to the main window
-    sf::Vector2f _size;
+    sf::Vector2f _size = {1000,1000};
     /// @brief the resolution that the original graph is drawn at
-    sf::Vector2u _resolution;
+    sf::Vector2u _resolution = {1000,1000};
     sf::Texture _texture;
     // sf::Sprite _graphImage;
     sf::Color _backgroundColor;
     sf::Vector2f _position;
     float _rotation = 0;
     sf::Vector2f _origin;
-
-    // ---------
-
-    //* other data
+    float _charSize = -1;
 
     std::list<GraphData> _dataSets;
 
     sf::Font _font;
 
-    std::string _xAxisLabel;
-    std::string _yAxisLabel;
+    std::string _xAxisLabel = "X";
+    std::string _yAxisLabel = "Y";
 
-    sf::Color _axesColor;
+    sf::Color _axesColor = sf::Color::White;
     unsigned int _axesThickness = 10;
     unsigned int _backgroundLinesThickness = 3;
     unsigned int _margin = 75;
@@ -61,7 +55,7 @@ private:
 
     /// @brief used to reduce the amount of times that the graph is redrawn
     bool _wasChanged = true;
-    bool _axisSetup = false;
+    bool _axesSetup = false;
 
     /// @brief SFML Function override
     /// @param target sf::RenderTarget
@@ -75,7 +69,13 @@ private:
     /// @param splineData should be empty
     void updateSpline(std::list<sw::Spline>& splineData, const GraphData& dataset);
 
-    float roundTo(const float& value, unsigned int precision = 0);
+    float roundTo(const float& value, unsigned int precision = 0) const;
+
+protected:
+    /// @returns the min value for the x and y separately 
+    sf::Vector2f getMinValue(const GraphData& graphData) const;
+    /// @returns the max value for the x and y separately
+    sf::Vector2f getMaxValue(const GraphData& graphData) const;
 
 public:
 
@@ -85,12 +85,12 @@ public:
     /// @brief draws the background lines for the graph
     /// @returns the vertex array that can be used to draw to a renderer
     sf::VertexArray drawBackgroundLines();
-    /// @brief draws the axes step lines
+    /// @brief draws the axis step lines
     /// @returns the vertex array that can be used to draw to a renderer
-    sf::VertexArray drawAxesStepIndicators();
-    /// @brief draws the axes lines for x and y
+    sf::VertexArray drawAxisStepIndicators();
+    /// @brief draws the axis lines for x and y
     /// @returns the vertex array that can be used to draw to a renderer
-    sf::VertexArray drawAxesLines();
+    sf::VertexArray drawAxisLines();
     /// @brief draws all the text elements for the graph
     /// @returns a list of all the text elements that need to be drawn
     std::list<sf::Text> drawTextElements();
@@ -108,16 +108,20 @@ public:
     /// @brief Constructor using essential values
     /// @param position top left position of graph
     /// @param size size of the graph (NOT RELATED TO RESOLUTION)
-    /// @param margin distance of axes from the borders of the graph
+    /// @param margin distance of axis from the borders of the graph
     /// @param font sf::Font reference
     /// @param xLabel label of x-axis
     /// @param yLabel label of y-axis
     /// @param resolution the x and y resolution of the original image (before scaling)
     /// @param antialiasingLevel the level of antialiasing applied to the original image
     /// @note if the size is scaled equally in the x and y then the graph will be stretched
-    Graph(const sf::Vector2f& position, const sf::Vector2f& size, const sf::Font& font, const std::string& xLabel, const std::string& yLabel, 
+    Graph(const sf::Vector2f& position, const sf::Vector2f& size, const sf::Font& font, const std::string& xLabel = "X", const std::string& yLabel = "Y", 
             const sf::Color& backgroundColor = sf::Color::Black, const unsigned int& antialiasingLevel = 0, const float& margin = 75, 
             const sf::Vector2u& resolution = sf::Vector2u(1000, 1000), const unsigned int& decimalPrecision = 2);
+
+    /// @brief Constructs the graph with default inputs 
+    /// @warning you must still set a font
+    inline Graph() = default;
 
     /// @brief does not effect texture
     void setPostion(const sf::Vector2f& pos);
@@ -142,7 +146,6 @@ public:
     unsigned int getAntialiasingLevel() const;
     void setMargin(const float& margin = 50);
     float getMargin() const;
-    void setFont(const sf::Font& font);
     void setBackgroundColor(const sf::Color& color);
     sf::Color getBackgroundColor() const;
     /// @note max decimal precision is 6
@@ -163,21 +166,32 @@ public:
     void setYTextRotation(const float& rotation);
     /// @returns the rotation of the y axis text indicators
     float getYTextRotation() const;
+    /// @brief the size of characters on the graph
+    /// @note if the graph has not been made yet returns some negative number
+    float getCharSize() const;
+    /// @brief sets the size of characters
+    /// @note if not set the size will be 35% of the margin
+    /// @note if set the char size will NOT change
+    void setCharSize(const float& size);
+    void setFont(const sf::Font& font);
+    /// @note this includes the background lines color
+    void setAxesColor(const sf::Color& color);
+    sf::Color getAxesColor() const;
+    const sf::Font& getFont() const;
 
     sf::Texture getTexture_copy() const;
     /// @note this is a reference to the stored texture and should not be stored
     sf::Texture& getTexture();
 
-    /// @brief Function for automatically deducing axes labeling
+    /// @brief Function for automatically deducing axis labeling
     /// @note this will update when ever something is changed
     void setupAxes();
 
-    /// @brief Function for setting axes labeling manually
+    /// @brief Function for setting axis labeling manually
     /// @param xSteps    x number of steps
     /// @param ySteps    y number of steps
-    /// @param axesColor color of axes
-    /// @warning this will force the axes to stay constant even if something is changed (to undo call the setupAxes without any inputs)
-    void setupAxes(const sf::Color& axesColor, const unsigned int& xSteps = 10, const unsigned int& ySteps = 10);
+    /// @warning this will force the axis to stay constant even if something is changed (to undo call the setupAxis without any inputs)
+    void setupAxes(const unsigned int& xSteps, const unsigned int& ySteps);
 
     /// @brief Function for adding a dataset to the plot
     /// @param set the set to be added

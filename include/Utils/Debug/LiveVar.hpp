@@ -13,6 +13,10 @@
 #include "Utils/funcHelper.hpp"
 #include "Utils/EventHelper.hpp"
 
+#if __has_include("CommandHandler.hpp")
+#include "CommandHandler.hpp" 
+#endif
+
 #define VALUE_SET std::pair<sf::Keyboard::Key, float>
 
 class LiveVar
@@ -86,6 +90,66 @@ public:
     static EventHelper::EventDynamic<std::string> onVarAdded;
     /// @brief called when ever a var is removed
     static EventHelper::EventDynamic<std::string> onVarRemoved;
+
+    /// @brief initializes commands for live vars if the command handler is included
+    /// @note if varDisplay is used, this is already called
+    static inline void initCommand()
+    {
+        // if command handler is also in use then we add some commands for using the var display
+        #ifdef COMMANDHANDLER_H
+        //* adding commands for live vars to the command handler
+        Command::Handler::addCommand(Command::command("lVars", "Contains commands for live variables", {Command::print, "Trying using 'help lVars'"}, 
+            //* sub commands for the lVars
+            {
+            Command::command("get", "[Name] | Gets the value for the given variable", {[](Command::Data* data){
+                float temp = LiveVar::getValue(data->getToken());
+                if (temp == std::numeric_limits<float>::min())
+                {
+                    data->setReturnStr("Value does not exist");
+                    data->setReturnColor(Command::WARNING_COLOR);
+                    return;
+                }
+                data->setReturnStr(std::to_string(temp));
+            }}),
+            Command::command("set", "[Name] [value : Float] | Sets the value for the given variable", {[](Command::Data* data){
+                float value;
+                if (!Command::isValidInput<float>("Invalid amount entered", *data, data->getToken(1), value, std::numeric_limits<float>::min()))
+                    return;
+                if (LiveVar::setValue(data->getToken(), value))
+                {
+                    data->setReturnStr("Variable successfully set");
+                    data->setReturnColor({0,255,0});
+                    return;
+                }
+                data->setReturnColor(Command::INVALID_INPUT_COLOR);
+                data->setReturnStr("Invalid name entered");
+            }}),
+            Command::command("create", "[Name] [initValue = 0] | Creates a new live variable", {[](Command::Data* data){
+                float value = StringHelper::toFloat(data->getToken(1), 0);
+                
+                if (data->getToken(0) != "" && !LiveVar::initVar(data->getToken(0), value))
+                {
+                    data->setReturnStr("Variable already exists");
+                    data->setReturnColor(Command::INVALID_INPUT_COLOR);
+                    return;
+                }
+                data->setReturnStr("Variable successfully created");
+                data->setReturnColor({0,255,0});
+            }}),
+            Command::command("remove", "[Name] | Removes the live variable if it exists", {[](Command::Data* data){
+                if (LiveVar::removeVar(data->getToken()))
+                {
+                    data->setReturnStr("Variable successfully removed");
+                    data->setReturnColor({0,255,0});
+                    return;
+                }
+                data->setReturnStr("Invalid name entered");
+                data->setReturnColor(Command::INVALID_INPUT_COLOR);
+            }})
+            }
+        ));
+        #endif
+    }
 
 protected:
     // updates the value based on the keys and increment amount

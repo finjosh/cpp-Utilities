@@ -37,12 +37,7 @@ void TFuncDisplay::init(tgui::Gui& gui)
     _list->setFocusable(false);
     _list->setMultiSelect(false);
 
-    // if command handler is also in use then we add some commands for using the var display
-    #ifdef COMMANDHANDLER_H
-    Command::Handler::addCommand({"TFunc", "Placeholder", {}, {
-        {"open", "Opens the Terminating functions display", {TFuncDisplay::setVisible, true}},
-        {"close", "Closes the Terminating Functions display", {TFuncDisplay::setVisible, false}}}});
-    #endif
+    initCommands();
 }
 
 void TFuncDisplay::close()
@@ -59,7 +54,6 @@ void TFuncDisplay::update()
     float scrollPositionV = _list->getVerticalScrollbarValue();
     float scrollPositionH = _list->getHorizontalScrollbarValue();
 
-    // TODO only update values instead of removing and adding back
     _list->removeAllItems();
     for (auto funcData: TerminatingFunction::getStringData())
     {

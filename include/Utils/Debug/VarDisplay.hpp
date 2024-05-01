@@ -58,6 +58,20 @@ protected:
 private:
     VarDisplay() = default;
 
+    static inline void initCommands()
+    {
+        // if command handler is also in use then we add some commands for using the var display
+        #ifdef COMMANDHANDLER_H
+        //* adding commands for live vars to the command prompt
+        Command::Handler::addCommand(Command::command("lVars", "Contains commands for live variables", {Command::print, "Invalid command\nTrying using \"help lVars\""}, 
+            //* sub commands for the lVars
+            {
+            Command::command("open", "Displays the live variables", {VarDisplay::setVisible}),
+            Command::command("close", "Hides the display for live variables", {VarDisplay::setVisible, false})}));
+        LiveVar::initCommand();
+        #endif
+    }
+
     static std::map<std::string, float> _vars;
     static bool _varChanged;
 

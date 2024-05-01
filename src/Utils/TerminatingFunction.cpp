@@ -8,10 +8,11 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
     while (function != TerminatingFunction::terminatingFunctions.end())
     {
         function->totalTime += deltaTime;
-        data rtnData(deltaTime, function->totalTime);
+        bool finished = (function->maxTime <= function->totalTime);
+        data rtnData(deltaTime, function->totalTime, finished);
         function->func.invoke(&rtnData);
 
-        if (rtnData.state == TerminatingFunction::State::Finished)
+        if (rtnData.state == TerminatingFunction::State::Finished || finished)
         {
             auto temp = function;
             function++;
@@ -23,11 +24,11 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
     }
 }
 
-std::string TerminatingFunction::Add(funcHelper::funcDynamic<data*> function)
+std::string TerminatingFunction::Add(funcHelper::funcDynamic<data*> function, const float& maxTime)
 { 
     if (function.valid())
     {
-        TerminatingFunction::terminatingFunctions.push_back({function}); 
+        TerminatingFunction::terminatingFunctions.push_back({function, maxTime}); 
         
         return function.getTypeid();
     }
@@ -39,8 +40,12 @@ void TerminatingFunction::clear()
 
 void TerminatingFunction::remove(const std::string& functionTypeid)
 {
+    std::find_if(terminatingFunctions.begin(), terminatingFunctions.end(), [functionTypeid](const _tFunc& func){ return functionTypeid == func.func.getTypeid(); })->maxTime = 0.f;
+}
+
+void TerminatingFunction::forceRemove(const std::string& functionTypeid)
+{
     TerminatingFunction::terminatingFunctions.remove_if([functionTypeid](const _tFunc& func){ return functionTypeid == func.func.getTypeid(); });
-    return;
 }
 
 std::list<std::pair<std::string, std::string>> TerminatingFunction::getStringData()

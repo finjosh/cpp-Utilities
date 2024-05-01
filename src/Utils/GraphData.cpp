@@ -46,6 +46,26 @@ void GraphData::setYValues(const std::vector<float>& yValues)
     this->_yValues = yValues;
 }
 
+void GraphData::setValues(const std::vector<sf::Vector2f>& values)
+{
+    this->_xValues.clear();
+    this->_yValues.clear();
+
+    for (auto point: values)
+    {
+        _xValues.push_back(point.x);
+        _yValues.push_back(point.y);
+    }
+}
+
+void GraphData::setValues(const std::vector<float>& xValues, const std::vector<float>& yValues)
+{
+    this->_xValues.clear();
+    this->_xValues = xValues;
+    this->_yValues.clear();
+    this->_yValues = yValues;
+}
+
 size_t GraphData::getDataLength() const
 {
     return _xValues.size();

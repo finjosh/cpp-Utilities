@@ -40,6 +40,15 @@ protected:
     /// @brief used for tgui backend
     static void _close(bool* abortTguiClose);
 
+    /// @note only creates commands if the command handler is included
+    static inline void initCommands()
+    {
+        // if command handler is also in use then we add some commands for using the var display
+        Command::Handler::addCommand({"TFunc", "Placeholder", {}, {
+        {"open", "Opens the Terminating functions display", {TFuncDisplay::setVisible, true}},
+        {"close", "Closes the Terminating Functions display", {TFuncDisplay::setVisible, false}}}});
+    }
+
 private:
     inline TFuncDisplay() = default;
 

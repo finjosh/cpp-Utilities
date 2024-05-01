@@ -20,9 +20,10 @@ public:
 
     struct data
     {
-        inline data(const float& deltaTime, const float& totalTime) : deltaTime(deltaTime), totalTime(totalTime) {};
+        inline data(const float& deltaTime, const float& totalTime, const bool& isForceStop) : deltaTime(deltaTime), totalTime(totalTime), isForceStop(isForceStop) {};
         const float deltaTime = 0.f;
         const float totalTime = 0.f;
+        const bool isForceStop = false;
         State state = State::Finished;
 
         inline void setRunning() { state = State::Running; }
@@ -33,15 +34,22 @@ public:
     /// @brief Calling this function will call all Terminating Functions and erase ther from the list if they are finished running
     /// @param deltaTime the deltaTime in seconds
     static void UpdateFunctions(float deltaTime);
+    /// @param maxTime is a hard limit on how long a function can run
     /// @note if the function is already added it will be added again
+    /// @note when a function is removed or over its limit data will set "isForceStop" to true
     /// @warning The function will only be added if it is valid
     /// @returns the function typeid is "" if function is not valid
-    static std::string Add(funcHelper::funcDynamic<data*> function);
+    static std::string Add(funcHelper::funcDynamic<data*> function, const float& maxTime = std::numeric_limits<float>::infinity());
     /// @brief clears all terminating functions from the list 
+    /// @note does not give warning to any function
     static void clear();
     /// @brief erases the given function from the terminating functions list IF there is one in the list
     /// @warning removes all functions with the same functionTypeid
     static void remove(const std::string& functionTypeid);
+    /// @brief erases the given function from the terminating functions list IF there is one in the list
+    /// @warning removes all functions with the same functionTypeid
+    /// @note bypasses the final call which gives warning of ending
+    static void forceRemove(const std::string& functionTypeid);
 
     /// @brief gets the string data from ever terminating function at the moment
     /// @return a list where each item is a pair of, name and total time
@@ -50,10 +58,11 @@ public:
 protected:
     struct _tFunc
     {
-        inline _tFunc(funcHelper::funcDynamic<data*> func) : func(func) {};
+        inline _tFunc(funcHelper::funcDynamic<data*> func, const float& maxTime) : func(func), maxTime(maxTime) {};
 
         funcHelper::funcDynamic<data*> func;
         float totalTime = 0.f;
+        float maxTime;
 
         inline bool operator== (const _tFunc& tFunc)
         {

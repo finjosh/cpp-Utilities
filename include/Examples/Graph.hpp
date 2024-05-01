@@ -8,6 +8,8 @@
 #include "TGUI/Backend/SFML-Graphics.hpp"
 #include "Utils/Debug/CommandHandler.hpp"
 #include "Utils/TGUICommon.hpp"
+#include "Utils/Debug/LiveVar.hpp"
+#include "Utils/Debug/VarDisplay.hpp"
 
 class GraphTest
 {
@@ -18,6 +20,7 @@ protected:
 
 private:
     static tguiCommon::ChildWindow _windowData;
+    static Graph _graph;
 };
 
 #endif

@@ -17,7 +17,7 @@ void TerminatingFunctionTest::test()
     
     // to remove a function you need to store its id when added
     std::string temp = TerminatingFunction::Add([](){ cout << "This never runs" << endl; });
-    TerminatingFunction::remove(temp);
+    TerminatingFunction::forceRemove(temp);
 
     // this would clear all current functions
     // TerminatingFunction::clear();
@@ -31,4 +31,20 @@ void TerminatingFunctionTest::test()
             data->setRunning();
         }
     });
+
+    // infinitely running function
+    TerminatingFunction::Add({[](TData* data){         
+        data->setRunning();
+    }});
+
+    // normally infinitely running function but has max of 20 seconds
+    TerminatingFunction::Add({[](TData* data){
+        // note you can account for a early stop
+        if (data->isForceStop)
+        {
+            std::cout << "Early stop at 20 seconds" << std::endl;
+            // do stuff
+        }
+        data->setRunning();
+    }}, 20.f);
 }

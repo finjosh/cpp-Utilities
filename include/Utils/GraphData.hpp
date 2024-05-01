@@ -21,6 +21,7 @@ enum class GraphType //! add the case in graph.cpp for drawing the data sets whe
     Line = 2
 };
 
+/// @note assumes that the given data is sorted by x values
 class GraphData
 {
 protected:
@@ -68,6 +69,9 @@ public:
     const std::vector<float>& getYValues() const;
 
     void setYValues(const std::vector<float>& yValues);
+
+    void setValues(const std::vector<sf::Vector2f>& values);
+    void setValues(const std::vector<float>& xValues, const std::vector<float>& yValues);
 
     /// @brief Get element count (xValues.size() == yValues.size())
     /// @exception if this not valid then the x and y values are not the same size
