@@ -48,9 +48,9 @@ void TerminatingFunction::forceRemove(const std::string& functionTypeid)
     TerminatingFunction::terminatingFunctions.remove_if([functionTypeid](const _tFunc& func){ return functionTypeid == func.func.getTypeid(); });
 }
 
-std::list<std::pair<std::string, std::string>> TerminatingFunction::getStringData()
+std::list<std::list<std::string>> TerminatingFunction::getStringData()
 {
-    std::list<std::pair<std::string, std::string>> rtn;
+    std::list<std::list<std::string>> rtn;
 
     for (auto func: terminatingFunctions)
     {

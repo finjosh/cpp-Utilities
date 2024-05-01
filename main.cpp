@@ -19,30 +19,22 @@
 #include "include/Examples/TFuncDisplay.hpp"
 #include "include/Examples/Graph.hpp"
 
-//! TEMP
-#include "include/Utils/Graph.hpp"
-
 using namespace std;
 using namespace sf;
 
 int main()
 {
-    //! If you want Terminating functions to be attached to the CommandHandler you need to call the initializer
-    // TerminatingFunction::initCommands();
-    //! --------------------------
-
-    // funcHelperTest::test();
-    // EventHelperTest::test();
-    // StopwatchTest::test();
-    // StringHelperTest::test();
-    // UpdateLimiterTest::test();
-    // LogTest::test();
-    // iniParserTest::test();
-    // //* uncomment the next line for the Terminating function tests (may disrupt output order)
-    // // TerminatingFunctionTest::test(); 
-    // // live var test is put after the VarDisplay is initalized so the vars will be in the display
-    // VarDisplayTest::test();
-    // CommandHandlerTest::test();
+    funcHelperTest::test();
+    EventHelperTest::test();
+    StopwatchTest::test();
+    StringHelperTest::test();
+    UpdateLimiterTest::test();
+    LogTest::test();
+    iniParserTest::test();
+    TerminatingFunctionTest::test(); 
+    // live var test is put after the VarDisplay is initalized so the vars will be in the display
+    VarDisplayTest::test();
+    CommandHandlerTest::test();
 
     // setup for sfml and tgui
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "C++ Utilities");
@@ -94,14 +86,15 @@ int main()
     // create the UI for the TFuncDisplay
     TFuncDisplay::init(gui);
     //! ---------------------------------------------------
-    // //* CommandPromptTest
-    // CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
-    // //* TFuncDisplayTest
-    // TFuncDisplayTest::test();
+    //* CommandPromptTest
+    CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
+    //* TFuncDisplayTest
+    TFuncDisplayTest::test();
 
-    // //* LiveVarTest
-    // LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
+    //* LiveVarTest
+    LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
 
+    //* GraphTest
     GraphTest::test(gui);
 
     float deltaTime = 0;

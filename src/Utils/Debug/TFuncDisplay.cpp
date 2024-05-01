@@ -30,8 +30,10 @@ void TFuncDisplay::init(tgui::Gui& gui)
     _list->setSize({"100%","100%"});
     _list->addColumn("Function Name");
     _list->setColumnExpanded(0, true);
-    _list->addColumn("Total Time    ");
+    _list->addColumn("    Total Time    ");
     _list->setColumnAutoResize(1, true);
+    _list->addColumn("    Max Time    ");
+    _list->setColumnAutoResize(2, true);
     _list->setResizableColumns(true);
     _list->setAutoScroll(false);
     _list->setFocusable(false);
@@ -57,7 +59,7 @@ void TFuncDisplay::update()
     _list->removeAllItems();
     for (auto funcData: TerminatingFunction::getStringData())
     {
-        _list->addItem({funcData.first, funcData.second});
+        _list->addItem({tgui::String(funcData.front()), tgui::String(*++funcData.begin()), tgui::String(funcData.back())});
     }
 
     _list->setVerticalScrollbarValue(scrollPositionV);

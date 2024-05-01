@@ -52,8 +52,8 @@ public:
     static void forceRemove(const std::string& functionTypeid);
 
     /// @brief gets the string data from ever terminating function at the moment
-    /// @return a list where each item is a pair of, name and total time
-    static std::list<std::pair<std::string, std::string>> getStringData();
+    /// @return a list where each item is a list of: function name, total time running, max run time
+    static std::list<std::list<std::string>> getStringData();
 
 protected:
     struct _tFunc
@@ -78,9 +78,9 @@ protected:
         }
 
         /// @return pair of strings first is name and second is total time
-        inline std::pair<std::string, std::string> toString()
+        inline std::list<std::string> toString()
         {
-            return {getShortenedID(func.getTypeid()), std::to_string(totalTime)};
+            return {getShortenedID(func.getTypeid()), std::to_string(totalTime), std::to_string(maxTime)};
         }
     };
 
