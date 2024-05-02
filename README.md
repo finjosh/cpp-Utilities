@@ -29,8 +29,8 @@ TGUI:
 | `TFuncDisplay.hpp` | Simple display for terminating functions for debugging | TerminatingFunction.hpp, TGUI, CommandHandler.hpp (optional) |
 | `LiveVar.hpp` | Live variables are used for debugging and testing | EventHelper.hpp, funcHelper.hpp, SFML Events, CommandHandler.hpp (optional) |
 | `VarDisplay.hpp` | Simple display for live vars, which shows all the current live vars and their values | LiveVar.hpp, TGUI, CommandHandler.hpp (optional) |
-| `GraphData.hpp` | Used to store data used with Graph.hpp | SFML Color and Vector2, StringHelper.hpp |
-| `Graph.hpp` | A simple graph drawing class. Draws graphs can draw any of the following Histogram, Bar, Scatter, and Line graphs. Can draw to a SFML texture or straight to the window | GraphData.hpp, StringHelper.hpp, Spline.hpp ([from here](https://github.com/Hapaxia/SelbaWard)) |
+| `GraphData.hpp` | Used to store data used for Graph.hpp | SFML Color and Vector2, StringHelper.hpp |
+| `Graph.hpp` | A simple graph drawing class. Can draw any of the following Histogram, Bar, Scatter, and Line graphs. Can draw to a SFML texture or straight to the window | GraphData.hpp, StringHelper.hpp, Spline.hpp ([from here](https://github.com/Hapaxia/SelbaWard)) |
 | `TGUICommon.hpp` | Simple classes with features that I find myself using often | TGUI, CommandHandler.hpp (optional) |
 
 # A preview of a few utilities
@@ -68,6 +68,19 @@ https://github.com/finjosh/cpp-Utilities/assets/109707607/cb718067-b088-4c1c-b04
 
 Display for seeing the name and total time of each terminating function
 
-![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/6ccbe7e5-0fef-4375-9220-54400852c50b)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/68e6e782-0f65-45f5-9926-b0ab9676f3d7)
 
-![Untitledvideo-MadewithClipchamp1-ezgif com-video-to-gif-converter](https://github.com/finjosh/cpp-Utilities/assets/109707607/976373e7-f805-4e30-959e-7b8c9aef7a17)
+![TFunc](https://github.com/finjosh/cpp-Utilities/assets/109707607/92debabb-7fac-4df1-9a6b-320c879fe47f)
+
+## Graphing Class
+
+Simple Graphing class that supports line graphs, bar graphs, scatter plots and histograms.
+
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/a902baa4-9120-4834-88ba-1de968e933ec)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/e7ad837a-a1fd-4e96-af0d-779fb6782d75)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/2ab66474-45b7-4a54-8502-d7cd6f814cc9)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/bdb84a59-6300-41a8-967c-6a89b9acde1c)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/dcf15a58-294b-4bee-b5ea-a2bdadee631e)
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/f360642e-9c49-4e75-855f-f4181466aea4)
+
+![Graph](https://github.com/finjosh/cpp-Utilities/assets/109707607/c3ea1e12-fc95-45b6-94db-a03dee31ce6a)
