@@ -8,6 +8,7 @@
 #include <string>
 #include <stdexcept>
 #include <list>
+#include <vector>
 
 class StringHelper
 {
@@ -134,6 +135,61 @@ public:
         for (auto i: list)
         {
             rtn += std::to_string(i) + ',';
+        }
+        if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
+        rtn += ']';
+        return rtn;
+    }
+
+    template <typename T = float, typename ConvertFunc = T(const std::string&, const T&)>
+    static inline std::vector<T> toVector(std::string str, ConvertFunc convFunc = &StringHelper::toFloat, T defaultValue = 0)
+    {
+        std::vector<T> rtn;
+        trim(str); // getting rid of extra white space
+        size_t pos = str.find_first_of('[');
+        if (pos != std::string::npos) 
+            str.erase(0,pos+1); // removing opening bracket
+        pos = str.find_first_of(']');
+        if (pos != std::string::npos) 
+            str[pos] = ','; // replacing the end bracket for comma
+        else
+            str += ',';
+        while (str.size() > 0)
+        {
+            size_t pos = str.find_first_of(','); // finding first comma
+            if (pos == std::string::npos) break;
+            std::string temp = str.substr(0,pos); // getting string between comma
+            str.erase(0,pos+1);
+            trim(temp);
+            rtn.emplace_back(convFunc(temp, defaultValue));
+        }
+        return rtn;
+    }
+
+    template <typename Iter, typename T = float, typename ConvertFunc = std::string(T)>
+    static inline std::string fromContainer(Iter begin, Iter end, ConvertFunc convFunc)
+    {
+        std::string rtn = "[";
+        Iter current = begin;
+        while (current != end)
+        {
+            rtn += convFunc(*current) + ',';
+            current++;
+        }
+        if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
+        rtn += ']';
+        return rtn;
+    }
+
+    template <typename Iter, typename T = float>
+    static inline std::string fromContainer(Iter begin, Iter end)
+    {
+        std::string rtn = "[";
+        Iter current = begin;
+        while (current != end)
+        {
+            rtn += std::to_string(*current) + ',';
+            current++;
         }
         if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
         rtn += ']';

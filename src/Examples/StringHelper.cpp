@@ -20,6 +20,14 @@ void StringHelperTest::test()
     printList<float>(StringHelper::toList<float>("[7 ,6,5] ", StringHelper::toFloat));
     printList<float>(StringHelper::toList<float>("[7,6 , 5,4,34,5,6,645,45,45,45,645,45,64,56,,456,4,56,45,6456, ]", StringHelper::toFloat));
     printList<float>(StringHelper::toList<float>(StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}), StringHelper::toFloat));
+    std::list<float> tempList = {7,6,5,34,4,5,67,7,4,3,4,5,76};
+    printList<float>(StringHelper::toList<float>(StringHelper::fromContainer<std::list<float>::iterator>(tempList.begin(), tempList.end()), StringHelper::toFloat));
+    std::vector<float> tempVector = {7,6,5,34,4,5,67,7,4,3,4,5,76};
+    for (auto i: StringHelper::toVector<float>(StringHelper::fromContainer<std::vector<float>::iterator>(tempVector.begin(), tempVector.end()), StringHelper::toFloat))
+    {
+        std::cout << std::to_string(i) << ",";
+    }
+    std::cout << "\n";
 
     cout << StringHelper::fromList<float>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl;
     cout << StringHelper::fromList<std::string>({"7","6","5","34","4","5","67","7","4","3","4","5","76"}, [](std::string str){ str.insert(str.begin(),'\"'); str.push_back('\"'); return str; }) << endl;
