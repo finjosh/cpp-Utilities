@@ -16,8 +16,8 @@ LIB_DIRS=/VSCodeFolder/Libraries/SFML-2.6.1/lib /VSCodeFolder/Libraries/TGUI-1.2
 SRC:=src
 # the directory for lib files that are made with "make libs"
 LIB_DIR:=libs
-# the directory where all the source files that you want in the lib are
-LIB_SOURCE:=src/Utils
+# the directories where all the source files that you want in the lib are
+LIB_SOURCE:=src/Utils src/External
 
 # compiler command
 CC:=g++
@@ -40,7 +40,7 @@ ifeq ($(OS),Windows_NT)
 	FIXPATH=$(subst /,\,$1)
 	PROJECT_DIR:=$(call FIXPATH,${PROJECT_DIR_TEMP})
 	SOURCEDIRS:=$(call FIXPATH,$(shell dir ${SRC} /s /b /ad)) $(call FIXPATH,${PROJECT_DIR}/${SRC}) $(call FIXPATH,${PROJECT_DIR})
-	LIBSOURCEDIRS:=$(call FIXPATH,$(shell dir "${LIB_SOURCE}" /s /b /ad)) $(call FIXPATH,${PROJECT_DIR}/${LIB_SOURCE})
+	LIBSOURCEDIRS:=$(foreach dir,${LIB_SOURCE},$(call FIXPATH,$(shell dir "${dir}" /s /b /ad)) $(call FIXPATH,${PROJECT_DIR}/${dir}))
 	RM=del /q /f
 	RMDIR=rmdir /S /Q
 	MD:=mkdir

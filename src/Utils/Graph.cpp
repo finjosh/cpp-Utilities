@@ -668,7 +668,7 @@ sf::Texture& Graph::getTexture()
 float Graph::roundTo(const float& value, unsigned int precision) const
 {
     if (precision == 0) return round(value);
-    return round(roundTo(value*10,precision-1))/10;
+    return roundTo(value*10,precision-1)/10;
 }
 
 void Graph::setXTextRotation(const float& rotation)

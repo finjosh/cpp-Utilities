@@ -116,7 +116,7 @@ public:
     }
 
     template <typename T = float, typename ConvertFunc = std::string(T)>
-    static inline std::string fromList(std::list<T> list, ConvertFunc convFunc)
+    static inline std::string fromList(const std::list<T>& list, ConvertFunc convFunc)
     {
         std::string rtn = "[";
         for (auto i: list)
@@ -129,7 +129,7 @@ public:
     }
 
     template <typename T = float>
-    static inline std::string fromList(std::list<T> list)
+    static inline std::string fromList(const std::list<T>& list)
     {
         std::string rtn = "[";
         for (auto i: list)
@@ -163,6 +163,32 @@ public:
             trim(temp);
             rtn.emplace_back(convFunc(temp, defaultValue));
         }
+        return rtn;
+    }
+
+    template <typename T = float, typename ConvertFunc = std::string(T)>
+    static inline std::string fromVector(const std::vector<T>& vector, ConvertFunc convFunc)
+    {
+        std::string rtn = "[";
+        for (auto i: vector)
+        {
+            rtn += convFunc(i) + ',';
+        }
+        if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
+        rtn += ']';
+        return rtn;
+    }
+
+    template <typename T = float>
+    static inline std::string fromVector(const std::vector<T>& vector)
+    {
+        std::string rtn = "[";
+        for (auto i: vector)
+        {
+            rtn += std::to_string(i) + ',';
+        }
+        if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
+        rtn += ']';
         return rtn;
     }
 
