@@ -16,6 +16,9 @@
 class Graph : public sf::Drawable
 {
 private:
+    static std::map<std::string, GraphType> _stringToGraphType;
+    static std::map<GraphType, std::string> _graphTypeToString;
+
     static size_t _lastID;
 
     /// @brief the size of the image when drawn to the main window
@@ -78,6 +81,9 @@ protected:
     sf::Vector2f getMaxValue(const GraphData& graphData) const;
 
 public:
+
+    static GraphType strToType(const std::string& str);
+    static std::string typeToString(const GraphType& type);
 
     /// @brief used to update the graph if anything was changed
     void Update();

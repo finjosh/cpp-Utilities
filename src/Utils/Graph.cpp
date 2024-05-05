@@ -1,6 +1,8 @@
 #include "Utils/Graph.hpp"
 
 size_t Graph::_lastID = 0;
+std::map<std::string, GraphType> Graph::_stringToGraphType = {{"scatter", GraphType::Scatter}, {"histogram", GraphType::Histogram}, {"line", GraphType::Line}, {"bar", GraphType::Bar}};
+std::map<GraphType, std::string> Graph::_graphTypeToString = {{GraphType::Scatter, "scatter"}, {GraphType::Histogram, "histogram"}, {GraphType::Line, "line"}, {GraphType::Bar, "bar"}};
 
 void Graph::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
@@ -10,6 +12,22 @@ void Graph::draw(sf::RenderTarget &target, sf::RenderStates states) const
     temp.setRotation(_rotation);
     temp.setTexture(&_texture);
     target.draw(temp, states);
+}
+
+GraphType Graph::strToType(const std::string& str)
+{
+    auto temp = _stringToGraphType.find(StringHelper::toLower_copy(str));
+    if (temp == _stringToGraphType.end())
+        return GraphType::Line;
+    return temp->second;
+}
+
+std::string Graph::typeToString(const GraphType& type)
+{
+    auto temp = _graphTypeToString.find(type);
+    if (temp == _graphTypeToString.end())
+        return "Not in dictionary";
+    return temp->second;
 }
 
 void Graph::Update()
