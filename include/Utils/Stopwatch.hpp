@@ -9,10 +9,10 @@
 
 namespace timer {
 
+enum TimeFormat{ NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS };
+
 class Stopwatch{
 public:
-   enum TimeFormat{ NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS };
-
    Stopwatch(): start_time(), laps({}) {
       start();
    }
@@ -89,16 +89,15 @@ private:
 };
 
 
-constexpr Stopwatch::TimeFormat ns = Stopwatch::TimeFormat::NANOSECONDS;
-constexpr Stopwatch::TimeFormat mus = Stopwatch::TimeFormat::MICROSECONDS;
-constexpr Stopwatch::TimeFormat ms = Stopwatch::TimeFormat::MILLISECONDS;
-constexpr Stopwatch::TimeFormat s = Stopwatch::TimeFormat::SECONDS;
+constexpr TimeFormat ns = TimeFormat::NANOSECONDS;
+constexpr TimeFormat mus = TimeFormat::MICROSECONDS;
+constexpr TimeFormat ms = TimeFormat::MILLISECONDS;
+constexpr TimeFormat s = TimeFormat::SECONDS;
 
-constexpr Stopwatch::TimeFormat nanoseconds = Stopwatch::TimeFormat::NANOSECONDS;
-constexpr Stopwatch::TimeFormat microseconds = Stopwatch::TimeFormat::MICROSECONDS;
-constexpr Stopwatch::TimeFormat milliseconds = Stopwatch::TimeFormat::MILLISECONDS;
-constexpr Stopwatch::TimeFormat seconds = Stopwatch::TimeFormat::SECONDS;
-
+constexpr TimeFormat nanoseconds = TimeFormat::NANOSECONDS;
+constexpr TimeFormat microseconds = TimeFormat::MICROSECONDS;
+constexpr TimeFormat milliseconds = TimeFormat::MILLISECONDS;
+constexpr TimeFormat seconds = TimeFormat::SECONDS;
 
 static std::string show_times(const std::vector<std::uint64_t>& times){
    std::string result("{");

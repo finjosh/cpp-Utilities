@@ -13,6 +13,6 @@ void StopwatchTest::test()
     // but you can restart the timer by calling "start"
     timer.start();
     std::this_thread::sleep_for(std::chrono::duration<double, std::ratio<1,1>>(1)); // sleeping this thread for 1 second
-    cout << timer.lap<Stopwatch::TimeFormat::MILLISECONDS>() << endl;
-    cout << float(timer.elapsed<Stopwatch::TimeFormat::MILLISECONDS>())/1000.0 << endl; // printing seconds as float
+    cout << timer.lap<TimeFormat::MILLISECONDS>() << endl;
+    cout << float(timer.elapsed<TimeFormat::MILLISECONDS>())/1000.0 << endl; // printing seconds as float
 }
