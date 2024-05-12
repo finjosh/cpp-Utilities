@@ -84,10 +84,12 @@ protected:
         }
     };
 
-    // second value is the current time the function has been running for
-    static std::list<_tFunc> terminatingFunctions;
 private:
     inline TerminatingFunction() = default;
+
+    // second value is the current time the function has been running for
+    static std::list<_tFunc> m_terminatingFunctions;
+    static std::mutex m_lock;
 };
 
 typedef TerminatingFunction TFunc;
