@@ -25,13 +25,21 @@ public:
     /// @param window the window to set state
     /// @param visible visible or not
     static void setVisible(tgui::ChildWindow::Ptr window, const bool& visible);
-    /// @brief this will handle maximizing button for the given window
+    /// @note maximizing will make the window fullscreen
     /// @note locks the window postion when maximized
-    /// @warning if x and y layout is "100%" then assumes that the window is maximized
-    void maximizeWindow(tgui::ChildWindow::Ptr window);
+    /// @note if x and y layout is "100%" then assumes that the window is maximized
+    /// @note does NOT work with setMinimizeWindow
+    /// @warning this must be accessible until the events are reset on window OR the window is removed from the GUI
+    void setMaximize(tgui::ChildWindow::Ptr window);
+    /// @note minimize will show only the window bar
+    /// @note maximize will show the previous size of the window
+    /// @note does NOT work with setMaximizeWindow
+    /// @warning this must be accessible until the events are reset on window OR the window is removed from the GUI
+    void setMinimize_Maximize(tgui::ChildWindow::Ptr window);
     #ifdef COMMANDHANDLER_H
     /// @brief creates the command for opening and closing this window
     /// @note uses the set visible command (requires the window to always be in the GUI)
+    /// @param windowName the name of the window in the command prompt
     static inline void createOpenCloseCommand(const std::string& windowName, tgui::ChildWindow::Ptr window)
     {
         Command::Handler::addCommand(Command::command(windowName, "Commands for the " + windowName + " window", 
@@ -40,6 +48,11 @@ public:
                                      Command::command("close", "Opens the window", [window](){ ChildWindow::setVisible(window, false); })}));
     }
     #endif
+
+protected:
+    void _maximizeWindow(tgui::ChildWindow::Ptr window);
+    void _minimizeWindow(tgui::ChildWindow::Ptr window);
+    void _minimizeMaximize(tgui::ChildWindow::Ptr window);
 
 private:
     tgui::Layout2d m_position; // the position when the window was minimized

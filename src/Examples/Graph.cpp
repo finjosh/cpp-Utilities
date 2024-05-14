@@ -194,7 +194,7 @@ void GraphTest::test(tgui::Gui& gui)
     list->onSizeChange([list](){list->setSize({"100% - 15", list->getWidgets().back()->getPosition().y + list->getWidgets().back()->getFullSize().y + 15});});
 
     parent->onClosing(tguiCommon::ChildWindow::closeWindow, parent);
-    parent->onMaximize(tguiCommon::ChildWindow::maximizeWindow, &_windowData);
+    _windowData.setMaximize(parent);
 
     tguiCommon::ChildWindow::createOpenCloseCommand("GraphExamples", parent);
 

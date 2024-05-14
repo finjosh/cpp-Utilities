@@ -2,9 +2,15 @@
 
 using namespace tguiCommon;
 
-void ChildWindow::maximizeWindow(tgui::ChildWindow::Ptr window)
+void ChildWindow::setMaximize(tgui::ChildWindow::Ptr window)
 {
     if (!window) return;
+    window->setTitleButtons(tgui::ChildWindow::TitleButton::Maximize | window->getTitleButtons());
+    window->onMaximize(_maximizeWindow, this);
+}
+
+void ChildWindow::_maximizeWindow(tgui::ChildWindow::Ptr window)
+{
     if (window->getSizeLayout().x.toString() != "100%" || window->getSizeLayout().y.toString() != "100%" || m_size.x.getValue() == 0 || m_size.y.getValue() == 0)
     {
         m_size = window->getSizeLayout();
@@ -19,6 +25,30 @@ void ChildWindow::maximizeWindow(tgui::ChildWindow::Ptr window)
         window->setPosition(m_position);
         window->setPositionLocked(false);
     }
+}
+
+void ChildWindow::setMinimize_Maximize(tgui::ChildWindow::Ptr window)
+{
+    if (!window) return;
+    window->setTitleButtons(tgui::ChildWindow::TitleButton::Minimize | window->getTitleButtons() & !tgui::ChildWindow::Maximize);
+    window->onMinimize(_minimizeWindow, this);
+    window->onMaximize(_minimizeMaximize, this);
+}
+
+void ChildWindow::_minimizeWindow(tgui::ChildWindow::Ptr window)
+{
+    window->setTitleButtons(tgui::ChildWindow::TitleButton::Maximize | window->getTitleButtons() & !tgui::ChildWindow::Minimize);
+    window->setResizable(false);
+    m_size = window->getSize();
+    window->setHeight(window->getSharedRenderer()->getTitleBarHeight());
+}
+
+void ChildWindow::_minimizeMaximize(tgui::ChildWindow::Ptr window)
+{
+    window->setResizable(true);
+    window->moveToFront();
+    window->setTitleButtons(tgui::ChildWindow::TitleButton::Minimize | window->getTitleButtons() & !tgui::ChildWindow::Maximize);
+    window->setSize(m_size);
 }
 
 void ChildWindow::closeWindow(tgui::ChildWindow::Ptr window, bool* abortTguiClose)
