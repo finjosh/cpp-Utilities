@@ -40,7 +40,7 @@ void ChildWindow::_minimizeWindow(tgui::ChildWindow::Ptr window)
     window->setTitleButtons(tgui::ChildWindow::TitleButton::Maximize | window->getTitleButtons() & !tgui::ChildWindow::Minimize);
     window->setResizable(false);
     m_size = window->getSize();
-    window->setHeight(window->getSharedRenderer()->getTitleBarHeight());
+    window->setHeight(window->getSharedRenderer()->getTitleBarHeight() + 1);
 }
 
 void ChildWindow::_minimizeMaximize(tgui::ChildWindow::Ptr window)
