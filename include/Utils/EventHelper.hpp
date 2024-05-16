@@ -54,7 +54,7 @@ public:
     /// @param func  Callback function
     /// @param args  Additional arguments to pass to the function
     ///
-    /// @return Unique id of the connection
+    /// @return Unique id of the connection (specific to this event)
     template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
     size_t connect(const Func& func, const BoundArgs&... args)
     {
@@ -76,6 +76,7 @@ public:
     bool disconnect(size_t id);
 
     /// @brief Disconnect all function from this event
+    /// @note all previous ids should be removed from storage
     void disconnectAll();
 
     /// @brief Call all connected functions

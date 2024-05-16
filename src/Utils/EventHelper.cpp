@@ -49,6 +49,7 @@ bool Event::disconnect(size_t id)
 void Event::disconnectAll()
 {
     m_functions.clear();
+    m_lastId = 0;
 }
 
 bool Event::invoke(bool threadSafe, bool removeOtherInstances)
