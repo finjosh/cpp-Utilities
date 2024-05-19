@@ -40,6 +40,9 @@ public:
 
     /// @param print true if printing is allowed
     static void allowPrint(const bool& print = true);
+    static void setMaxHistory(const size_t& size = 64);
+    static size_t getMaxHistory();
+    static void clearHistory();
 
 protected:
     static void MaximizePrompt();
@@ -49,12 +52,10 @@ protected:
     static void UpdateAutoFill();
 
     /// @brief commits the currently selected auto fill
-    static void AutoFill();
+    /// @param updateAutoFill if true updates the auto fill list
+    static void AutoFill(const bool& updateAutoFill = true);
 
     static void addHistory(const std::string& command);
-    static void setMaxHistory(const size_t& size);
-    static size_t getMaxHistory();
-    static void clearHistory();
 
     /// @brief closes the command prompts window without removing it from tgui
     /// @param abortTguiClose set to nullptr if not used with tgui
@@ -63,18 +64,18 @@ protected:
 private:
     inline Prompt() = default;
 
-    static tgui::ChildWindow::Ptr _parent;
-    static tgui::EditBox::Ptr _textBox;
-    static tgui::ListBox::Ptr _autoFillList;
-    static tgui::ChatBox::Ptr _chatBox;
+    static tgui::ChildWindow::Ptr m_parent;
+    static tgui::EditBox::Ptr m_textBox;
+    static tgui::ListBox::Ptr m_autoFillList;
+    static tgui::ChatBox::Ptr m_chatBox;
 
-    static std::list<std::string> _commandHistory;
-    static size_t _maxHistory;
+    static std::list<std::string> m_commandHistory;
+    static size_t m_maxHistory;
 
-    static bool _allowPrint;
+    static bool m_allowPrint;
 
-    static tgui::Layout2d _parentSize;
-    static tgui::Layout2d _parentPos;
+    static tgui::Layout2d m_parentSize;
+    static tgui::Layout2d m_parentPos;
 };
 
 }

@@ -27,84 +27,96 @@ void Command::print(const std::string& str, Data* input)
 
 Data::Data(const std::string& command)
 {
-    this->_tokens = parseCommand(command);
+    this->m_tokens = parseCommand(command);
 }
 
 void Data::setCommand(const std::string& command)
 {
-    this->_tokens = parseCommand(command);
+    this->m_tokens = parseCommand(command);
 }
 
 void Data::setTokens(const std::string& command)
 {
-    this->_tokens = parseCommand(command);
+    this->m_tokens = parseCommand(command);
 }
 
 void Data::setTokens(const Tokens& tokens)
 {
-    this->_tokens = tokens;    
+    this->m_tokens = tokens;    
 }
 
 void Data::setToken(const size_t& index, const std::string& tokenStr)
 {
-    this->_tokens[index] = tokenStr;
+    this->m_tokens[index] = tokenStr;
 }
 
 void Data::addToken(const std::string& tokenStr)
 {
-    this->_tokens.push_back(tokenStr);
+    this->m_tokens.push_back(tokenStr);
 }
 
 void Data::removeToken(const size_t& index)
 {
-    this->_tokens.erase(this->_tokens.begin() + index);
+    this->m_tokens.erase(this->m_tokens.begin() + index);
 }
 
-const Tokens& Data::getTokens()
+const Tokens& Data::getTokens() const
 {
-    return this->_tokens;
+    return this->m_tokens;
 }
 
-const std::string Data::getToken(const size_t& index)
+std::string Data::getTokens(const size_t& begin, const size_t& end) const
 {
-    if (index < this->_tokens.size())
-        return this->_tokens[index];
+    std::string rtn;
+    size_t last = end <= this->getNumTokens()-1 ? end : this->getNumTokens()-1;
+    for (size_t i = begin; i <= last; i++)
+    {
+        rtn += this->getToken(i) + " ";
+    }
+    rtn.erase(rtn.size()-1);
+    return rtn;
+}
+
+std::string Data::getToken(const size_t& index) const
+{
+    if (index < this->m_tokens.size())
+        return this->m_tokens[index];
     return "";
 }
 
-size_t Data::getNumOfTokens()
+size_t Data::getNumTokens() const
 {
-    return this->_tokens.size();
+    return this->m_tokens.size();
 }
 
-const color& Data::getReturnColor()
+const color& Data::getReturnColor() const
 {
-    return this->_color;
+    return this->m_color;
 }
 
 void Data::setReturnColor(const color& color)
 {
-    this->_color = color;
+    this->m_color = color;
 }
 
-const std::string& Data::getReturnStr()
+const std::string& Data::getReturnStr() const
 {
-    return this->_return;
+    return this->m_return;
 }
 
 void Data::setReturnStr(const std::string& returnStr)
 {
-    this->_return = returnStr;
+    this->m_return = returnStr;
 }
 
 void Data::addReturnStrLine(const std::string& line)
 {
-    this->_return += "\n" + line;
+    this->m_return += "\n" + line;
 }
 
 void Data::addToReturnStr(const std::string& str)
 {
-    this->_return += str;
+    this->m_return += str;
 }
 
 Tokens Data::parseCommand(const std::string& command)
@@ -124,7 +136,7 @@ Tokens Data::parseCommand(const std::string& command)
 void Data::deepParseCommand()
 {
     size_t i = 0;
-    while (i < this->getNumOfTokens())
+    while (i < this->getNumTokens())
     {
         std::string token = this->getToken(i);
         // checking if we are calling commands for the token data
@@ -132,25 +144,33 @@ void Data::deepParseCommand()
         {
             size_t startOfSub = i;
             std::string command = token.substr(1);
-            this->removeToken(i);
+            i++;
             token = this->getToken(i);
             while (!token.ends_with(')') && token != "")
             {
                 command += " " + token;
-                this->removeToken(i);
+                i++;
                 token = this->getToken(i);
             }
+            i--; // removing the extra index added
             // once token ends with ')' add it to the end of the command
             if (token != "")
             {
-                this->removeToken(i);
+                i++;
                 token.erase(token.size()-1);
                 command += " " + token;
             }
-            Tokens temp = this->parseCommand(Command::Handler::callCommand(command).getReturnStr());
-            // this->_tokens.erase(this->_tokens.begin()+startOfSub,this->_tokens.begin()+i); // removing all the tokens we have used
-            this->_tokens.insert(this->_tokens.begin()+startOfSub, temp.begin(), temp.end()); // adding the data from the sub command
-            i = startOfSub + temp.size()-1; // setting i to the end of the sub commands return tokens
+            if (Command::Handler::isCommand(command))
+            {
+                Tokens temp = Command::Data::parseCommand(Command::Handler::callCommand(command).getReturnStr());
+                this->m_tokens.erase(this->m_tokens.begin()+startOfSub,this->m_tokens.begin()+i); // removing all the tokens we have used
+                this->m_tokens.insert(this->m_tokens.begin()+startOfSub, temp.begin(), temp.end()); // adding the data from the sub command
+                i = startOfSub + temp.size()-1; // setting i to the end of the sub commands return tokens
+            }
+            else
+            {
+                i = startOfSub + Command::Data::parseCommand(command).size();
+            }
         }
         i++;
     }
@@ -273,7 +293,7 @@ std::list<std::string> Handler::autoFillSearch(const std::string& search)
     {
         input.setCommand(StringHelper::toLower_copy(search.substr(subCommandPos+1)));
         if (search.ends_with(" ") || search.ends_with("("))
-            input.addToken(""); // adding an empty token so the auto fill will work if there is a space 
+            input.addToken(""); // adding an empty token so the auto fill will work if there is a space or a open bracket
     }
     else // if there is no sub command to auto fill
     {
@@ -282,11 +302,11 @@ std::list<std::string> Handler::autoFillSearch(const std::string& search)
 
     if (search.ends_with(" "))
         input.addToken(""); // adding an empty token so the auto fill will work if there is a space 
-    if (input.getNumOfTokens() == 0) return rtn;
+    if (input.getNumTokens() == 0) return rtn;
     else if (input.getToken(0) == "help") 
     {
         input.removeToken(0); // auto filling for searching by removing the help token
-        if (input.getNumOfTokens() == 0) return rtn; // checking if the only thing imputed was help
+        if (input.getNumTokens() == 0) return rtn; // checking if the only thing imputed was help
     }
 
     std::list<command>::iterator commandsIter = _commands.begin();
@@ -299,7 +319,7 @@ std::list<std::string> Handler::autoFillSearch(const std::string& search)
         while (true)
         {
             i = std::find_if(tempList->begin(), tempList->end(), [&input](const Command::command& v){return StringHelper::toLower_copy(v.getName()) == input.getToken(0);});
-            if (i != tempList->end() && input.getNumOfTokens() > 1)
+            if (i != tempList->end() && input.getNumTokens() > 1)
             {
                 tempList = &i->_subCommands;
                 input.removeToken(0);
@@ -334,7 +354,7 @@ Data Handler::callCommand(const std::string& commandStr)
     Data input(commandStr);
 
     // doing early checks for either help command or no command being entered
-    if (input.getNumOfTokens() == 0) 
+    if (input.getNumTokens() == 0) 
     {
         input.setReturnStr("Try using \"help\" for a list of commands");
         return input;
@@ -343,7 +363,7 @@ Data Handler::callCommand(const std::string& commandStr)
     else if (input.getToken(0) == "help") 
     {
         // checking if command specific help
-        if (input.getNumOfTokens() == 1)
+        if (input.getNumTokens() == 1)
         {
             // no command specific help
             std::string rtn = "help [Command] - can be used on every command to show it's full description and it's sub commands if there are any\n\n";
@@ -365,7 +385,7 @@ Data Handler::callCommand(const std::string& commandStr)
             }
 
             input.removeToken(0); // remove the current command from the tokens to find check if there is another to look for
-            while (input.getNumOfTokens() > 0 || curCommand->_subCommands.size() == 0)
+            while (input.getNumTokens() > 0 || curCommand->_subCommands.size() == 0)
             {
                 auto temp = std::find(curCommand->_subCommands.begin(), curCommand->_subCommands.end(), input.getToken(0));
 
@@ -375,7 +395,7 @@ Data Handler::callCommand(const std::string& commandStr)
                 input.removeToken(0);
             }
 
-            if (input.getNumOfTokens() == 0) // only if every token was found display the info for the command and its sub commands
+            if (input.getNumTokens() == 0) // only if every token was found display the info for the command and its sub commands
             {
                 rtn += "~ " + curCommand->getNameDescription() + "\n";
                 rtn += curCommand->getSubCommandsNameDescription(50);
@@ -393,8 +413,8 @@ Data Handler::callCommand(const std::string& commandStr)
         return input;
     }
 
-    input.removeToken(0); // remove the current command from the tokens to find check if there is another to look for
-    while (input.getNumOfTokens() > 0 || curCommand->_subCommands.size() == 0)
+    input.removeToken(0); // remove the current command from the tokens to check if there is another to look for
+    while (input.getNumTokens() > 0 || curCommand->_subCommands.size() == 0)
     {
         auto temp = std::find(curCommand->_subCommands.begin(), curCommand->_subCommands.end(), input.getToken(0));
 
@@ -409,6 +429,18 @@ Data Handler::callCommand(const std::string& commandStr)
     curCommand->invoke(input);
 
     return input;
+}
+
+bool Command::Handler::isCommand(const std::string& commandStr)
+{
+    Data input(commandStr);
+    std::list<command>::iterator curCommand = std::find(_commands.begin(), _commands.end(), input.getToken(0));
+    if (curCommand == _commands.end()) 
+    {
+        return false;
+    }
+
+    return true;
 }
 
 std::list<command> Handler::_commands;

@@ -59,20 +59,24 @@ public:
     void removeToken(const size_t& index = 0);
 
     /// @returns a const reference to the current tokens
-    const Tokens& getTokens();
+    const Tokens& getTokens() const;
+    /// @param begin the first index
+    /// @param end the last index
+    /// @returns the tokens in the given range combined
+    std::string getTokens(const size_t& begin, const size_t& end = std::numeric_limits<size_t>().max()) const;
     /// @param index the index of the wanted token
     /// @returns if there is a token at the index returns token else returns a string with nothing
-    const std::string getToken(const size_t& index = 0);
+    std::string getToken(const size_t& index = 0) const;
     /// @returns the current number of tokens stored
-    size_t getNumOfTokens();
+    size_t getNumTokens() const;
 
-    const color& getReturnColor();
+    const color& getReturnColor() const;
     /// @brief sets the wanted color of the return string
     /// @note is handled by command prompt
     void setReturnColor(const color& color);
 
     /// @returns the current return string
-    const std::string& getReturnStr();
+    const std::string& getReturnStr() const;
     /// @brief sets the string that will be returned after the command if finished
     void setReturnStr(const std::string& returnStr);
     /// @brief adds a line to the return string
@@ -96,9 +100,9 @@ protected:
     static Tokens parseCommand(const std::string& command);
 
 private:
-    color _color;
-    Tokens _tokens;
-    std::string _return;
+    color m_color;
+    Tokens m_tokens;
+    std::string m_return;
 };
 
 /// @brief tries to convert the given string to the given type
@@ -141,7 +145,6 @@ inline bool isValidInput(const std::string& errorMsg, Data& data, const std::str
 
     if (!valid || !comp(value))
     {
-        valid = false;
         data.setReturnStr(errorMsg);
         data.setReturnColor(Command::INVALID_INPUT_COLOR);
         value = defaultValue;
@@ -220,6 +223,10 @@ public:
      * @returns pair of string and color (string should be printed in the given color)
     */
     static Data callCommand(const std::string& commandStr);
+
+    /// @brief checks if the first token is a valid command
+    /// @returns if the first token is a command
+    static bool isCommand(const std::string& commandStr);
 
 protected:
     /// @param cmd the command that is wanted to be added

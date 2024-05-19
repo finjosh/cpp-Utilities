@@ -1,57 +1,57 @@
 #include "Utils/Debug/CommandPrompt.hpp"
 
-tgui::ChildWindow::Ptr Command::Prompt::_parent{nullptr};
-tgui::EditBox::Ptr Command::Prompt::_textBox{nullptr};
-tgui::ListBox::Ptr Command::Prompt::_autoFillList{nullptr};
-tgui::ChatBox::Ptr Command::Prompt::_chatBox{nullptr};
+tgui::ChildWindow::Ptr Command::Prompt::m_parent{nullptr};
+tgui::EditBox::Ptr Command::Prompt::m_textBox{nullptr};
+tgui::ListBox::Ptr Command::Prompt::m_autoFillList{nullptr};
+tgui::ChatBox::Ptr Command::Prompt::m_chatBox{nullptr};
 
-std::list<std::string> Command::Prompt::_commandHistory;
-size_t Command::Prompt::_maxHistory = 64;
+std::list<std::string> Command::Prompt::m_commandHistory;
+size_t Command::Prompt::m_maxHistory = 64;
 
-bool Command::Prompt::_allowPrint = true;
+bool Command::Prompt::m_allowPrint = true;
 
-tgui::Layout2d Command::Prompt::_parentSize{"25%", "25%"};
-tgui::Layout2d Command::Prompt::_parentPos{0,0};
+tgui::Layout2d Command::Prompt::m_parentSize{"25%", "25%"};
+tgui::Layout2d Command::Prompt::m_parentPos{0,0};
 
 void Command::Prompt::init(tgui::Gui& sfmlGui)
 {
-    _parent = tgui::ChildWindow::create("Command Prompt", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
-    sfmlGui.add(_parent);
+    m_parent = tgui::ChildWindow::create("Command Prompt", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
+    sfmlGui.add(m_parent);
 
     // * setup of child window
-    _parent->setTitleAlignment(tgui::ChildWindow::TitleAlignment::Left);
-    _parent->setResizable();
-    _parent->setSize({"40%","35%"});
-    _parent->setPosition({"60%","65%"});
+    m_parent->setTitleAlignment(tgui::ChildWindow::TitleAlignment::Left);
+    m_parent->setResizable();
+    m_parent->setSize({"40%","35%"});
+    m_parent->setPosition({"60%","65%"});
 
     // * setup for edit box
     {
-        _textBox = tgui::EditBox::create();
-        _parent->add(_textBox);
-        _textBox->setSize({"100%", "25"});
-        _textBox->setPosition({0, "100% - 25"});
+        m_textBox = tgui::EditBox::create();
+        m_parent->add(m_textBox);
+        m_textBox->setSize({"100%", "25"});
+        m_textBox->setPosition({0, "100% - 25"});
 
-        // * setup for auto closing _autoFillList when focus is lost
-        _textBox->onUnfocus([]()
+        // * setup for auto closing m_autoFillList when focus is lost
+        m_textBox->onUnfocus([]()
         {
-            if (_autoFillList)
+            if (m_autoFillList)
             {
-                _autoFillList->setVisible(false);
+                m_autoFillList->setVisible(false);
             }
         });
 
-        // * setup for chat _textBox
-        _chatBox = tgui::ChatBox::create();
-        _parent->add(_chatBox);
-        _chatBox->setSize({"100%", "100%-25"});
-        _chatBox->setLinesStartFromTop();
-        _chatBox->setLineLimit(1028);
-        _chatBox->setTextColor(tgui::Color::White);
-        _chatBox->setFocusable(false);
+        // * setup for chat m_textBox
+        m_chatBox = tgui::ChatBox::create();
+        m_parent->add(m_chatBox);
+        m_chatBox->setSize({"100%", "100%-25"});
+        m_chatBox->setLinesStartFromTop();
+        m_chatBox->setLineLimit(1028);
+        m_chatBox->setTextColor(tgui::Color::White);
+        m_chatBox->setFocusable(false);
 
         // * setup for the command prompt custom commands
         {
-            auto temp = _chatBox.get();
+            auto temp = m_chatBox.get();
             Command::Handler::addCommand({"cp", "Prefix for any Command Prompt specific commands", {[](Command::Data* input)
             { 
                 input->setReturnStr("Not a valid cp command. Try using 'help cp' for more info"); 
@@ -75,13 +75,13 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
                 }}),
                 Command::command("allowPrinting", "controls if printing to the command prompt is allowed (true/false or 1/0)", {[](Command::Data* input)
                 {
-                    _allowPrint = StringHelper::toBool(input->getToken(0), _allowPrint);
+                    m_allowPrint = StringHelper::toBool(input->getToken(0), m_allowPrint);
                     input->setReturnStr("Printing is now: ");
-                    input->addToReturnStr(_allowPrint ? "allowed" : "not allowed");
+                    input->addToReturnStr(m_allowPrint ? "allowed" : "not allowed");
                 }}),
                 Command::command("getPrintingAllowed", "prints if printing is allowed", {[](Command::Data* input)
                 {
-                    input->setReturnStr(_allowPrint ? "True" : "False");
+                    input->setReturnStr(m_allowPrint ? "True" : "False");
                 }}),
                 Command::command("clearHistory", "clears the command history", {[](Command::Data* data){ Command::Prompt::clearHistory(); data->setReturnStr("History Cleared"); data->setReturnColor({0,255,0}); }}),
                 Command::command("getMaxHistory", "prints the max number of commands in history", {[](Command::Data* data){ Command::print(std::to_string(Command::Prompt::getMaxHistory()), data); }}),
@@ -100,12 +100,13 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
                         int min = 0;
                         int max = RAND_MAX;
 
-                        if (!Command::isValidInput<int>("Invalid min entered", *input, input->getToken(0), min, -1, [](int& v){ return v >= 0;}) 
-                            || !Command::isValidInput<int>("Invalid max entered", *input, input->getToken(1), max, -1, [&max, &min](int& v){ return !(v < 0 || v > max || min > max);}))
+                        if (input->getNumTokens() > 0 && !Command::isValidInput<int>("Invalid min entered", *input, input->getToken(0), min, 0, [](int& v){ return v >= 0;}) 
+                            || 
+                            input->getNumTokens() > 1 && !Command::isValidInput<int>("Invalid max entered", *input, input->getToken(1), max, RAND_MAX, [&max, &min](int& v){ return !(v < 0 || v > max || min > max);}))
                             return;
 
                         unsigned long amount = 1;
-                        if (input->getNumOfTokens() == 3)
+                        if (input->getNumTokens() == 3)
                             Command::isValidInput<unsigned long>("Invalid amount entered - Defaulted to 1", *input, input->getToken(2), amount, 1, [](unsigned long& v){ return v > 0; });
 
                         while (amount != 0)
@@ -121,62 +122,62 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
         // * ---------------------------
 
         // * setup for auto fill
-        _autoFillList = tgui::ListBox::create();
-        _parent->add(_autoFillList);
-        _autoFillList->setSize({"100%", "0"});
-        _autoFillList->setAutoScroll(false);
-        _autoFillList->setOrigin(0,1);
-        _autoFillList->setPosition({"0"}, {"100%-" + std::to_string(_textBox->getSize().y)});
-        _autoFillList->setFocusable(false);
+        m_autoFillList = tgui::ListBox::create();
+        m_parent->add(m_autoFillList);
+        m_autoFillList->setSize({"100%", "0"});
+        m_autoFillList->setAutoScroll(false);
+        m_autoFillList->setOrigin(0,1);
+        m_autoFillList->setPosition({"0"}, {"100%-" + std::to_string(m_textBox->getSize().y)});
+        m_autoFillList->setFocusable(false);
 
-        _textBox->onTextChange(Command::Prompt::UpdateAutoFill);
-        _textBox->onFocus([]()
+        m_textBox->onTextChange(Command::Prompt::UpdateAutoFill);
+        m_textBox->onFocus([]()
         {
             Command::Prompt::UpdateAutoFill(); 
-            _textBox->onFocus.setEnabled(false);
+            m_textBox->onFocus.setEnabled(false);
         });
-        _textBox->onUnfocus([]()
+        m_textBox->onUnfocus([]()
         {
-            if (_textBox)
-                _textBox->onFocus.setEnabled(true);
+            if (m_textBox)
+                m_textBox->onFocus.setEnabled(true);
         });
 
-        _textBox->onReturnKeyPress([]()
+        m_textBox->onReturnKeyPress([]()
         {
-            if (_textBox->getText().size() == 0 && _autoFillList->isVisible())
-                _textBox->setText(_autoFillList->getSelectedItem());
+            if (m_autoFillList->isVisible())
+                AutoFill(false);
 
             Command::color tColor;
-            _chatBox->addLine("> " + _textBox->getText(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a), tgui::TextStyle::Bold);
+            m_chatBox->addLine("> " + m_textBox->getText(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a), tgui::TextStyle::Bold);
 
-            auto commandData = Command::Handler::callCommand(_textBox->getText().toStdString());
-            Command::Prompt::addHistory(_textBox->getText().toStdString());
+            auto commandData = Command::Handler::callCommand(m_textBox->getText().toStdString());
+            Command::Prompt::addHistory(m_textBox->getText().toStdString());
             
             if (commandData.getReturnStr() != "")
             {
                 tColor = commandData.getReturnColor();
-                _chatBox->addLine(commandData.getReturnStr(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a));
+                m_chatBox->addLine(commandData.getReturnStr(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a));
             }
 
-            _textBox->setText("");
+            m_textBox->setText("");
         });
     }
 
     // * events
-    _parent->onSizeChange(&Command::Prompt::ResizePrompt);
-    _parent->onClosing(&Command::Prompt::_close);
-    _parent->setMaximumSize(_parent->getParentGui()->getView().getSize());
-    _parent->onMaximize(&Command::Prompt::MaximizePrompt);
+    m_parent->onSizeChange(&Command::Prompt::ResizePrompt);
+    m_parent->onClosing(&Command::Prompt::_close);
+    m_parent->setMaximumSize(m_parent->getParentGui()->getView().getSize());
+    m_parent->onMaximize(&Command::Prompt::MaximizePrompt);
 
     _close(nullptr);
 }
 
 void Command::Prompt::close()
 {
-    _parent = nullptr;
-    _textBox = nullptr;
-    _autoFillList = nullptr;
-    _chatBox = nullptr;
+    m_parent = nullptr;
+    m_textBox = nullptr;
+    m_autoFillList = nullptr;
+    m_chatBox = nullptr;
 }
 
 void Command::Prompt::UpdateEvent(const sf::Event& event)
@@ -185,7 +186,7 @@ void Command::Prompt::UpdateEvent(const sf::Event& event)
     {
         if (event.key.code == sf::Keyboard::Key::Tilde)
         {
-            if (_parent->isEnabled())
+            if (m_parent->isEnabled())
             {
                 setVisible(false);
             }
@@ -194,44 +195,44 @@ void Command::Prompt::UpdateEvent(const sf::Event& event)
         }
 
         // checking after checking the open and close key
-        if (!_parent->isFocused())
+        if (!m_parent->isFocused())
             return;
 
         if (event.key.code == sf::Keyboard::Key::Escape)
         {
-            if (_autoFillList->isVisible() && (_textBox->isFocused() || _autoFillList->isFocused()))
+            if (m_autoFillList->isVisible() && (m_textBox->isFocused() || m_autoFillList->isFocused()))
             {
-                _autoFillList->setVisible(false);
+                m_autoFillList->setVisible(false);
             }
             else
             {
-                _textBox->setFocused(false);
+                m_textBox->setFocused(false);
             }
         }
 
-        if (event.key.code == sf::Keyboard::Key::Up && (_textBox->isFocused() || _autoFillList->isFocused()))
+        if (event.key.code == sf::Keyboard::Key::Up && (m_textBox->isFocused() || m_autoFillList->isFocused()))
         {
-            if (!_autoFillList->isVisible() && _commandHistory.size() != 0)
+            if (!m_autoFillList->isVisible() && m_commandHistory.size() != 0)
             {
-                _autoFillList->removeAllItems();
-                for (auto i = _commandHistory.begin(); i != _commandHistory.end(); i++)
-                    _autoFillList->addItem(*i);
-                _autoFillList->setVisible(true);
-                _autoFillList->setSize({"100%", std::min(float(_autoFillList->getItemHeight() * _autoFillList->getItemCount() + 5), _parent->getSize().y / 3)});
+                m_autoFillList->removeAllItems();
+                for (auto i = m_commandHistory.begin(); i != m_commandHistory.end(); i++)
+                    m_autoFillList->addItem(*i);
+                m_autoFillList->setVisible(true);
+                m_autoFillList->setSize({"100%", std::min(float(m_autoFillList->getItemHeight() * m_autoFillList->getItemCount() + 5), m_parent->getSize().y / 3)});
             }
-            int temp = _autoFillList->getSelectedItemIndex() - 1;
-            temp = temp < 0 ? _autoFillList->getItemCount()-1 : temp; // checking if we want to wrap to the last item in the auto fill list
+            int temp = m_autoFillList->getSelectedItemIndex() - 1;
+            temp = temp < 0 ? m_autoFillList->getItemCount()-1 : temp; // checking if we want to wrap to the last item in the auto fill list
 
-            _autoFillList->setSelectedItemByIndex(temp);
-            _textBox->setCaretPosition(_textBox->getText().size());
+            m_autoFillList->setSelectedItemByIndex(temp);
+            m_textBox->setCaretPosition(m_textBox->getText().size());
         }
 
         if (event.key.code == sf::Keyboard::Key::Down)
         {
-            if (_autoFillList->isVisible())
+            if (m_autoFillList->isVisible())
             {
-                _autoFillList->setSelectedItemByIndex((_autoFillList->getSelectedItemIndex() + 1)%_autoFillList->getItemCount());
-                _textBox->setCaretPosition(_textBox->getText().size());
+                m_autoFillList->setSelectedItemByIndex((m_autoFillList->getSelectedItemIndex() + 1)%m_autoFillList->getItemCount());
+                m_textBox->setCaretPosition(m_textBox->getText().size());
             }
         }
 
@@ -246,21 +247,21 @@ void Command::Prompt::setVisible(bool visible)
 {
     if (visible)
     {
-        _parent->setVisible(true);
-        _parent->setEnabled(true);
-        _parent->moveToFront();
+        m_parent->setVisible(true);
+        m_parent->setEnabled(true);
+        m_parent->moveToFront();
     }
     else
     {
-        _parent->setVisible(false);
-        _parent->setEnabled(false);
+        m_parent->setVisible(false);
+        m_parent->setEnabled(false);
     }
 }
 
 void Command::Prompt::_close(bool* abortTguiClose)
 {
-    _parent->setEnabled(false);
-    _parent->setVisible(false);
+    m_parent->setEnabled(false);
+    m_parent->setVisible(false);
 
     if (abortTguiClose != nullptr)
         (*abortTguiClose) = true;
@@ -268,114 +269,129 @@ void Command::Prompt::_close(bool* abortTguiClose)
 
 void Command::Prompt::print(const tgui::String& str, const Command::color& color)
 {
-    if (_chatBox && _allowPrint)
-        _chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
+    if (m_chatBox && m_allowPrint)
+        m_chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
 }
 
 bool Command::Prompt::isPrintAllowed()
 {
-    return _allowPrint;
+    return m_allowPrint;
 }
 
 void Command::Prompt::allowPrint(const bool& print)
 {
-    _allowPrint = print;
+    m_allowPrint = print;
 }
 
 void Command::Prompt::MaximizePrompt()
 {
-    if (_parent->getFullSize() == _parentSize.getValue())
+    if (m_parent->getFullSize() == m_parentSize.getValue())
     {
-        _parentSize = _parent->getSizeLayout();
-        _parentPos = _parent->getPositionLayout();
-        _parent->setPosition({0,0});
-        _parent->setPositionLocked(true);
-        _parent->onSizeChange.setEnabled(false);
-        _parent->setSize({"100%", "100%"});
-        _parent->onSizeChange.setEnabled(true);
+        m_parentSize = m_parent->getSizeLayout();
+        m_parentPos = m_parent->getPositionLayout();
+        m_parent->setPosition({0,0});
+        m_parent->setPositionLocked(true);
+        m_parent->onSizeChange.setEnabled(false);
+        m_parent->setSize({"100%", "100%"});
+        m_parent->onSizeChange.setEnabled(true);
     }
     else
     {
-        _parent->setSize(_parentSize);
-        _parent->setPosition(_parentPos);
-        _parent->setPositionLocked(false);
+        m_parent->setSize(m_parentSize);
+        m_parent->setPosition(m_parentPos);
+        m_parent->setPositionLocked(false);
         ResizePrompt();
     }
 }
 
 void Command::Prompt::ResizePrompt()
 {
-    if (_parent->getSizeLayout().x.toString() != "100%")
-        _parentSize = _parent->getFullSize();
+    if (m_parent->getSizeLayout().x.toString() != "100%")
+        m_parentSize = m_parent->getFullSize();
 }
 
 void Command::Prompt::UpdateAutoFill()
 {
-    std::list<std::string> commands = Command::Handler::autoFillSearch(_textBox->getText().toStdString());;
-    _autoFillList->removeAllItems();
+    std::list<std::string> commands = Command::Handler::autoFillSearch(m_textBox->getText().toStdString());;
+    m_autoFillList->removeAllItems();
 
     if (commands.size() == 0)
     {
-        _autoFillList->setVisible(false);
+        m_autoFillList->setVisible(false);
         return;
     }
     else 
-        _autoFillList->setVisible(true);
+        m_autoFillList->setVisible(true);
 
     for (auto cmd: commands)
     {
-        _autoFillList->addItem(cmd);
+        m_autoFillList->addItem(cmd);
     }
 
-    _autoFillList->setSize({"100%", std::min(float(_autoFillList->getItemHeight() * _autoFillList->getItemCount() + 5), _parent->getSize().y / 3)});
-    _autoFillList->setSelectedItemByIndex(0);
+    m_autoFillList->setSize({"100%", std::min(float(m_autoFillList->getItemHeight() * m_autoFillList->getItemCount() + 5), m_parent->getSize().y / 3)});
+    m_autoFillList->setSelectedItemByIndex(0);
 }
 
-void Command::Prompt::AutoFill()
+void Command::Prompt::AutoFill(const bool& updateAutoFill)
 {
-    _textBox->onFocus.setEnabled(false);
-    _textBox->setFocused(true);
-    _textBox->onFocus.setEnabled(true);
-    tgui::String temp = _textBox->getText();
-    size_t subCommandPos = temp.find_last_of('('); // if there is a sub command
-    size_t lastSpace = temp.find_last_of(' ');
-    if (subCommandPos != std::string::npos && subCommandPos > lastSpace)
+    m_textBox->onFocus.setEnabled(false);
+    m_textBox->setFocused(true);
+    m_textBox->onFocus.setEnabled(true);
+    Command::Data temp(m_textBox->getText().toStdString());
+    size_t lastToken = temp.getNumTokens()-1;
+    if (temp.getToken(lastToken).starts_with('('))
     {
-        _textBox->setText(temp.substr(0, subCommandPos + 1) + _autoFillList->getSelectedItem());
+        temp.setToken(lastToken, "(" + m_autoFillList->getSelectedItem().toStdString());
     }
     else
     {
-        _textBox->setText(temp.substr(0, lastSpace + 1) + _autoFillList->getSelectedItem());
+        if (temp.getNumTokens() == 0)
+            temp.addToken(m_autoFillList->getSelectedItem().toStdString());
+        else
+            temp.setToken(lastToken, m_autoFillList->getSelectedItem().toStdString());
     }
-    UpdateAutoFill();
+    m_textBox->setText(temp.getTokens(0));
+    // tgui::String temp = m_textBox->getText();
+    // size_t subCommandPos = temp.find_last_of('('); // if there is a sub command
+    // size_t endOfLastToken = temp.find_last_not_of(' ');
+    // if (subCommandPos != std::string::npos && subCommandPos > endOfLastToken)
+    // {
+    //     m_textBox->setText(temp.substr(0, subCommandPos + 1) + m_autoFillList->getSelectedItem());
+    // }
+    // else
+    // {
+    //     m_textBox->setText(temp.substr(0, endOfLastToken + 1) + m_autoFillList->getSelectedItem());
+    // }
+    if (updateAutoFill)
+        UpdateAutoFill();
 }
 
 void Command::Prompt::addHistory(const std::string& command)
 {
     if (StringHelper::trim_copy(command).size() == 0) return;
-    if (_maxHistory > _commandHistory.size())
+    if (m_maxHistory > m_commandHistory.size())
     {
-        if (command != "" && _commandHistory.back() != command)
-            _commandHistory.push_back(command);
+        if (command != "" && m_commandHistory.back() != command)
+            m_commandHistory.push_back(command);
     }
     else
     {
-        _commandHistory.erase(_commandHistory.begin());
-        _commandHistory.push_back(command);
+        m_commandHistory.erase(m_commandHistory.begin());
+        m_commandHistory.push_back(command);
     }
 }
 
 void Command::Prompt::setMaxHistory(const size_t& size)
 {
-    _maxHistory = size;
+    m_maxHistory = size;
 }
 
 size_t Command::Prompt::getMaxHistory()
 {
-    return _maxHistory;
+    return m_maxHistory;
 }
 
 void Command::Prompt::clearHistory()
 {
-    _commandHistory.clear();
+    m_commandHistory.clear();
 }

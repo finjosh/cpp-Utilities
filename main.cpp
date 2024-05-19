@@ -51,26 +51,25 @@ int main()
     Command::Handler::addCommand(Command::command{"setTheme", "Function used to set the theme of the UI (The previous outputs in the command prompt will not get updated color)", 
         {Command::print, "Trying calling one of the sub commands"},
         std::list<Command::command>{
-            Command::command{"white", "(NOT WORKING) Sets the theme back to the white theme", {[](){ 
-                tgui::Theme::setDefault(nullptr);
-                tgui::Theme::getDefault()->replace(*tgui::Theme::getDefault().get());
-                // Note that command color does not update with theme so you have to set the default color
-                Command::color::setDefaultColor({0,0,0,255}); // black
-            }}},
+            // Command::command{"default", "(Currently does not work, coming soon) Sets the theme back to default", {[](){ 
+            //     tgui::Theme::setDefault(""); //! This does not work due to a tgui issue
+            //     // Note that command color does not update with theme so you have to set the default color
+            //     Command::color::setDefaultColor({0,0,0,255}); // black
+            // }}},
             // Dark theme is a custom theme made by me 
             // It can be found here: https://github.com/finjosh/TGUI-DarkTheme
-            Command::command{"dark", "Sets the theme to the dark theme", {[](){ 
-                tgui::Theme::getDefault()->replace(tgui::Theme("themes/Dark.txt")); 
+            Command::command{"dark", "Sets the them to the dark theme", {[](){ 
+                tgui::Theme::getDefault()->load("themes/Dark.txt"); 
                 // Note that command color does not update with theme so you have to set the default color
                 Command::color::setDefaultColor({255,255,255,255}); // white
             }}}, 
-            Command::command{"black", "Sets the theme to the black theme", {[](){ 
-                tgui::Theme::getDefault()->replace(tgui::Theme("themes/Black.txt")); 
+            Command::command{"black", "Sets the them to the black theme", {[](){ 
+                tgui::Theme::getDefault()->load("themes/Black.txt"); 
                 // Note that command color does not update with theme so you have to set the default color
                 Command::color::setDefaultColor({255,255,255,255}); // white
             }}},
-            Command::command{"grey", "Sets the theme to the transparent grey theme", {[](){ 
-                tgui::Theme::getDefault()->replace(tgui::Theme("themes/TransparentGrey.txt")); 
+            Command::command{"grey", "Sets the them to the transparent grey theme", {[](){ 
+                tgui::Theme::getDefault()->load("themes/TransparentGrey.txt"); 
                 // Note that command color does not update with theme so you have to set the default color
                 Command::color::setDefaultColor({0,0,0,255}); // black
             }}}

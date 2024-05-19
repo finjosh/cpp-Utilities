@@ -29,7 +29,7 @@ float LiveVar::getValue(const std::string& name)
 {
     auto iter = m_vars.find(name);
 
-    if (iter == m_vars.end()) return std::numeric_limits<float>::min();
+    if (iter == m_vars.end()) return std::numeric_limits<float>::infinity();
 
     return iter->second.getValue();
 }
