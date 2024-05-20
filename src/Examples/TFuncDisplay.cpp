@@ -24,25 +24,7 @@ void TFuncDisplayTest::test()
     });
     TFunc::Add([](TData* data)
     {
-        if (data->totalTime >= 8)
-        {
-            TFuncDisplay::minimize();
-            return;
-        }
-        data->setRunning();
-    });
-    TFunc::Add([](TData* data)
-    {
-        if (data->totalTime >= 10)
-        {
-            TFuncDisplay::maximize();
-            return;
-        }
-        data->setRunning();
-    });
-    TFunc::Add([](TData* data)
-    {
-        if (data->totalTime >= 12)
+        if (data->totalTime >= 4)
         {
             TFuncDisplay::setVisible(false);
             return;

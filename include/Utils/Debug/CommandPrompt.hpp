@@ -13,6 +13,7 @@
 
 #include "Utils/Debug/CommandHandler.hpp"
 #include "Utils/StringHelper.hpp"
+#include "Utils/TGUICommon.hpp"
 
 namespace Command
 {
@@ -45,9 +46,9 @@ public:
     static void clearHistory();
 
 protected:
-    static void MaximizePrompt();
-    /// @brief handles the resizing of the prompt
-    static void ResizePrompt();
+    // static void MaximizePrompt();
+    // /// @brief handles the resizing of the prompt
+    // static void ResizePrompt();
 
     static void UpdateAutoFill();
 
@@ -57,12 +58,14 @@ protected:
 
     static void addHistory(const std::string& command);
 
-    /// @brief closes the command prompts window without removing it from tgui
-    /// @param abortTguiClose set to nullptr if not used with tgui
-    static void _close(bool* abortTguiClose);
+    // /// @brief closes the command prompts window without removing it from tgui
+    // /// @param abortTguiClose set to nullptr if not used with tgui
+    // static void _close(bool* abortTguiClose);
 
 private:
     inline Prompt() = default;
+
+    static tguiCommon::ChildWindow m_windowHandler;
 
     static tgui::ChildWindow::Ptr m_parent;
     static tgui::EditBox::Ptr m_textBox;
@@ -73,9 +76,6 @@ private:
     static size_t m_maxHistory;
 
     static bool m_allowPrint;
-
-    static tgui::Layout2d m_parentSize;
-    static tgui::Layout2d m_parentPos;
 };
 
 }

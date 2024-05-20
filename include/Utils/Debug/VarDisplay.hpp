@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "LiveVar.hpp" 
+#include "Utils/TGUICommon.hpp"
 
 #if __has_include("CommandHandler.hpp")
 #include "CommandHandler.hpp" 
@@ -36,10 +37,6 @@ public:
     static void Update();
 
     static void setVisible(bool visible = true);
-    /// @brief only shows the displays title bar
-    static void minimizeWindow();
-    /// @brief shows the entire display (including the variables)
-    static void maximizeWindow();
 
 protected:
     /// @brief adds a var to the list
@@ -52,9 +49,6 @@ protected:
     /// @note used with the events from live vars
     static void removeVar(const std::string& name);
     
-    /// @brief used for tgui backend
-    static void _closeWindow(bool* abortTguiClose);
-
 private:
     VarDisplay() = default;
 
@@ -62,24 +56,18 @@ private:
     {
         // if command handler is also in use then we add some commands for using the var display
         #ifdef COMMANDHANDLER_H
-        //* adding commands for live vars to the command prompt
-        Command::Handler::addCommand(Command::command("lVars", "Contains commands for live variables", {Command::print, "Invalid command\nTrying using \"help lVars\""}, 
-            //* sub commands for the lVars
-            {
-            Command::command("open", "Displays the live variables", {VarDisplay::setVisible}),
-            Command::command("close", "Hides the display for live variables", {VarDisplay::setVisible, false})}));
+        tguiCommon::ChildWindow::createOpenCloseCommand("lVars", m_parent);
         LiveVar::initCommand();
         #endif
     }
 
-    static std::map<std::string, float> _vars;
-    static bool _varChanged;
+    static std::map<std::string, float> m_vars;
+    static bool m_varChanged;
 
-    static tgui::ChildWindow::Ptr _parent;
-    /// @brief the height of the parent before being minimized
-    static float _parentHeight;
-    static tgui::RichTextLabel::Ptr _varLabel;
-    static tgui::ScrollablePanel::Ptr _scrollPanel;
+    static tguiCommon::ChildWindow m_windowHandler;
+    static tgui::ChildWindow::Ptr m_parent;
+    static tgui::RichTextLabel::Ptr m_varLabel;
+    static tgui::ScrollablePanel::Ptr m_scrollPanel;
 };
 
 #endif

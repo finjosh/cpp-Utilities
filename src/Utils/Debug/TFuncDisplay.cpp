@@ -1,118 +1,83 @@
 #include "Utils/Debug/TFuncDisplay.hpp"
 
-tgui::ChildWindow::Ptr TFuncDisplay::_parent = nullptr;
-tgui::ListView::Ptr TFuncDisplay::_list = nullptr;
-float TFuncDisplay::_parentHeight = 0.f;
+tguiCommon::ChildWindow TFuncDisplay::m_windowHandler;
+tgui::ChildWindow::Ptr TFuncDisplay::m_parent = nullptr;
+tgui::ListView::Ptr TFuncDisplay::m_list = nullptr;
 
 void TFuncDisplay::init(tgui::Gui& gui)
 {
-    _parent = tgui::ChildWindow::create("Terminating Functions", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
-    gui.add(_parent);
+    m_parent = tgui::ChildWindow::create("Terminating Functions", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
+    gui.add(m_parent);
     
-    _parent->onSizeChange([]()
-    { 
-        if (int(_parent->getSize().y) > int(_parent->getSharedRenderer()->getTitleBarHeight()))
-        {    
-            _parentHeight = _parent->getSharedRenderer()->getTitleBarHeight();
-            _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
-        }
-    });
-    _parent->setSize({"20%","20%"});
-    _parent->setPosition({"70%","0%"});
-    _parent->setResizable(true);
-    _parent->onClosing(_close);
-    _parent->onMinimize(minimize);
-    _parent->onMaximize(maximize);
+    m_parent->setSize({"20%","20%"});
+    m_parent->setPosition({"70%","0%"});
+    m_parent->setResizable(true);
+    m_windowHandler.setMinimize_Maximize(m_parent);
+    m_windowHandler.setSoftClose(m_parent);
     setVisible(false);
 
-    _list = tgui::ListView::create();
-    _parent->add(_list);
-    _list->setSize({"100%","100%"});
-    _list->addColumn("Function Name");
-    _list->setColumnExpanded(0, true);
-    _list->addColumn("    Total Time    ");
-    _list->setColumnAutoResize(1, true);
-    _list->addColumn("    Max Time    ");
-    _list->setColumnAutoResize(2, true);
-    _list->setResizableColumns(true);
-    _list->setAutoScroll(false);
-    _list->setFocusable(false);
-    _list->setMultiSelect(false);
+    m_list = tgui::ListView::create();
+    m_parent->add(m_list);
+    m_list->setSize({"100%","100%"});
+    m_list->addColumn("Function Name");
+    m_list->setColumnExpanded(0, true);
+    m_list->addColumn("    Total Time    ");
+    m_list->setColumnAutoResize(1, true);
+    m_list->addColumn("    Max Time    ");
+    m_list->setColumnAutoResize(2, true);
+    m_list->setResizableColumns(true);
+    m_list->setAutoScroll(false);
 
     initCommands();
 }
 
 void TFuncDisplay::close()
 {
-    _parent = nullptr;
-    _list = nullptr;
+    m_parent = nullptr;
+    m_list = nullptr;
 }
 
 void TFuncDisplay::update()
 {
-    if (!_parent->isVisible() || isMinimized())
+    if (!m_parent->isVisible() || m_windowHandler.isMinimized(m_parent))
         return;
 
-    float scrollPositionV = _list->getVerticalScrollbarValue();
-    float scrollPositionH = _list->getHorizontalScrollbarValue();
+    float scrollPositionV = m_list->getVerticalScrollbarValue();
+    float scrollPositionH = m_list->getHorizontalScrollbarValue();
 
-    _list->removeAllItems();
+    m_list->removeAllItems();
     for (auto funcData: TerminatingFunction::getStringData())
     {
-        _list->addItem({tgui::String(funcData.front()), tgui::String(*++funcData.begin()), tgui::String(funcData.back())});
+        m_list->addItem({tgui::String(funcData.front()), tgui::String(*++funcData.begin()), tgui::String(funcData.back())});
     }
 
-    _list->setVerticalScrollbarValue(scrollPositionV);
-    _list->setHorizontalScrollbarValue(scrollPositionH);
+    m_list->setVerticalScrollbarValue(scrollPositionV);
+    m_list->setHorizontalScrollbarValue(scrollPositionH);
 }
 
 void TFuncDisplay::setVisible(bool visible)
 {
     if (visible)
     {
-        _parent->setVisible(true);
-        _parent->setEnabled(true);
-        _parent->moveToFront();
+        m_parent->setVisible(true);
+        m_parent->setEnabled(true);
+        m_parent->moveToFront();
     }
     else
     {
-        _parent->setVisible(false);
-        _parent->setEnabled(false);
+        m_parent->setVisible(false);
+        m_parent->setEnabled(false);
     }
 }
 
 bool TFuncDisplay::isVisible()
 {
-    return _parent->isVisible();
+    return m_parent->isVisible();
 }
 
-void TFuncDisplay::minimize()
+void TFuncDisplay::resetColumnSizes()
 {
-    setVisible(true);
-
-    // adding the ability to maximize the TFuncDisplay without using shortcut
-    _parentHeight = _parent->getSize().y;
-    _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
-
-    // reducing the height of the window
-    _parent->setHeight(_parent->getSharedRenderer()->getTitleBarHeight());
-}
-
-void TFuncDisplay::maximize()
-{
-    _parent->setHeight(_parentHeight);
-    _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
-}
-
-bool TFuncDisplay::isMinimized()
-{
-    return int(_parent->getSize().y) == int(_parent->getSharedRenderer()->getTitleBarHeight());
-}
-
-void TFuncDisplay::_close(bool* abortTguiClose)
-{
-    (*abortTguiClose) = true;
-
-    _parent->setEnabled(false);
-    _parent->setVisible(false);
+    m_list->setColumnExpanded(0, true);
+    m_list->setColumnAutoResize(1, true);
+    m_list->setColumnAutoResize(2, true);
 }

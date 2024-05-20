@@ -102,7 +102,7 @@ public:
             //* sub commands for the lVars
             {
             Command::command("get", "[Name] | Gets the value for the given variable", {[](Command::Data* data){
-                float temp = LiveVar::getValue(data->getTokens(0));
+                float temp = LiveVar::getValue(data->getTokensStr());
                 if (temp == std::numeric_limits<float>::infinity())
                 {
                     data->setReturnStr("Value does not exist");
@@ -115,7 +115,7 @@ public:
                 float value;
                 if (!Command::isValidInput<float>("Invalid amount entered", *data, data->getToken(1), value, std::numeric_limits<float>::infinity()))
                     return;
-                if (LiveVar::setValue(data->getTokens(0), value))
+                if (LiveVar::setValue(data->getTokensStr(), value))
                 {
                     data->setReturnStr("Variable successfully set");
                     data->setReturnColor({0,255,0});
@@ -127,7 +127,7 @@ public:
             Command::command("create", "[Name] [initValue = 0] | Creates a new live variable", {[](Command::Data* data){
                 float value = StringHelper::toFloat(data->getToken(data->getNumTokens()-1), 0);
                 
-                if (data->getToken(0) != "" && !LiveVar::initVar(data->getTokens(0, data->getNumTokens()-2), value))
+                if (data->getToken(0) != "" && !LiveVar::initVar(data->getTokensStr(0, data->getNumTokens()-2), value))
                 {
                     data->setReturnStr("Variable already exists");
                     data->setReturnColor(Command::INVALID_INPUT_COLOR);
@@ -137,7 +137,7 @@ public:
                 data->setReturnColor({0,255,0});
             }}),
             Command::command("remove", "[Name] | Removes the live variable if it exists", {[](Command::Data* data){
-                if (LiveVar::removeVar(data->getTokens(0)))
+                if (LiveVar::removeVar(data->getTokensStr()))
                 {
                     data->setReturnStr("Variable successfully removed");
                     data->setReturnColor({0,255,0});

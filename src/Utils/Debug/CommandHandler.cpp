@@ -65,7 +65,7 @@ const Tokens& Data::getTokens() const
     return this->m_tokens;
 }
 
-std::string Data::getTokens(const size_t& begin, const size_t& end) const
+std::string Data::getTokensStr(const size_t& begin, const size_t& end) const
 {
     std::string rtn;
     size_t last = end <= this->getNumTokens()-1 ? end : this->getNumTokens()-1;
@@ -179,13 +179,13 @@ void Data::deepParseCommand()
 // * Command
 
 command::command(const std::string& name, const std::string& description, const funcHelper::funcDynamic<Data*>& func, const std::list<command>& subCommands) :
-    _name(name), _description(description), _function(func), _subCommands(subCommands)
+    m_name(name), m_description(description), m_function(func), m_subCommands(subCommands)
 {
-    _subCommands.sort();
+    m_subCommands.sort();
 }
 
 command::command(const command& command) :
-    _name(command.getName()), _description(command.getDescription()), _function(command._function), _subCommands(command._subCommands)
+    m_name(command.getName()), m_description(command.getDescription()), m_function(command.m_function), m_subCommands(command.m_subCommands)
 {}
 
 bool command::operator< (const command& command) const
@@ -220,29 +220,29 @@ bool command::operator== (const std::string& str) const
 
 std::string command::getName() const
 {
-    return this->_name;
+    return this->m_name;
 }
 
 std::string command::getDescription() const
 {
-    return this->_description;
+    return this->m_description;
 }
 
 std::string command::getNameDescription(const size_t& maxLength) const
 {
-    return this->_name + " - " + this->_description.substr(0, maxLength) + (this->_description.size() > maxLength ? "..." : "");
+    return this->m_name + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
 }
 
 std::string command::getSubCommandsNameDescription(const size_t& maxLength, size_t subCommandIndex) const
 {
     std::string rtn;
-    std::for_each(_subCommands.begin(), _subCommands.end(), [&rtn, &maxLength, &subCommandIndex](const command& cmd)
+    std::for_each(m_subCommands.begin(), m_subCommands.end(), [&rtn, &maxLength, &subCommandIndex](const command& cmd)
     {
         for (size_t i = 0; i < subCommandIndex; i++)
         {
             rtn += TAB_STR;
         }
-        rtn += "~ " + cmd.getNameDescription() + "\n";
+        rtn += "~ " + cmd.getNameDescription(maxLength) + "\n";
         rtn += cmd.getSubCommandsNameDescription(maxLength, ++subCommandIndex);
         --subCommandIndex;
     });
@@ -251,34 +251,119 @@ std::string command::getSubCommandsNameDescription(const size_t& maxLength, size
 
 void command::invoke(Data& data)
 {
-    this->_function.invoke(&data);
+    this->m_function.invoke(&data);
 }
 
 // * -------
 
 // * Command Handler
 
-void Handler::addCommand(const command& command)
+void Command::Handler::addCommand(const command& command, const bool& replace)
 {
-    _addCommand(command, _commands);
+    m_addCommand(command, m_commands, replace);
 }
 
-void Handler::_addCommand(const command& cmd, std::list<command>& _commands)
+void Command::Handler::m_addCommand(const command& cmd, std::list<command>& m_commands, const bool& replace)
 {
-    auto lastCommand = std::find(_commands.begin(), _commands.end(), cmd);
+    auto lastCommand = std::find(m_commands.begin(), m_commands.end(), cmd);
     // if the command is not already in the list add it
-    if (lastCommand == _commands.end())
+    if (lastCommand == m_commands.end())
     {
-        _commands.push_back(cmd);
-        _commands.sort();
+        m_commands.push_back(cmd);
+        m_commands.sort();
         return;
     }
 
-    // if the command is in the list try adding its sub commands to the current ones sub commands
-    for (auto subCommand: cmd._subCommands)
+    if (replace)
     {
-        _addCommand(subCommand, lastCommand->_subCommands);
+        m_commands.erase(lastCommand);
+        m_commands.push_back(cmd);
+        m_commands.sort();
+        return;
     }
+    // if the command is in the list try adding its sub commands to the current ones sub commands
+    for (auto subCommand: cmd.m_subCommands)
+    {
+        m_addCommand(subCommand, lastCommand->m_subCommands, replace);
+    }
+}
+
+bool Command::Handler::addSubCommand(const std::vector<std::string>& commandPath, const command& command, const bool& replace)
+{
+    Command::command* cmd = m_getCommand(commandPath);
+    if (cmd == nullptr)
+        return false;
+
+    m_addCommand(command, cmd->m_subCommands, replace);
+
+    return true;
+}
+
+bool Command::Handler::addSubCommand(const std::string& strCommand, const command& command, const bool& replace)
+{
+    return addSubCommand(Command::Data(strCommand).getTokens(), command, replace);
+}
+
+void Command::Handler::removeAllCommands()
+{
+    m_commands.clear();
+    onAllCommandsRemoved.invoke(m_threadSafeEvents);
+}
+
+bool Command::Handler::removeCommand(const std::vector<std::string>& commandPath)
+{
+    std::list<command>* lastList = &m_commands;
+    std::list<command>* curList = &m_commands;
+    std::list<command>::iterator curCommand = m_commands.end();
+    size_t i = 0;
+    while (commandPath.size() > i)
+    {
+        curCommand = std::find_if(curList->begin(), curList->end(), [&commandPath, &i](const command& cmd){ return cmd.getName() == commandPath[i]; });
+        if (curCommand == curList->end())
+            return false;
+        else
+        {
+            i++;
+            lastList = curList;
+            curList = &(curCommand->m_subCommands);
+        }
+    }
+
+    if (i != 0)
+        lastList->erase(curCommand);
+
+    return true;
+}
+
+bool Command::Handler::removeCommand(const std::string& strCommandPath)
+{
+    return Command::Handler::removeCommand(Command::Data(strCommandPath).getTokens());
+}
+
+command* Command::Handler::m_getCommand(const std::vector<std::string>& commandPath, std::list<command>* list)
+{
+    std::list<command>::iterator curCommand = m_commands.end();
+    size_t i = 0;
+    while (commandPath.size() > i)
+    {
+        curCommand = std::find_if(list->begin(), list->end(), [&commandPath, &i](const command& cmd){ return cmd.getName() == commandPath[i]; });
+        if (curCommand == list->end())
+            return nullptr;
+
+        i++;
+        list = &(curCommand->m_subCommands);
+    }
+    return &(*curCommand);
+}
+
+void Command::Handler::setThreadSafeEvents(const bool& threadSafe)
+{
+    m_threadSafeEvents = threadSafe;
+}
+
+bool Command::Handler::isThreadSafeEvents()
+{
+    return m_threadSafeEvents;
 }
 
 std::list<std::string> Handler::autoFillSearch(const std::string& search)
@@ -309,19 +394,19 @@ std::list<std::string> Handler::autoFillSearch(const std::string& search)
         if (input.getNumTokens() == 0) return rtn; // checking if the only thing imputed was help
     }
 
-    std::list<command>::iterator commandsIter = _commands.begin();
-    std::list<command>* commandsList = &_commands;
+    std::list<command>::iterator commandsIter = m_commands.begin();
+    std::list<command>* commandsList = &m_commands;
 
     // finding which list to find auto fill for
     {
-        std::list<command>* tempList = &_commands;
+        std::list<command>* tempList = &m_commands;
         std::list<command>::iterator i = commandsIter;
         while (true)
         {
             i = std::find_if(tempList->begin(), tempList->end(), [&input](const Command::command& v){return StringHelper::toLower_copy(v.getName()) == input.getToken(0);});
             if (i != tempList->end() && input.getNumTokens() > 1)
             {
-                tempList = &i->_subCommands;
+                tempList = &i->m_subCommands;
                 input.removeToken(0);
             }
             else
@@ -367,7 +452,7 @@ Data Handler::callCommand(const std::string& commandStr)
         {
             // no command specific help
             std::string rtn = "help [Command] - can be used on every command to show it's full description and it's sub commands if there are any\n\n";
-            std::for_each(_commands.begin(), _commands.end(), [&rtn](const command& cmd){ rtn += "~ " + cmd.getNameDescription(50) + "\n"; });
+            std::for_each(m_commands.begin(), m_commands.end(), [&rtn](const command& cmd){ rtn += "~ " + cmd.getNameDescription(64) + "\n"; });
             input.setReturnStr(rtn);
             return input;
         }
@@ -376,29 +461,17 @@ Data Handler::callCommand(const std::string& commandStr)
             input.removeToken(0); // remove help from the tokens
             
             std::string rtn;
-            std::list<command>::iterator curCommand = std::find(_commands.begin(), _commands.end(), input.getToken(0));
-            
-            if (curCommand == _commands.end()) 
+            command* cmd = m_getCommand(input.getTokens());
+            if (cmd == nullptr) 
             {
                 input.setReturnStr("The given command could not be found\nTry using \"help\" for a list of commands");
                 return input;
             }
 
-            input.removeToken(0); // remove the current command from the tokens to find check if there is another to look for
-            while (input.getNumTokens() > 0 || curCommand->_subCommands.size() == 0)
+            if (cmd != nullptr) // only if the entire command was found
             {
-                auto temp = std::find(curCommand->_subCommands.begin(), curCommand->_subCommands.end(), input.getToken(0));
-
-                if (temp == curCommand->_subCommands.end()) break;
-
-                curCommand = temp;
-                input.removeToken(0);
-            }
-
-            if (input.getNumTokens() == 0) // only if every token was found display the info for the command and its sub commands
-            {
-                rtn += "~ " + curCommand->getNameDescription() + "\n";
-                rtn += curCommand->getSubCommandsNameDescription(50);
+                rtn += "~ " + cmd->getNameDescription() + "\n";
+                rtn += cmd->getSubCommandsNameDescription(64);
             }
 
             input.setReturnStr(rtn);           
@@ -406,19 +479,19 @@ Data Handler::callCommand(const std::string& commandStr)
         }
     }
 
-    std::list<command>::iterator curCommand = std::find(_commands.begin(), _commands.end(), input.getToken(0));
-    if (curCommand == _commands.end()) 
+    std::list<command>::iterator curCommand = std::find(m_commands.begin(), m_commands.end(), input.getToken(0));
+    if (curCommand == m_commands.end()) 
     {
         input.setReturnStr("Try using \"help\" for a list of commands");
         return input;
     }
 
     input.removeToken(0); // remove the current command from the tokens to check if there is another to look for
-    while (input.getNumTokens() > 0 || curCommand->_subCommands.size() == 0)
+    while (input.getNumTokens() > 0 || curCommand->m_subCommands.size() == 0)
     {
-        auto temp = std::find(curCommand->_subCommands.begin(), curCommand->_subCommands.end(), input.getToken(0));
+        auto temp = std::find(curCommand->m_subCommands.begin(), curCommand->m_subCommands.end(), input.getToken(0));
 
-        if (temp == curCommand->_subCommands.end()) break;
+        if (temp == curCommand->m_subCommands.end()) break;
 
         curCommand = temp;
         input.removeToken(0);
@@ -434,8 +507,8 @@ Data Handler::callCommand(const std::string& commandStr)
 bool Command::Handler::isCommand(const std::string& commandStr)
 {
     Data input(commandStr);
-    std::list<command>::iterator curCommand = std::find(_commands.begin(), _commands.end(), input.getToken(0));
-    if (curCommand == _commands.end()) 
+    std::list<command>::iterator curCommand = std::find(m_commands.begin(), m_commands.end(), input.getToken(0));
+    if (curCommand == m_commands.end()) 
     {
         return false;
     }
@@ -443,6 +516,8 @@ bool Command::Handler::isCommand(const std::string& commandStr)
     return true;
 }
 
-std::list<command> Handler::_commands;
+std::list<command> Command::Handler::m_commands;
+EventHelper::Event Command::Handler::onAllCommandsRemoved;
+bool Command::Handler::m_threadSafeEvents = false;
 
 // * ---------------

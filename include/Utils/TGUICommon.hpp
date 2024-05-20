@@ -15,11 +15,9 @@ namespace tguiCommon
 class ChildWindow
 {
 public:
-    /// @brief closes the window without removing it from the gui
-    /// @note you must give the child window ptr while adding to the "onClosing" event
-    /// @param abortTGUIClose used by the tgui event
-    /// @param window used by this function to disable and make the window invisible
-    static void closeWindow(tgui::ChildWindow::Ptr window, bool* abortTguiClose);
+    /// @brief Makes the window not visible and does NOT remove it from the UI
+    /// @param window the window to update
+    static void setSoftClose(tgui::ChildWindow::Ptr window);
     /// @brief sets the given window visible or not
     /// @note enables, sets visible, and moves to front
     /// @param window the window to set state
@@ -36,6 +34,10 @@ public:
     /// @note does NOT work with setMaximizeWindow
     /// @warning this must be accessible until the events are reset on window OR the window is removed from the GUI
     void setMinimize_Maximize(tgui::ChildWindow::Ptr window);
+    /// @brief checks if the window is minimized
+    /// @note the window is minimized if the maximize button is showing
+    /// @param window the window to check
+    static bool isMinimized(tgui::ChildWindow::Ptr window);
     #ifdef COMMANDHANDLER_H
     /// @brief creates the command for opening and closing this window
     /// @note uses the set visible command (requires the window to always be in the GUI)
@@ -53,6 +55,7 @@ protected:
     void _maximizeWindow(tgui::ChildWindow::Ptr window);
     void _minimizeWindow(tgui::ChildWindow::Ptr window);
     void _minimizeMaximize(tgui::ChildWindow::Ptr window);
+    static void _softClose(tgui::ChildWindow::Ptr window, bool* abortTguiClose);
 
 private:
     tgui::Layout2d m_position; // the position when the window was minimized

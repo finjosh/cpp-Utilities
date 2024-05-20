@@ -1,12 +1,12 @@
 #include "Utils/Debug/VarDisplay.hpp"
 
-std::map<std::string, float> VarDisplay::_vars;
-bool VarDisplay::_varChanged = false;
+std::map<std::string, float> VarDisplay::m_vars;
+bool VarDisplay::m_varChanged = false;
 
-tgui::ChildWindow::Ptr VarDisplay::_parent = nullptr;
-float VarDisplay::_parentHeight = 0;
-tgui::RichTextLabel::Ptr VarDisplay::_varLabel = nullptr;
-tgui::ScrollablePanel::Ptr VarDisplay::_scrollPanel = nullptr;
+tguiCommon::ChildWindow VarDisplay::m_windowHandler;
+tgui::ChildWindow::Ptr VarDisplay::m_parent = nullptr;
+tgui::RichTextLabel::Ptr VarDisplay::m_varLabel = nullptr;
+tgui::ScrollablePanel::Ptr VarDisplay::m_scrollPanel = nullptr;
 
 void VarDisplay::init(tgui::Gui& gui)
 {
@@ -25,60 +25,49 @@ void VarDisplay::init(tgui::Gui& gui)
         VarDisplay::removeVar(name);
     });
 
-    _parent = tgui::ChildWindow::create("Debugging Vars", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
-    gui.add(_parent);
+    m_parent = tgui::ChildWindow::create("Debugging Vars", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
+    m_windowHandler.setMinimize_Maximize(m_parent);
+    m_windowHandler.setSoftClose(m_parent);
+    gui.add(m_parent);
 
-    _parent->onClosing(&_closeWindow);
-    _parent->setSize({"10%","15%"});
-    _parent->setPosition({"90%", "0%"});
-    _parent->setResizable(true);
-    _parent->onMinimize(&VarDisplay::minimizeWindow);
-    _parent->onMaximize(&VarDisplay::maximizeWindow);
-    _parent->add(tgui::ScrollablePanel::create({_parent->getSize() - tgui::Vector2f(0, _parent->getSharedRenderer()->getTitleBarHeight())}));
-    _scrollPanel = _parent->getWidgets().back()->cast<tgui::ScrollablePanel>();
-    _parent->onSizeChange([]()
-    { 
-        _scrollPanel->setSize(_parent->getSize() - tgui::Vector2f(0, _parent->getSharedRenderer()->getTitleBarHeight())); 
-        if (int(_parent->getSize().y) > int(_parent->getSharedRenderer()->getTitleBarHeight()))
-        {    
-            _parentHeight = _parent->getSharedRenderer()->getTitleBarHeight();
-            _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
-        }
-    });
+    m_parent->setSize({"10%","15%"});
+    m_parent->setPosition({"90%", "0%"});
+    m_parent->setResizable(true);
+    m_scrollPanel = tgui::ScrollablePanel::create({m_parent->getSize() - tgui::Vector2f(0, m_parent->getSharedRenderer()->getTitleBarHeight())});
+    m_parent->add(m_scrollPanel);
+    m_scrollPanel->setSize({"100%", "100%"});
 
-    _varLabel = tgui::RichTextLabel::create();
-    _scrollPanel->add(_varLabel);
-    _varLabel->setAutoSize(true);
-    _varLabel->onSizeChange([](){ VarDisplay::_scrollPanel->setContentSize(VarDisplay::_varLabel->getSize()); });
+    m_varLabel = tgui::RichTextLabel::create();
+    m_scrollPanel->add(m_varLabel);
+    m_varLabel->onSizeChange([](){ VarDisplay::m_scrollPanel->setContentSize(VarDisplay::m_varLabel->getSize()); });
 
-    bool temp;
-    _closeWindow(&temp);
+    setVisible(false);
 
     initCommands();
 }
 
 void VarDisplay::close()
 {
-    _parent = nullptr;
-    _varLabel = nullptr;
-    _scrollPanel = nullptr;
+    m_parent = nullptr;
+    m_varLabel = nullptr;
+    m_scrollPanel = nullptr;
 }
 
 void VarDisplay::Update()
 {
-    if (_varChanged)
+    if (m_varChanged)
     {
         std::string str = "";
-        for (auto i: _vars)
+        for (auto i: m_vars)
         {
             str += ("<b><i>" + i.first + "</i></b> = " + std::to_string(i.second) + "\n"); 
         }
         if (str.length() > 0)
             str.erase(--str.end());
         
-        _varLabel->setText(str);
+        m_varLabel->setText(str);
 
-        _varChanged = false;
+        m_varChanged = false;
     }
 }
 
@@ -86,65 +75,38 @@ void VarDisplay::setVisible(bool visible)
 {
     if (visible)
     {
-        _parent->setVisible(true);
-        _parent->setEnabled(true);
-        _parent->moveToFront();
+        m_parent->setVisible(true);
+        m_parent->setEnabled(true);
+        m_parent->moveToFront();
     }
     else
     {
-        _parent->setVisible(false);
-        _parent->setEnabled(false);
+        m_parent->setVisible(false);
+        m_parent->setEnabled(false);
     }
 }
 
 void VarDisplay::addVar(const std::string& name, const float& value)
 {
-    _varChanged = true;
+    m_varChanged = true;
 
-    _vars.insert({name, value});
+    m_vars.insert({name, value});
 }
 
 void VarDisplay::setVar(const std::string& name, const float& value)
 {
-    auto iter = _vars.find(name);
+    auto iter = m_vars.find(name);
 
-    if (iter == _vars.end()) return;
+    if (iter == m_vars.end()) return;
 
-    _varChanged = true;
+    m_varChanged = true;
     iter->second = value;
 }
 
 void VarDisplay::removeVar(const std::string& name)
 {
-    if (_vars.erase(name))
+    if (m_vars.erase(name))
     {
-        _varChanged = true;
+        m_varChanged = true;
     }
-}
-
-void VarDisplay::_closeWindow(bool* abortTguiClose)
-{
-    if (abortTguiClose != nullptr)
-        (*abortTguiClose) = true;
-
-    _parent->setEnabled(false);
-    _parent->setVisible(false);
-}
-
-void VarDisplay::minimizeWindow()
-{
-    setVisible();
-
-    // adding the ability to maximize the VarDisplay without using shortcut
-    _parentHeight = _parent->getSize().y;
-    _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
-
-    // reducing the height of the window
-    _parent->setHeight(_parent->getSharedRenderer()->getTitleBarHeight());
-}
-
-void VarDisplay::maximizeWindow()
-{
-    _parent->setHeight(_parentHeight);
-    _parent->setTitleButtons(tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
 }

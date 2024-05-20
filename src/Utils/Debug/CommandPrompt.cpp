@@ -1,5 +1,7 @@
 #include "Utils/Debug/CommandPrompt.hpp"
 
+tguiCommon::ChildWindow Command::Prompt::m_windowHandler;
+
 tgui::ChildWindow::Ptr Command::Prompt::m_parent{nullptr};
 tgui::EditBox::Ptr Command::Prompt::m_textBox{nullptr};
 tgui::ListBox::Ptr Command::Prompt::m_autoFillList{nullptr};
@@ -9,9 +11,6 @@ std::list<std::string> Command::Prompt::m_commandHistory;
 size_t Command::Prompt::m_maxHistory = 64;
 
 bool Command::Prompt::m_allowPrint = true;
-
-tgui::Layout2d Command::Prompt::m_parentSize{"25%", "25%"};
-tgui::Layout2d Command::Prompt::m_parentPos{0,0};
 
 void Command::Prompt::init(tgui::Gui& sfmlGui)
 {
@@ -163,13 +162,10 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
         });
     }
 
-    // * events
-    m_parent->onSizeChange(&Command::Prompt::ResizePrompt);
-    m_parent->onClosing(&Command::Prompt::_close);
-    m_parent->setMaximumSize(m_parent->getParentGui()->getView().getSize());
-    m_parent->onMaximize(&Command::Prompt::MaximizePrompt);
-
-    _close(nullptr);
+    //* setting up the maximize functionality
+    m_windowHandler.setMaximize(m_parent);
+    m_windowHandler.setSoftClose(m_parent);
+    setVisible(false);
 }
 
 void Command::Prompt::close()
@@ -258,15 +254,6 @@ void Command::Prompt::setVisible(bool visible)
     }
 }
 
-void Command::Prompt::_close(bool* abortTguiClose)
-{
-    m_parent->setEnabled(false);
-    m_parent->setVisible(false);
-
-    if (abortTguiClose != nullptr)
-        (*abortTguiClose) = true;
-}
-
 void Command::Prompt::print(const tgui::String& str, const Command::color& color)
 {
     if (m_chatBox && m_allowPrint)
@@ -281,33 +268,6 @@ bool Command::Prompt::isPrintAllowed()
 void Command::Prompt::allowPrint(const bool& print)
 {
     m_allowPrint = print;
-}
-
-void Command::Prompt::MaximizePrompt()
-{
-    if (m_parent->getFullSize() == m_parentSize.getValue())
-    {
-        m_parentSize = m_parent->getSizeLayout();
-        m_parentPos = m_parent->getPositionLayout();
-        m_parent->setPosition({0,0});
-        m_parent->setPositionLocked(true);
-        m_parent->onSizeChange.setEnabled(false);
-        m_parent->setSize({"100%", "100%"});
-        m_parent->onSizeChange.setEnabled(true);
-    }
-    else
-    {
-        m_parent->setSize(m_parentSize);
-        m_parent->setPosition(m_parentPos);
-        m_parent->setPositionLocked(false);
-        ResizePrompt();
-    }
-}
-
-void Command::Prompt::ResizePrompt()
-{
-    if (m_parent->getSizeLayout().x.toString() != "100%")
-        m_parentSize = m_parent->getFullSize();
 }
 
 void Command::Prompt::UpdateAutoFill()
@@ -338,6 +298,10 @@ void Command::Prompt::AutoFill(const bool& updateAutoFill)
     m_textBox->setFocused(true);
     m_textBox->onFocus.setEnabled(true);
     Command::Data temp(m_textBox->getText().toStdString());
+    
+    if (m_textBox->getText().back() == ' ')
+        temp.addToken("");
+
     size_t lastToken = temp.getNumTokens()-1;
     if (temp.getToken(lastToken).starts_with('('))
     {
@@ -350,18 +314,7 @@ void Command::Prompt::AutoFill(const bool& updateAutoFill)
         else
             temp.setToken(lastToken, m_autoFillList->getSelectedItem().toStdString());
     }
-    m_textBox->setText(temp.getTokens(0));
-    // tgui::String temp = m_textBox->getText();
-    // size_t subCommandPos = temp.find_last_of('('); // if there is a sub command
-    // size_t endOfLastToken = temp.find_last_not_of(' ');
-    // if (subCommandPos != std::string::npos && subCommandPos > endOfLastToken)
-    // {
-    //     m_textBox->setText(temp.substr(0, subCommandPos + 1) + m_autoFillList->getSelectedItem());
-    // }
-    // else
-    // {
-    //     m_textBox->setText(temp.substr(0, endOfLastToken + 1) + m_autoFillList->getSelectedItem());
-    // }
+    m_textBox->setText(temp.getTokensStr());
     if (updateAutoFill)
         UpdateAutoFill();
 }

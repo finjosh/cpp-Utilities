@@ -82,7 +82,7 @@ public:
     /// @brief Call all connected functions
     ///
     /// @param threadSafe if true this event will be called on EventHelper::Event::ThreadSafe::update() 
-    /// @param removeOtherInstances fi true will remove any other thread safe calls of this event before adding
+    /// @param removeOtherInstances if true will remove any other thread safe calls of this event before adding
     ///
     /// @return True when at least one function was called
     bool invoke(bool threadSafe = false, bool removeOtherInstances = false);

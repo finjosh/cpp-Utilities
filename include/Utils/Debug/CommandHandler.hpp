@@ -5,6 +5,7 @@
 
 #include "Utils/funcHelper.hpp"
 #include "Utils/StringHelper.hpp"
+#include "Utils/EventHelper.hpp"
 
 #include <map>
 #include <vector>
@@ -63,7 +64,7 @@ public:
     /// @param begin the first index
     /// @param end the last index
     /// @returns the tokens in the given range combined
-    std::string getTokens(const size_t& begin, const size_t& end = std::numeric_limits<size_t>().max()) const;
+    std::string getTokensStr(const size_t& begin = 0, const size_t& end = std::numeric_limits<size_t>().max()) const;
     /// @param index the index of the wanted token
     /// @returns if there is a token at the index returns token else returns a string with nothing
     std::string getToken(const size_t& index = 0) const;
@@ -191,13 +192,13 @@ public:
     void invoke(Data& data);
 
 protected:
-    std::list<command> _subCommands;
+    std::list<command> m_subCommands;
 
 private:
-    std::string _name;
-    std::string _description;
+    std::string m_name;
+    std::string m_description;
     
-    funcHelper::funcDynamic<Data*> _function;
+    funcHelper::funcDynamic<Data*> m_function;
 
     friend Handler; // allowing Handler to access private and protected vars
 };
@@ -205,9 +206,28 @@ private:
 class Handler
 {
 public:
-    /// @brief if there already exists a command that was givin it will not be added
-    /// @note if there exists a command that was added but its sub commands are not already added it will be added
-    static void addCommand(const command& command);
+    /// @note if there exists a command that was added but its sub commands are not already added it will be added (sub commands will be added even if the main was skiped)
+    /// @param replace if true any duplicate commands will be replaced otherwise they will be skiped
+    static void addCommand(const command& command, const bool& replace = false);
+
+    /// @param commandPath the path to the parent command
+    /// @param replace if true any duplicate commands will be replaced otherwise they will be skiped (sub commands will be added even if the main was skiped)
+    /// @returns true for valid path OR false for invalid path
+    static bool addSubCommand(const std::vector<std::string>& commandPath, const command& command, const bool& replace = false);
+    /// @param strCommandPath the path to the parent command
+    /// @param replace if true any duplicate commands will be replaced otherwise they will be skiped (sub commands will be added even if the main was skiped)
+    /// @returns true for valid path OR false for invalid path
+    static bool addSubCommand(const std::string& strCommandPath, const command& command, const bool& replace = false);
+
+    static void removeAllCommands();
+    /// @brief removes the given command and all of its sub commands
+    /// @param commandPath the path to the command that is wanted to be removed
+    /// @returns true if the command was removed OR false if not found
+    static bool removeCommand(const std::vector<std::string>& commandPath);
+    /// @brief removes the given command and all of its sub commands
+    /// @param strCommand the command that is wanted to be removed WITHOUT any inputs
+    /// @returns true if the command was removed OR false if not found
+    static bool removeCommand(const std::string& strCommand);
 
     /**
      * @brief used for auto fill / command predictions
@@ -228,15 +248,27 @@ public:
     /// @returns if the first token is a command
     static bool isCommand(const std::string& commandStr);
 
+    /// @note called when all commands are removed at once using "removeAllCommands"
+    static EventHelper::Event onAllCommandsRemoved;
+    static void setThreadSafeEvents(const bool& threadSafe = true);
+    static bool isThreadSafeEvents();
+
 protected:
     /// @param cmd the command that is wanted to be added
     /// @param _commands the commands we are trying to add to
-    static void _addCommand(const command& cmd, std::list<command>& _commands);
+    /// @param replace if the command should be replaced if there is a duplicate
+    static void m_addCommand(const command& cmd, std::list<command>& _commands, const bool& replace);
+
+    /// @brief tries to get the command from the given path
+    /// @param list the list to search for the given command path
+    /// @returns a pointer to the command or nullptr if not found
+    static command* m_getCommand(const std::vector<std::string>& commandPath, std::list<command>* list = &Command::Handler::m_commands);
 
 private:
     inline Handler() = default;
 
-    static std::list<command> _commands;
+    static std::list<command> m_commands;
+    static bool m_threadSafeEvents;
 };
 
 }

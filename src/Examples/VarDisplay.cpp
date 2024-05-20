@@ -26,24 +26,6 @@ void VarDisplayTest::test()
     {
         if (data->totalTime >= 4)
         {
-            VarDisplay::minimizeWindow();
-            return;
-        }
-        data->setRunning();
-    });
-    TFunc::Add([](TData* data)
-    {
-        if (data->totalTime >= 6)
-        {
-            VarDisplay::maximizeWindow();
-            return;
-        }
-        data->setRunning();
-    });
-    TFunc::Add([](TData* data)
-    {
-        if (data->totalTime >= 8)
-        {
             VarDisplay::setVisible(false);
             return;
         }

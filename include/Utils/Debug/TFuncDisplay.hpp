@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include "Utils/TerminatingFunction.hpp"
-
 #include "TGUI/Backend/SFML-Graphics.hpp"
 #include "TGUI/Widgets/ChildWindow.hpp"
 #include "TGUI/Widgets/ListView.hpp"
 
 #include "SFML/Graphics/RenderWindow.hpp"
+
+#include "Utils/TerminatingFunction.hpp"
+#include "Utils/TGUICommon.hpp"
 
 #if __has_include("CommandHandler.hpp")
 #include "CommandHandler.hpp" 
@@ -30,31 +31,25 @@ public:
     /// @brief closes and opens the window
     static void setVisible(bool visible = true);
     static bool isVisible();
-
-    /// @brief only shows the top bar when minimized
-    static void minimize();
-    static void maximize();
-    static bool isMinimized();
+    static void resetColumnSizes();
 
 protected:
-    /// @brief used for tgui backend
-    static void _close(bool* abortTguiClose);
-
     /// @note only creates commands if the command handler is included
     static inline void initCommands()
     {
         // if command handler is also in use then we add some commands for using the var display
-        Command::Handler::addCommand({"TFunc", "Placeholder", {}, {
-        {"open", "Opens the Terminating functions display", {TFuncDisplay::setVisible, true}},
-        {"close", "Closes the Terminating Functions display", {TFuncDisplay::setVisible, false}}}});
+        #ifdef COMMANDHANDLER_H
+        tguiCommon::ChildWindow::createOpenCloseCommand("TFunc", m_parent);
+        Command::Handler::addSubCommand("TFunc", Command::command{"resetColumnSizes", "Resets the columns to be auto sized", [](){ TFuncDisplay::resetColumnSizes(); }});
+        #endif
     }
 
 private:
     inline TFuncDisplay() = default;
 
-    static float _parentHeight;
-    static tgui::ChildWindow::Ptr _parent;
-    static tgui::ListView::Ptr _list;
+    static tguiCommon::ChildWindow m_windowHandler;
+    static tgui::ChildWindow::Ptr m_parent;
+    static tgui::ListView::Ptr m_list;
 };
 
 #endif
