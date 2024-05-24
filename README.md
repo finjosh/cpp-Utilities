@@ -92,7 +92,8 @@ Helper for testing a function or a sequence of functions runtime
 
 ### Testing UI
 
-
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/6b9b69f6-1e8e-479f-b8a2-4ed18314e3bf)
 
 ### Test Graphing UI
 
+![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/3cec6044-b57a-403e-8821-d91b25565746)
