@@ -32,6 +32,7 @@ TGUI:
 | `GraphData.hpp` | Used to store data used for Graph.hpp | SFML Color and Vector2, StringHelper.hpp |
 | `Graph.hpp` | A simple graph drawing class. Can draw any of the following Histogram, Bar, Scatter, and Line graphs. Can draw to a SFML texture or straight to the window | GraphData.hpp, StringHelper.hpp, Spline.hpp ([from here](https://github.com/Hapaxia/SelbaWard)) |
 | `TGUICommon.hpp` | Simple classes with features that I find myself using often | TGUI, CommandHandler.hpp (optional) |
+| `TestHelper.hpp` | Helper for testing a function or a sequence of functions runtime | SFML Window, SFML Graphics, TGUI, iniParser.hpp, Stopwatch.hpp, funcHelper.hpp, Graph.hpp |
 
 # A preview of a few utilities
 Note that the theme can be set to any TGUI theme, and the utilities UI will update accordingly. 
@@ -84,3 +85,14 @@ Simple Graphing class that supports line graphs, bar graphs, scatter plots and h
 ![image](https://github.com/finjosh/cpp-Utilities/assets/109707607/f360642e-9c49-4e75-855f-f4181466aea4)
 
 ![Graph](https://github.com/finjosh/cpp-Utilities/assets/109707607/c3ea1e12-fc95-45b6-94db-a03dee31ce6a)
+
+## Test Helper
+
+Helper for testing a function or a sequence of functions runtime
+
+### Testing UI
+
+
+
+### Test Graphing UI
+

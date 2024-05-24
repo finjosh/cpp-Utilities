@@ -18,12 +18,14 @@
 #include "include/Examples/CommandPrompt.hpp"
 #include "include/Examples/TFuncDisplay.hpp"
 #include "include/Examples/Graph.hpp"
+#include "include/Examples/TestHelper.hpp"
 
 using namespace std;
 using namespace sf;
 
 int main()
 {
+    TestHelperTest::test();
     funcHelperTest::test();
     EventHelperTest::test();
     StopwatchTest::test();

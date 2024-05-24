@@ -1,5 +1,6 @@
 #include "include/Examples/CommandHandler.hpp"
 
+// TODO test addSubCommand, removeAllCommands, removeCommand
 void CommandHandlerTest::test()
 {
     using namespace std;
