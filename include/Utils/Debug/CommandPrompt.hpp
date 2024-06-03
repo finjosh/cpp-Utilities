@@ -35,13 +35,13 @@ public:
 
     /// @brief only prints to the command prompt IF the command prompt is set to true
     /// @note setting command prompt to allow prints is only done through the command prompt its self during runtime
-    static void print(const tgui::String& str, const Command::color& color = Command::color());
+    static void print(const tgui::String& str, Command::color color = Command::color());
 
     static bool isPrintAllowed();
 
     /// @param print true if printing is allowed
-    static void allowPrint(const bool& print = true);
-    static void setMaxHistory(const size_t& size = 64);
+    static void allowPrint(bool print = true);
+    static void setMaxHistory(size_t size = 64);
     static size_t getMaxHistory();
     static void clearHistory();
 
@@ -54,7 +54,7 @@ protected:
 
     /// @brief commits the currently selected auto fill
     /// @param updateAutoFill if true updates the auto fill list
-    static void AutoFill(const bool& updateAutoFill = true);
+    static void AutoFill(bool updateAutoFill = true);
 
     static void addHistory(const std::string& command);
 

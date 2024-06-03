@@ -7,7 +7,7 @@ iniParser::iniParser()
     this->m_filePath = "NULL";
 }
 
-iniParser::iniParser(std::string generic_path)
+iniParser::iniParser(const std::string& generic_path)
 {
     if (std::filesystem::exists(generic_path))
     {
@@ -28,7 +28,7 @@ iniParser::~iniParser()
     }
 }
 
-void iniParser::setFilePath(std::string generic_path)
+void iniParser::setFilePath(const std::string& generic_path)
 {
     if (this->isOpen())
     {
@@ -206,7 +206,7 @@ void iniParser::CopyFile_Error()
 const std::map<std::string, std::map<std::string, std::string>>& iniParser::getLoadedData() const
 { return this->m_loadedData; }
 
-const std::map<std::string, std::string>& iniParser::getSectionData(std::string SectionName) const
+const std::map<std::string, std::string>& iniParser::getSectionData(const std::string& SectionName) const
 {
     const auto& temp = this->m_loadedData.find(SectionName);
     return (temp == this->m_loadedData.end() ? iniParser::InvalidSectionData : temp->second);
@@ -215,12 +215,9 @@ const std::map<std::string, std::string>& iniParser::getSectionData(std::string 
 bool iniParser::isSectionDataValid(const std::map<std::string, std::string>& SectionData) const
 { return (SectionData != iniParser::InvalidSectionData); }
 
-std::string iniParser::getValue(std::string SectionName, std::string keyName) const
+std::string iniParser::getValue(const std::string& SectionName, const std::string& keyName) const
 {
     if (!this->m_DataWasLoaded) return "\0\0\0";
-
-    StringHelper::trim(SectionName);
-    StringHelper::trim(keyName);
 
     auto section = this->m_loadedData.find(SectionName);
     if (section == this->m_loadedData.end())
@@ -233,16 +230,13 @@ std::string iniParser::getValue(std::string SectionName, std::string keyName) co
     return key->second;
 }
 
-std::string iniParser::getValue(std::pair<std::string, std::string> Section_Key_Name) const
+std::string iniParser::getValue(const std::pair<std::string, std::string>& Section_Key_Name) const
 { return this->getValue(Section_Key_Name.first, Section_Key_Name.second); }
 
-bool iniParser::setValue(std::string SectionName, std::string keyName, std::string keyValue)
+bool iniParser::setValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
 {
     if (!this->m_DataWasLoaded) return false;
     
-    StringHelper::trim(SectionName);
-    StringHelper::trim(keyName);
-
     auto section = this->m_loadedData.find(SectionName);
     if (section == this->m_loadedData.end())
         return false;
@@ -255,16 +249,13 @@ bool iniParser::setValue(std::string SectionName, std::string keyName, std::stri
     return true;
 }
 
-bool iniParser::setValue(std::pair<std::string, std::string> Section_Key_Name, std::string keyValue)
+bool iniParser::setValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
 { return this->setValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
 
-bool iniParser::addValue(std::string SectionName, std::string keyName, std::string keyValue)
+bool iniParser::addValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
 {
     if (!this->m_DataWasLoaded) return false;
     
-    StringHelper::trim(SectionName);
-    StringHelper::trim(keyName);
-
     auto section = this->m_loadedData.find(SectionName);
     if (section == this->m_loadedData.end())
     {
@@ -283,16 +274,13 @@ bool iniParser::addValue(std::string SectionName, std::string keyName, std::stri
     return false;
 }
 
-bool iniParser::addValue(std::pair<std::string, std::string> Section_Key_Name, std::string keyValue)
+bool iniParser::addValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
 { return this->addValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
 
-bool iniParser::removeValue(std::string SectionName, std::string keyName)
+bool iniParser::removeValue(const std::string& SectionName, const std::string& keyName)
 {
     if (!this->m_DataWasLoaded) return false;
     
-    StringHelper::trim(SectionName);
-    StringHelper::trim(keyName);
-
     auto section = this->m_loadedData.find(SectionName);
     if (section == this->m_loadedData.end())
         return false;
@@ -305,15 +293,13 @@ bool iniParser::removeValue(std::string SectionName, std::string keyName)
     return true;
 }
 
-bool iniParser::removeValue(std::pair<std::string, std::string> Section_Key_Name)
+bool iniParser::removeValue(const std::pair<std::string, std::string>& Section_Key_Name)
 { return this->removeValue(Section_Key_Name.first, Section_Key_Name.second); }
 
-bool iniParser::addSection(std::string SectionName)
+bool iniParser::addSection(const std::string& SectionName)
 {
     if (!this->m_DataWasLoaded) return false;
     
-    StringHelper::trim(SectionName);
-
     auto section = this->m_loadedData.find(SectionName);
     if (section == this->m_loadedData.end())
     {
@@ -324,12 +310,10 @@ bool iniParser::addSection(std::string SectionName)
     return false;
 }
 
-bool iniParser::removeSection(std::string SectionName)
+bool iniParser::removeSection(const std::string& SectionName)
 {
     if (!this->m_DataWasLoaded) return false;
     
-    StringHelper::trim(SectionName);
-
     auto section = this->m_loadedData.find(SectionName);
     if (section == this->m_loadedData.end())
         return false;
@@ -368,12 +352,9 @@ bool iniParser::SaveData()
     return false;
 }
 
-bool iniParser::addValue_ToEnd(std::string SectionName, std::string keyName, std::string keyValue)
+bool iniParser::addValue_ToEnd(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
 {
     bool returnValue = false;
-
-    StringHelper::trim(SectionName);
-    StringHelper::trim(keyName);
 
     if (this->m_DataWasLoaded)
     {

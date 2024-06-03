@@ -86,14 +86,14 @@ void VarDisplay::setVisible(bool visible)
     }
 }
 
-void VarDisplay::addVar(const std::string& name, const float& value)
+void VarDisplay::addVar(const std::string& name, float value)
 {
     m_varChanged = true;
 
     m_vars.insert({name, value});
 }
 
-void VarDisplay::setVar(const std::string& name, const float& value)
+void VarDisplay::setVar(const std::string& name, float value)
 {
     auto iter = m_vars.find(name);
 

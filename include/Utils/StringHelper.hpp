@@ -49,6 +49,8 @@ public:
     */ 
     static bool attemptToLongDouble(std::string string, long double& result);
     /** @brief Converts the string to a bool
+     *  @note checks for "true" or "false" or "1" or "0"
+     *  @note trims and converts given string to lower case
      *  @param result  Bool Value if the string contains a bool. Unmodified if string is invalid.
      *  @return Returns whether the string was valid and a value has been place into the reference parameter.
     */ 
@@ -57,66 +59,69 @@ public:
      *  @param defaultValue  Value to return if conversion fails
      *  @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
     */ 
-    static int toInt(const std::string& string, const int& defaultValue = 0);
+    static int toInt(const std::string& string, int defaultValue = 0);
     /** @brief Converts the string to an integer
      *  @param defaultValue  Value to return if conversion fails
      *  @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
     */ 
-    static unsigned int toUInt(const std::string& string, const unsigned int& defaultValue = 0); 
+    static unsigned int toUInt(const std::string& string, unsigned int defaultValue = 0); 
     /** @brief Converts the string to an integer
      *  @param defaultValue  Value to return if conversion fails
      *  @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
     */ 
-   static unsigned long toULong(const std::string& string, const int& defaultValue = 0);
+   static unsigned long toULong(const std::string& string, int defaultValue = 0);
     /** @brief Converts the string to a float
      *  @param defaultValue  Value to return if conversion fails
      *  @return Returns the float value or defaultValue if the string didn't contain a float
     */ 
-    static float toFloat(const std::string& string, const float& defaultValue = 0);
+    static float toFloat(const std::string& string, float defaultValue = 0);
     /** @brief Converts the string to a long double
      *  @param defaultValue  Value to return if conversion fails
      *  @return Returns the long double value or defaultValue if the string didn't contain a long double
     */ 
-    static long double toLongDouble(const std::string& string, const long double& defaultValue = 0);
+    static long double toLongDouble(const std::string& string, long double defaultValue = 0);
     /** @brief Converts the string to a bool
      *  @param defaultValue  Value to return if conversion fails
      *  @return Returns the bool value or defaultValue if the string didn't contain a bool
     */ 
-    static bool toBool(const std::string& string, const bool& defaultValue = 0);
+    static bool toBool(const std::string& string, bool defaultValue = 0);
     /** @brief Converts a float to a string while rounding its decimal value
      *  @param value is the float value to be converted
      *  @param decimalRoundingPlace is the number of decimals to round to
      *  @warning max rounding of 6
     */
-    static std::string FloatToStringRound(const float& value, const unsigned int& decimalRoundingPlace = 1);
+    static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
 
-    template <typename T = float, typename ConvertFunc = T(const std::string&, const T&)>
-    static inline std::list<T> toList(std::string str, ConvertFunc convFunc = &StringHelper::toFloat, T defaultValue = 0)
+    template <typename T = float, typename ConvertFunc = T(const std::string&, T)>
+    static inline std::list<T> toList(const std::string& str, const ConvertFunc& convFunc = &StringHelper::toFloat, T defaultValue = 0)
     {
         std::list<T> rtn;
-        trim(str); // getting rid of extra white space
         size_t pos = str.find_first_of('[');
+        size_t last = str.find_last_not_of(whitespaceDelimiters)+1;
         if (pos != std::string::npos) 
-            str.erase(0,pos+1); // removing opening bracket
-        pos = str.find_first_of(']');
-        if (pos != std::string::npos) 
-            str[pos] = ','; // replacing the end bracket for comma
+            pos++;
         else
-            str += ',';
-        while (str.size() > 0)
+            pos = 0;
+        while (pos < last)
         {
-            size_t pos = str.find_first_of(','); // finding first comma
-            if (pos == std::string::npos) break;
-            std::string temp = str.substr(0,pos); // getting string between comma
-            str.erase(0,pos+1);
+            size_t nextPos = str.find_first_of(',', pos); // finding first comma
+            if (nextPos == std::string::npos) 
+            {
+                nextPos = str.find_first_of(']', pos);
+                if (nextPos == std::string::npos) 
+                    nextPos = last;
+            }
+            std::string temp = str.substr(pos,nextPos-pos); // getting string between comma
+            pos = nextPos+1;
             trim(temp);
             rtn.emplace_back(convFunc(temp, defaultValue));
         }
         return rtn;
     }
 
+    /// @tparam ConvertFunc takes the type that is stored in the list and returns a string
     template <typename T = float, typename ConvertFunc = std::string(T)>
-    static inline std::string fromList(const std::list<T>& list, ConvertFunc convFunc)
+    static inline std::string fromList(const std::list<T>& list, const ConvertFunc& convFunc)
     {
         std::string rtn = "[";
         for (auto i: list)
@@ -141,33 +146,36 @@ public:
         return rtn;
     }
 
-    template <typename T = float, typename ConvertFunc = T(const std::string&, const T&)>
-    static inline std::vector<T> toVector(std::string str, ConvertFunc convFunc = &StringHelper::toFloat, T defaultValue = 0)
+    template <typename T = float, typename ConvertFunc = T(const std::string&, T)>
+    static inline std::vector<T> toVector(const std::string& str, const ConvertFunc& convFunc = StringHelper::toFloat, T defaultValue = 0)
     {
         std::vector<T> rtn;
-        trim(str); // getting rid of extra white space
         size_t pos = str.find_first_of('[');
+        size_t last = str.find_last_not_of(whitespaceDelimiters)+1;
         if (pos != std::string::npos) 
-            str.erase(0,pos+1); // removing opening bracket
-        pos = str.find_first_of(']');
-        if (pos != std::string::npos) 
-            str[pos] = ','; // replacing the end bracket for comma
+            pos++;
         else
-            str += ',';
-        while (str.size() > 0)
+            pos = 0;
+        while (pos < last)
         {
-            size_t pos = str.find_first_of(','); // finding first comma
-            if (pos == std::string::npos) break;
-            std::string temp = str.substr(0,pos); // getting string between comma
-            str.erase(0,pos+1);
+            size_t nextPos = str.find_first_of(',', pos); // finding first comma
+            if (nextPos == std::string::npos) 
+            {
+                nextPos = str.find_first_of(']', pos);
+                if (nextPos == std::string::npos) 
+                    nextPos = last;
+            }
+            std::string temp = str.substr(pos,nextPos-pos); // getting string between comma
+            pos = nextPos+1;
             trim(temp);
             rtn.emplace_back(convFunc(temp, defaultValue));
         }
         return rtn;
     }
 
+    /// @tparam ConvertFunc takes the type that is stored in the list and returns a string
     template <typename T = float, typename ConvertFunc = std::string(T)>
-    static inline std::string fromVector(const std::vector<T>& vector, ConvertFunc convFunc)
+    static inline std::string fromVector(const std::vector<T>& vector, const ConvertFunc& convFunc)
     {
         std::string rtn = "[";
         for (auto i: vector)
@@ -192,8 +200,9 @@ public:
         return rtn;
     }
 
+    /// @tparam ConvertFunc takes the type that is stored in the list and returns a string
     template <typename Iter, typename T = float, typename ConvertFunc = std::string(T)>
-    static inline std::string fromContainer(Iter begin, Iter end, ConvertFunc convFunc)
+    static inline std::string fromContainer(Iter begin, Iter end, const ConvertFunc& convFunc)
     {
         std::string rtn = "[";
         Iter current = begin;

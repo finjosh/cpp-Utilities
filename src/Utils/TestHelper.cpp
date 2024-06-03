@@ -43,8 +43,8 @@ void TestHelper::reset()
 }
 
 void TestHelper::initTest(const std::string& name, const std::string& xName,
-                          const funcHelper::func<>& test, const funcHelper::func<>& iterateTest, const size_t& iterations, const size_t& startingValue,
-                          const funcHelper::func<>& resetTest, const size_t& repetitions, const timer::TimeFormat& timeFormat)
+                          const funcHelper::func<>& test, const funcHelper::func<>& iterateTest, size_t iterations, size_t startingValue,
+                          const funcHelper::func<>& resetTest, size_t repetitions, timer::TimeFormat timeFormat)
 {
     reset();
     m_name = name;
@@ -59,7 +59,7 @@ void TestHelper::initTest(const std::string& name, const std::string& xName,
     m_yData.resize(iterations);
 }
 
-std::string TestHelper::runTest(const TestHelper::FileExists& fileExists, const std::string& suffix, std::string folderPath, const float& inf)
+std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::string& suffix, std::string folderPath, float inf)
 {
     if (!std::filesystem::is_directory(folderPath))
     {
@@ -483,7 +483,7 @@ void TestHelper::graphData(const std::list<std::string>& files)
     window.close();
 }
 
-bool TestHelper::makeGraph(Graph& graph, const iniParser& data, const float& thickness)
+bool TestHelper::makeGraph(Graph& graph, const iniParser& data, float thickness)
 {
     if (data.getValue("General", "X") == "\0")
         return false;

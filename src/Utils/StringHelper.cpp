@@ -64,7 +64,7 @@ bool StringHelper::attemptToBool(std::string string, bool& result)
     return false;
 }
 
-int StringHelper::toInt(const std::string& string, const int& defaultValue)
+int StringHelper::toInt(const std::string& string, int defaultValue)
 {
     int result;
     if (attemptToInt(string, result))
@@ -73,7 +73,7 @@ int StringHelper::toInt(const std::string& string, const int& defaultValue)
         return defaultValue;
 }
 
-unsigned int StringHelper::toUInt(const std::string& string, const unsigned int& defaultValue)
+unsigned int StringHelper::toUInt(const std::string& string, unsigned int defaultValue)
 {
     unsigned int result;
     if (attemptToUInt(string, result))
@@ -82,7 +82,7 @@ unsigned int StringHelper::toUInt(const std::string& string, const unsigned int&
         return defaultValue;
 }
 
-unsigned long StringHelper::toULong(const std::string& string, const int& defaultValue)
+unsigned long StringHelper::toULong(const std::string& string, int defaultValue)
 {
     unsigned long result;
     if (attemptToULong(string, result))
@@ -91,7 +91,7 @@ unsigned long StringHelper::toULong(const std::string& string, const int& defaul
         return defaultValue;
 }
 
-float StringHelper::toFloat(const std::string& string, const float& defaultValue)
+float StringHelper::toFloat(const std::string& string, float defaultValue)
 {
     float result;
     if (attemptToFloat(string, result))
@@ -100,7 +100,7 @@ float StringHelper::toFloat(const std::string& string, const float& defaultValue
         return defaultValue;
 }
 
-long double StringHelper::toLongDouble(const std::string& string, const long double& defaultValue)
+long double StringHelper::toLongDouble(const std::string& string, long double defaultValue)
 {
     long double result;
     if (attemptToLongDouble(string, result))
@@ -109,7 +109,7 @@ long double StringHelper::toLongDouble(const std::string& string, const long dou
         return defaultValue;
 }
 
-bool StringHelper::toBool(const std::string& string, const bool& defaultValue)
+bool StringHelper::toBool(const std::string& string, bool defaultValue)
 {
     bool result;
     if (attemptToBool(string, result))
@@ -118,7 +118,7 @@ bool StringHelper::toBool(const std::string& string, const bool& defaultValue)
         return defaultValue;
 }
 
-std::string StringHelper::FloatToStringRound(const float& value, const unsigned int& decimalRoundingPlace)
+std::string StringHelper::FloatToStringRound(float value, unsigned int decimalRoundingPlace)
 { 
     std::string temp = std::to_string(value); 
     return temp.substr(0, temp.length() - (decimalRoundingPlace == 0 ? 7 : 6 - decimalRoundingPlace));

@@ -1,13 +1,13 @@
 #include "Utils/Debug/LiveVar.hpp"
 
-LiveVar::var::var(const float& value, funcHelper::funcDynamic2<float*, sf::Event> keyEvent) : value(value), keyEvent(keyEvent) {}
+LiveVar::var::var(float value, funcHelper::funcDynamic2<float*, sf::Event> keyEvent) : value(value), keyEvent(keyEvent) {}
 
 float LiveVar::var::getValue() const
 {
     return value;
 }
 
-void LiveVar::var::setValue(const float& v)
+void LiveVar::var::setValue(float v)
 {
     if (v != value)
     {
@@ -43,7 +43,7 @@ EventHelper::EventDynamic<float>* LiveVar::getVarEvent(const std::string& name)
     return &(iter->second.onChanged);
 }
 
-bool LiveVar::setValue(const std::string& name, const float& value)
+bool LiveVar::setValue(const std::string& name, float value)
 {
     auto iter = m_vars.find(name);
 
@@ -53,7 +53,7 @@ bool LiveVar::setValue(const std::string& name, const float& value)
     return true;
 }
 
-bool LiveVar::initVar(const std::string& name, const float& value)
+bool LiveVar::initVar(const std::string& name, float value)
 {
     if (m_vars.find(name) == m_vars.end()) 
     {
@@ -65,7 +65,7 @@ bool LiveVar::initVar(const std::string& name, const float& value)
     return false;
 }
 
-bool LiveVar::initVar(const std::string& name, const float& value, funcHelper::funcDynamic2<float*, sf::Event> func)
+bool LiveVar::initVar(const std::string& name, float value, funcHelper::funcDynamic2<float*, sf::Event> func)
 {
     if (m_vars.find(name) == m_vars.end()) 
     {
@@ -77,8 +77,8 @@ bool LiveVar::initVar(const std::string& name, const float& value, funcHelper::f
     return false;
 }
 
-bool LiveVar::initVar(const std::string& name, const float& value, const float& increment, const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey,
-                        const float& min, const float& max)
+bool LiveVar::initVar(const std::string& name, float value, float increment, sf::Keyboard::Key increaseKey, sf::Keyboard::Key decreaseKey,
+                        float min, float max)
 {
     return initVar(name, value, {&incrementKeys, increaseKey, decreaseKey, increment, min, max});
 }
@@ -106,8 +106,8 @@ void LiveVar::UpdateLiveVars(const sf::Event& event)
     }
 }
 
-void LiveVar::incrementKeys(const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey, const float& increment,
-                            const float& min, const float& max, float* value, const sf::Event& event)
+void LiveVar::incrementKeys(sf::Keyboard::Key increaseKey, sf::Keyboard::Key decreaseKey, float increment,
+                            float min, float max, float* value, const sf::Event& event)
 {
     if (event.type != sf::Event::KeyPressed) return;
     if (event.key.code == increaseKey)

@@ -22,7 +22,7 @@ GraphType Graph::strToType(const std::string& str)
     return temp->second;
 }
 
-std::string Graph::typeToString(const GraphType& type)
+std::string Graph::typeToString(GraphType type)
 {
     auto temp = _graphTypeToString.find(type);
     if (temp == _graphTypeToString.end())
@@ -347,19 +347,19 @@ void Graph::updateSpline(std::list<sw::Spline>& splineData, const GraphData& dat
     }
 }
 
-sf::Vector2f Graph::convertValueToPoint(sf::Vector2f dataValue)
+sf::Vector2f Graph::convertValueToPoint(const sf::Vector2f& dataValue)
 {
    return sf::Vector2f(_margin + _axesThickness/2 + ((dataValue.x - _xBounds.first) / (_xBounds.second - _xBounds.first)) * (_resolution.x - _margin*2),
                         _resolution.y - _margin - _axesThickness/2 - ((dataValue.y - _yBounds.first) / (_yBounds.second - _yBounds.first)) * (_resolution.y - _margin*2)); 
 }
 
-std::string Graph::toString(const float& d, const size_t& precision)
+std::string Graph::toString(float d, size_t precision)
 {
     return StringHelper::FloatToStringRound(d, precision);
 }
 
 Graph::Graph(const sf::Vector2f& position, const sf::Vector2f& size, const sf::Font& font, const std::string& xLabel, const std::string& yLabel, 
-                const sf::Color& backgroundColor, const unsigned int& antialiasingLevel, const float& margin, const sf::Vector2u& resolution, const unsigned int& decimalPrecision)
+                const sf::Color& backgroundColor, unsigned int antialiasingLevel, float margin, const sf::Vector2u& resolution, unsigned int decimalPrecision)
 : _font(font), _xAxisLabel(xLabel), _yAxisLabel(yLabel), _antialiasingLevel(antialiasingLevel), _margin(margin), _resolution(resolution), _backgroundColor(backgroundColor), 
 _decimalPrecision(decimalPrecision), _position(position), _size(size)
 {}
@@ -369,12 +369,12 @@ void Graph::setPostion(const sf::Vector2f& pos)
     _position = pos;
 }
 
-void Graph::setRotation(const float& degree)
+void Graph::setRotation(float degree)
 {
     _rotation = degree;
 }
 
-void Graph::setOrigin(const sf::Vector2f origin)
+void Graph::setOrigin(const sf::Vector2f& origin)
 {
     _origin = origin;
 }
@@ -402,13 +402,13 @@ void Graph::setYLable(const std::string& yLabel)
     this->_wasChanged = true;
 }
 
-void Graph::setAntialiasingLevel(const unsigned int& antialiasingLevel)
+void Graph::setAntialiasingLevel(unsigned int antialiasingLevel)
 {
     this->_antialiasingLevel = antialiasingLevel;
     this->_wasChanged = true;
 }
 
-void Graph::setMargin(const float& margin)
+void Graph::setMargin(float margin)
 {
     this->_margin = margin;
     this->_wasChanged = true;
@@ -420,19 +420,19 @@ void Graph::setBackgroundColor(const sf::Color& color)
     this->_wasChanged = true;
 }
 
-void Graph::setDecimalPrecision(const unsigned int& decimalPrecision)
+void Graph::setDecimalPrecision(unsigned int decimalPrecision)
 {
     _decimalPrecision = decimalPrecision < 6 ? decimalPrecision : 6;
     this->_wasChanged = true;
 }
 
-void Graph::setAxesThickness(const unsigned int& thickness)
+void Graph::setAxesThickness(unsigned int thickness)
 {
     _axesThickness = thickness;
     this->_wasChanged = true;
 }
 
-void Graph::setBackgroundLinesThickness(const unsigned int& thickness)
+void Graph::setBackgroundLinesThickness(unsigned int thickness)
 {
     _backgroundLinesThickness = thickness;
     this->_wasChanged = true;
@@ -566,7 +566,7 @@ void Graph::setupAxes()
     this->_axesSetup = false;
 }
 
-void Graph::setupAxes(const unsigned int& xSteps, const unsigned int& ySteps)
+void Graph::setupAxes(unsigned int xSteps, unsigned int ySteps)
 {
     _numSteps.x = xSteps;
     _numSteps.y = ySteps;
@@ -592,7 +592,7 @@ void Graph::clearDataSets()
     _wasChanged = true;
 }
 
-void Graph::removeDataSet(const size_t& ID)
+void Graph::removeDataSet(size_t ID)
 {
     auto temp = std::find_if(this->_dataSets.begin(), this->_dataSets.end(), [ID](const GraphData& temp){ return temp.getID() == ID; });
     if (temp == this->_dataSets.end()) return;
@@ -600,7 +600,7 @@ void Graph::removeDataSet(const size_t& ID)
     _wasChanged = true;
 }
 
-GraphData* Graph::getDataSet(const size_t& ID)
+GraphData* Graph::getDataSet(size_t ID)
 {
     auto temp = std::find_if(this->_dataSets.begin(), this->_dataSets.end(), [ID](const GraphData& temp){ return temp.getID() == ID; }).operator->();
     if (temp == this->_dataSets.end().operator->()) return nullptr;
@@ -683,13 +683,13 @@ sf::Texture& Graph::getTexture()
     return _texture;
 }
 
-float Graph::roundTo(const float& value, unsigned int precision) const
+float Graph::roundTo(float value, uint8_t precision) const
 {
     if (precision == 0) return round(value);
     return roundTo(value*10,precision-1)/10;
 }
 
-void Graph::setXTextRotation(const float& rotation)
+void Graph::setXTextRotation(float rotation)
 {
     _xTextRotation = rotation;
     _wasChanged = true;
@@ -700,7 +700,7 @@ float Graph::getXTextRotation() const
     return _xTextRotation;
 }
 
-void Graph::setYTextRotation(const float& rotation)
+void Graph::setYTextRotation(float rotation)
 {
     _yTextRotation = rotation;
     _wasChanged = true;
@@ -716,7 +716,7 @@ float Graph::getCharSize() const
     return (_charSize < 0 ? _margin*0.35 : _charSize);
 }
 
-void Graph::setCharSize(const float& size)
+void Graph::setCharSize(float size)
 {
     _charSize = size;
     _wasChanged = true;

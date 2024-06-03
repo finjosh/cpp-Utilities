@@ -254,7 +254,7 @@ void Command::Prompt::setVisible(bool visible)
     }
 }
 
-void Command::Prompt::print(const tgui::String& str, const Command::color& color)
+void Command::Prompt::print(const tgui::String& str, Command::color color)
 {
     if (m_chatBox && m_allowPrint)
         m_chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
@@ -265,7 +265,7 @@ bool Command::Prompt::isPrintAllowed()
     return m_allowPrint;
 }
 
-void Command::Prompt::allowPrint(const bool& print)
+void Command::Prompt::allowPrint(bool print)
 {
     m_allowPrint = print;
 }
@@ -292,7 +292,7 @@ void Command::Prompt::UpdateAutoFill()
     m_autoFillList->setSelectedItemByIndex(0);
 }
 
-void Command::Prompt::AutoFill(const bool& updateAutoFill)
+void Command::Prompt::AutoFill(bool updateAutoFill)
 {
     m_textBox->onFocus.setEnabled(false);
     m_textBox->setFocused(true);
@@ -334,7 +334,7 @@ void Command::Prompt::addHistory(const std::string& command)
     }
 }
 
-void Command::Prompt::setMaxHistory(const size_t& size)
+void Command::Prompt::setMaxHistory(size_t size)
 {
     m_maxHistory = size;
 }

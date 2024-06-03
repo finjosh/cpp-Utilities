@@ -8,7 +8,7 @@ Command::color::color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) :
     r(r), b(b), g(g), a(a)
 {}
 
-void Command::color::setDefaultColor(const color& color)
+void Command::color::setDefaultColor(color color)
 {
     _default_text_color = color;
 }
@@ -21,6 +21,11 @@ color Command::color::getDefaultColor()
 void Command::print(const std::string& str, Data* input)
 {
     input->setReturnStr(str);
+}
+
+void Command::helpCommand(const std::string& name, Data* data)
+{
+    data->setReturnStr("Use \"help\" " + name + " for more infomation");
 }
 
 // * Command Data
@@ -45,7 +50,7 @@ void Data::setTokens(const Tokens& tokens)
     this->m_tokens = tokens;    
 }
 
-void Data::setToken(const size_t& index, const std::string& tokenStr)
+void Data::setToken(size_t index, const std::string& tokenStr)
 {
     this->m_tokens[index] = tokenStr;
 }
@@ -55,7 +60,7 @@ void Data::addToken(const std::string& tokenStr)
     this->m_tokens.push_back(tokenStr);
 }
 
-void Data::removeToken(const size_t& index)
+void Data::removeToken(size_t index)
 {
     this->m_tokens.erase(this->m_tokens.begin() + index);
 }
@@ -65,7 +70,7 @@ const Tokens& Data::getTokens() const
     return this->m_tokens;
 }
 
-std::string Data::getTokensStr(const size_t& begin, const size_t& end) const
+std::string Data::getTokensStr(size_t begin, size_t end) const
 {
     std::string rtn;
     size_t last = end <= this->getNumTokens()-1 ? end : this->getNumTokens()-1;
@@ -77,7 +82,7 @@ std::string Data::getTokensStr(const size_t& begin, const size_t& end) const
     return rtn;
 }
 
-std::string Data::getToken(const size_t& index) const
+std::string Data::getToken(size_t index) const
 {
     if (index < this->m_tokens.size())
         return this->m_tokens[index];
@@ -89,12 +94,12 @@ size_t Data::getNumTokens() const
     return this->m_tokens.size();
 }
 
-const color& Data::getReturnColor() const
+color Data::getReturnColor() const
 {
     return this->m_color;
 }
 
-void Data::setReturnColor(const color& color)
+void Data::setReturnColor(color color)
 {
     this->m_color = color;
 }
@@ -228,12 +233,12 @@ std::string command::getDescription() const
     return this->m_description;
 }
 
-std::string command::getNameDescription(const size_t& maxLength) const
+std::string command::getNameDescription(size_t maxLength) const
 {
     return this->m_name + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
 }
 
-std::string command::getSubCommandsNameDescription(const size_t& maxLength, size_t subCommandIndex) const
+std::string command::getSubCommandsNameDescription(size_t maxLength, size_t subCommandIndex) const
 {
     std::string rtn;
     std::for_each(m_subCommands.begin(), m_subCommands.end(), [&rtn, &maxLength, &subCommandIndex](const command& cmd)
@@ -258,12 +263,12 @@ void command::invoke(Data& data)
 
 // * Command Handler
 
-void Command::Handler::addCommand(const command& command, const bool& replace)
+void Command::Handler::addCommand(const command& command, bool replace)
 {
     m_addCommand(command, m_commands, replace);
 }
 
-void Command::Handler::m_addCommand(const command& cmd, std::list<command>& m_commands, const bool& replace)
+void Command::Handler::m_addCommand(const command& cmd, std::list<command>& m_commands, bool replace)
 {
     auto lastCommand = std::find(m_commands.begin(), m_commands.end(), cmd);
     // if the command is not already in the list add it
@@ -288,7 +293,7 @@ void Command::Handler::m_addCommand(const command& cmd, std::list<command>& m_co
     }
 }
 
-bool Command::Handler::addSubCommand(const std::vector<std::string>& commandPath, const command& command, const bool& replace)
+bool Command::Handler::addSubCommand(const std::vector<std::string>& commandPath, const command& command, bool replace)
 {
     Command::command* cmd = m_getCommand(commandPath);
     if (cmd == nullptr)
@@ -299,7 +304,7 @@ bool Command::Handler::addSubCommand(const std::vector<std::string>& commandPath
     return true;
 }
 
-bool Command::Handler::addSubCommand(const std::string& strCommand, const command& command, const bool& replace)
+bool Command::Handler::addSubCommand(const std::string& strCommand, const command& command, bool replace)
 {
     return addSubCommand(Command::Data(strCommand).getTokens(), command, replace);
 }
@@ -356,7 +361,7 @@ command* Command::Handler::m_getCommand(const std::vector<std::string>& commandP
     return &(*curCommand);
 }
 
-void Command::Handler::setThreadSafeEvents(const bool& threadSafe)
+void Command::Handler::setThreadSafeEvents(bool threadSafe)
 {
     m_threadSafeEvents = threadSafe;
 }

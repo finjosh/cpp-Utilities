@@ -27,7 +27,7 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
     m_lock.unlock();
 }
 
-std::string TerminatingFunction::Add(funcHelper::funcDynamic<data*> function, const float& maxTime)
+std::string TerminatingFunction::Add(funcHelper::funcDynamic<data*> function, float maxTime)
 { 
     m_lock.lock();
     if (function.valid())

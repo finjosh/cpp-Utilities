@@ -41,21 +41,21 @@ public:
      * @note if the given name does not exist nothing happens
      * @returns true if set false if not
     */
-    static bool setValue(const std::string& name, const float& value);
+    static bool setValue(const std::string& name, float value);
 
     /**
      * @param func a function that will return the new value depending on the given event data
      * @note if there is already a var with the same name the new one will not be added
      * @returns false if the value was not added
     */
-    static bool initVar(const std::string& name, const float& value);
+    static bool initVar(const std::string& name, float value);
 
     /**
      * @param func a function that will return the new value depending on the given event data
      * @note if there is already a var with the same name the new one will not be added
      * @returns false if the value was not added
     */
-    static bool initVar(const std::string& name, const float& value, funcHelper::funcDynamic2<float*, sf::Event> func);
+    static bool initVar(const std::string& name, float value, funcHelper::funcDynamic2<float*, sf::Event> func);
 
     /**
      * @param increaseKey when the given key is pressed the value will be increase by the increment amount
@@ -63,8 +63,8 @@ public:
      * @note if there is already a var with the same name the new one will not be added
      * @returns false if the value was not added
     */
-    static bool initVar(const std::string& name, const float& value, const float& increment, const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey,
-                        const float& min = std::numeric_limits<float>::lowest(), const float& max = std::numeric_limits<float>::max());
+    static bool initVar(const std::string& name, float value, float increment, sf::Keyboard::Key increaseKey, sf::Keyboard::Key decreaseKey,
+                        float min = std::numeric_limits<float>::lowest(), float max = std::numeric_limits<float>::max());
 
     /**
      * @param value is a pair with the keyboard key and the value that will be selected when said key is pressed
@@ -74,7 +74,7 @@ public:
      * @warning ellipsis must be the pair of keyboard::key, float
      * @returns false if the value was not added
     */
-    inline static bool initVar(const std::string& name, const float& v, std::convertible_to<VALUE_SET> auto&&... value)
+    inline static bool initVar(const std::string& name, float v, std::convertible_to<VALUE_SET> auto&&... value)
     {
         std::list<std::pair<sf::Keyboard::Key, float>> values = {value...};
 
@@ -153,8 +153,8 @@ public:
 
 protected:
     // updates the value based on the keys and increment amount
-    static void incrementKeys(const sf::Keyboard::Key& increaseKey, const sf::Keyboard::Key& decreaseKey, const float& increment, 
-                            const float& min, const float& max, float* value, const sf::Event& event);
+    static void incrementKeys(sf::Keyboard::Key increaseKey, sf::Keyboard::Key decreaseKey, float increment, 
+                            float min, float max, float* value, const sf::Event& event);
     // updates the value based on the preset keys and values
     static void presetKeys(const std::list<std::pair<sf::Keyboard::Key, float>>& values, float* value, const sf::Event& event);
 
@@ -164,10 +164,10 @@ private:
     class var
     {
     public:
-        var(const float& value, funcHelper::funcDynamic2<float*, sf::Event> keyEvent);
+        var(float value, funcHelper::funcDynamic2<float*, sf::Event> keyEvent);
 
         float getValue() const;
-        void setValue(const float& v);
+        void setValue(float v);
         void invokeKeyEvent(const sf::Event& event);
 
         // called when ever the value is changed

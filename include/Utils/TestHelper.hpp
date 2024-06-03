@@ -42,8 +42,8 @@ public:
     /// @param timeFormat how the time will be stored (it will always be recorded in nanoseconds but converted to the given format)
     /// @param startingValue the starting value for iteration (when reseting will call iterateTest until reaching this value without testing)
     static void initTest(const std::string& name, const std::string& xName,
-                         const funcHelper::func<>& test, const funcHelper::func<>& iterateTest, const size_t& iterations, const size_t& startingValue = 0,
-                         const funcHelper::func<>& resetTest = {[](){}}, const size_t& repetitions = 1, const timer::TimeFormat& timeFormat = timer::TimeFormat::MILLISECONDS);
+                         const funcHelper::func<>& test, const funcHelper::func<>& iterateTest, size_t iterations, size_t startingValue = 0,
+                         const funcHelper::func<>& resetTest = {[](){}}, size_t repetitions = 1, timer::TimeFormat timeFormat = timer::TimeFormat::MILLISECONDS);
     /// @note This runs the test and opens a window that shows the progress of the test
     /// @note this also saves the data collected to a 'name of test'Test.ini file
     /// @warning if the window is closed early then nothing will be saved
@@ -52,7 +52,7 @@ public:
     /// @param folderPath the folder to put the files in
     /// @param inf the value that infinity and -infinity values will be converted to (graph will break otherwise)
     /// @returns the name of the file that was made (if no file was made returns "")
-    static std::string runTest(const TestHelper::FileExists& fileExists = TestHelper::MakeNew, const std::string& suffix = "", std::string folderPath = "", const float& inf = 0);
+    static std::string runTest(TestHelper::FileExists fileExists = TestHelper::MakeNew, const std::string& suffix = "", std::string folderPath = "", float inf = 0);
     static void setXName(const std::string& name);
     static std::string getXName();
     /// @brief opens a window that attempts to graph all .ini files in the given folder
@@ -65,7 +65,7 @@ public:
     static void graphData(const std::list<std::string>& files);
 
 protected:
-    static bool makeGraph(Graph& graph, const iniParser& data, const float& thickness = 5);
+    static bool makeGraph(Graph& graph, const iniParser& data, float thickness = 5);
 
 private:
     inline TestHelper() = default;

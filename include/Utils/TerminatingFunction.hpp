@@ -20,7 +20,7 @@ public:
 
     struct data
     {
-        inline data(const float& deltaTime, const float& totalTime, const bool& isForceStop) : deltaTime(deltaTime), totalTime(totalTime), isForceStop(isForceStop) {};
+        inline data(float deltaTime, float totalTime, bool isForceStop) : deltaTime(deltaTime), totalTime(totalTime), isForceStop(isForceStop) {};
         const float deltaTime = 0.f;
         const float totalTime = 0.f;
         const bool isForceStop = false;
@@ -39,7 +39,7 @@ public:
     /// @note when a function is removed or over its limit data will set "isForceStop" to true
     /// @warning The function will only be added if it is valid
     /// @returns the function typeid is "" if function is not valid
-    static std::string Add(funcHelper::funcDynamic<data*> function, const float& maxTime = std::numeric_limits<float>::infinity());
+    static std::string Add(funcHelper::funcDynamic<data*> function, float maxTime = std::numeric_limits<float>::infinity());
     /// @brief clears all terminating functions from the list 
     /// @note does not give warning to any function
     static void clear();
@@ -58,7 +58,7 @@ public:
 protected:
     struct _tFunc
     {
-        inline _tFunc(funcHelper::funcDynamic<data*> func, const float& maxTime) : func(func), maxTime(maxTime) {};
+        inline _tFunc(funcHelper::funcDynamic<data*> func, float maxTime) : func(func), maxTime(maxTime) {};
 
         funcHelper::funcDynamic<data*> func;
         float totalTime = 0.f;

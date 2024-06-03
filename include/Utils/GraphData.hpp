@@ -44,14 +44,14 @@ public:
     /// @param color dataset color
     /// @param label dataset label
     /// @param type dataset type
-    GraphData(const sf::Color& color, const std::string& label, const GraphType& type);
+    GraphData(const sf::Color& color, const std::string& label, GraphType type);
 
     /// @param xValues vector of floats, representing x axis
     /// @param yValues vector of floats, representing y axis
     /// @param color color of the bars/points/line
     /// @param label data label
     /// @param type  bars/points/line
-    GraphData(const std::vector<float>& xValues, const std::vector<float>& yValues, const sf::Color& color, const std::string& label, const GraphType& type);
+    GraphData(const std::vector<float>& xValues, const std::vector<float>& yValues, const sf::Color& color, const std::string& label, GraphType type);
 
     /// @brief data is invalid when xValues.size() != yValues.size()
     /// @return false when data is invalid
@@ -79,14 +79,13 @@ public:
     size_t getDataLength() const;
 
     /// @brief Get a specific value
-    /// @param i index
     /// @return value pair at i
-    sf::Vector2f getDataValue(const size_t& i) const;
+    sf::Vector2f getDataValue(size_t index) const;
 
     /// @brief Setter for a certain value, by index
     /// @param i index
     /// @param valuePair new x and y values
-    void setDataValue(const size_t& i, const sf::Vector2f& valuePair);
+    void setDataValue(size_t i, const sf::Vector2f& valuePair);
 
     /// @returns color of this data when drawn on a graph
     sf::Color getColor() const;
@@ -99,7 +98,7 @@ public:
 
     GraphType getGraphType() const;
 
-    void setGraphType(const GraphType& type);
+    void setGraphType(GraphType type);
 
     /// @brief Function for adding a pair of values to the dataset
     /// @param pair the pair to be added
@@ -107,19 +106,19 @@ public:
 
     /// @brief Function for erasing a pair of values to the dataset
     /// @param number of elements to erase
-    void popFront(const size_t n = 1);
+    void popFront(size_t n = 1);
 
     /// @brief Clears all the x and y values stored
     void clearPairValues();
 
     /// @note thickness only affects scatter, bar, and line
     /// @note default is 10
-    void setThickness(const float& value);
+    void setThickness(float value);
 
     float getThickness() const;
 
     /// @brief dont use this unless you know what you are doing
-    void setID(const size_t& id);
+    void setID(size_t id);
     size_t getID();
 };
 

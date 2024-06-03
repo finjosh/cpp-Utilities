@@ -70,7 +70,7 @@ void ChildWindow::_softClose(tgui::ChildWindow::Ptr window, bool* abortTguiClose
         *abortTguiClose = true;
 }
 
-void ChildWindow::setVisible(tgui::ChildWindow::Ptr window, const bool& visible)
+void ChildWindow::setVisible(tgui::ChildWindow::Ptr window, bool visible)
 {
     if (!window) return;
     if (visible)

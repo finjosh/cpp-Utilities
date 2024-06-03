@@ -66,13 +66,13 @@ private:
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
     /// @brief converts the given data value into a position vector
-    sf::Vector2f convertValueToPoint(sf::Vector2f dataValue);
+    sf::Vector2f convertValueToPoint(const sf::Vector2f& dataValue);
 
     /// @brief updates the given spline to work with the given data
     /// @param splineData should be empty
     void updateSpline(std::list<sw::Spline>& splineData, const GraphData& dataset);
 
-    float roundTo(const float& value, unsigned int precision = 0) const;
+    float roundTo(float value, uint8_t precision = 0) const;
 
 protected:
     /// @returns the min value for the x and y separately 
@@ -83,7 +83,7 @@ protected:
 public:
 
     static GraphType strToType(const std::string& str);
-    static std::string typeToString(const GraphType& type);
+    static std::string typeToString(GraphType type);
 
     /// @brief used to update the graph if anything was changed
     void Update();
@@ -109,7 +109,7 @@ public:
     /// @param d float to convert
     /// @param precision number of digits after comma
     /// @returns String representation
-    std::string toString(const float& d, const size_t& precision = 2);
+    std::string toString(float d, size_t precision = 2);
 
     /// @brief Constructor using essential values
     /// @param position top left position of graph
@@ -122,8 +122,8 @@ public:
     /// @param antialiasingLevel the level of antialiasing applied to the original image
     /// @note if the size is scaled equally in the x and y then the graph will be stretched
     Graph(const sf::Vector2f& position, const sf::Vector2f& size, const sf::Font& font, const std::string& xLabel = "X", const std::string& yLabel = "Y", 
-            const sf::Color& backgroundColor = sf::Color::Black, const unsigned int& antialiasingLevel = 0, const float& margin = 75, 
-            const sf::Vector2u& resolution = sf::Vector2u(1000, 1000), const unsigned int& decimalPrecision = 2);
+            const sf::Color& backgroundColor = sf::Color::Black, unsigned int antialiasingLevel = 0, float margin = 75, 
+            const sf::Vector2u& resolution = sf::Vector2u(1000, 1000), unsigned int decimalPrecision = 2);
 
     /// @brief Constructs the graph with default inputs 
     /// @warning you must still set a font
@@ -133,10 +133,10 @@ public:
     void setPostion(const sf::Vector2f& pos);
     sf::Vector2f getPosition() const;
     /// @brief does not effect texture
-    void setRotation(const float& degree);
+    void setRotation(float degree);
     float getRotation() const;
     /// @brief does not effect texture
-    void setOrigin(const sf::Vector2f origin);
+    void setOrigin(const sf::Vector2f& origin);
     sf::Vector2f getOrigin() const;
     /// @brief does not effect texture
     void setSize(const sf::Vector2f& size);
@@ -148,28 +148,28 @@ public:
     void setYLable(const std::string& yLabel);
     std::string getYLable() const;
     /// @note the antialiasing is only on the original graph texture 
-    void setAntialiasingLevel(const unsigned int& antialiasingLevel = 0);
+    void setAntialiasingLevel(unsigned int antialiasingLevel = 0);
     unsigned int getAntialiasingLevel() const;
-    void setMargin(const float& margin = 50);
+    void setMargin(float margin = 50);
     float getMargin() const;
     void setBackgroundColor(const sf::Color& color);
     sf::Color getBackgroundColor() const;
     /// @note max decimal precision is 6
-    void setDecimalPrecision(const unsigned int& decimalPrecision = 2);
+    void setDecimalPrecision(unsigned int decimalPrecision = 2);
     unsigned int getDecimalPrecision() const;
-    void setAxesThickness(const unsigned int& thickness = 10);
+    void setAxesThickness(unsigned int thickness = 10);
     unsigned int getAxesThickness() const;
     /// @brief the thickness of the the background indicator lines
-    void setBackgroundLinesThickness(const unsigned int& thickness = 3);
+    void setBackgroundLinesThickness(unsigned int thickness = 3);
     unsigned int getBackgroundLinesThickness() const;
     /// @brief sets the rotation of the x axis text indicators
     /// @note default = 45
-    void setXTextRotation(const float& rotation);
+    void setXTextRotation(float rotation);
     /// @returns the rotation of the x axis text indicators
     float getXTextRotation() const;
     /// @brief sets the rotation of the y axis text indicators
     /// @note default = 45
-    void setYTextRotation(const float& rotation);
+    void setYTextRotation(float rotation);
     /// @returns the rotation of the y axis text indicators
     float getYTextRotation() const;
     /// @brief the size of characters on the graph
@@ -178,7 +178,7 @@ public:
     /// @brief sets the size of characters
     /// @note if not set the size will be 35% of the margin
     /// @note if set the char size will NOT change
-    void setCharSize(const float& size);
+    void setCharSize(float size);
     void setFont(const sf::Font& font);
     /// @note this includes the background lines color
     void setAxesColor(const sf::Color& color);
@@ -197,7 +197,7 @@ public:
     /// @param xSteps    x number of steps
     /// @param ySteps    y number of steps
     /// @warning this will force the axis to stay constant even if something is changed (to undo call the setupAxis without any inputs)
-    void setupAxes(const unsigned int& xSteps, const unsigned int& ySteps);
+    void setupAxes(unsigned int xSteps, unsigned int ySteps);
 
     /// @brief Function for adding a dataset to the plot
     /// @param set the set to be added
@@ -205,12 +205,12 @@ public:
     size_t addDataSet(const GraphData& data_set);
 
     void clearDataSets();
-    void removeDataSet(const size_t& ID);
+    void removeDataSet(size_t ID);
     /// @param ID the id of the wanted data set
     /// @note dont edit the graph type
     /// @note if you call this the next time update is called the graph will be redrawn
     /// @returns nullptr if there was not dataSet with that ID 
-    GraphData* getDataSet(const size_t& ID);
+    GraphData* getDataSet(size_t ID);
 };
 
 #endif

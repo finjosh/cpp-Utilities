@@ -23,7 +23,7 @@ struct color
     /// @brief default color is white 
     color(uint8_t r = _default_text_color.r, uint8_t g = _default_text_color.g, uint8_t b = _default_text_color.b, uint8_t a = _default_text_color.a);
 
-    static void setDefaultColor(const color& color);
+    static void setDefaultColor(color color);
 
     static color getDefaultColor();
 
@@ -55,26 +55,26 @@ public:
     void setTokens(const std::string& command);
     /// @brief overrides the current tokens to the given tokens
     void setTokens(const Tokens& tokens);
-    void setToken(const size_t& index, const std::string& tokenStr);
+    void setToken(size_t index, const std::string& tokenStr);
     void addToken(const std::string& tokenStr);
-    void removeToken(const size_t& index = 0);
+    void removeToken(size_t index = 0);
 
     /// @returns a const reference to the current tokens
     const Tokens& getTokens() const;
     /// @param begin the first index
     /// @param end the last index
     /// @returns the tokens in the given range combined
-    std::string getTokensStr(const size_t& begin = 0, const size_t& end = std::numeric_limits<size_t>().max()) const;
+    std::string getTokensStr(size_t begin = 0, size_t end = std::numeric_limits<size_t>().max()) const;
     /// @param index the index of the wanted token
     /// @returns if there is a token at the index returns token else returns a string with nothing
-    std::string getToken(const size_t& index = 0) const;
+    std::string getToken(size_t index = 0) const;
     /// @returns the current number of tokens stored
     size_t getNumTokens() const;
 
-    const color& getReturnColor() const;
+    color getReturnColor() const;
     /// @brief sets the wanted color of the return string
     /// @note is handled by command prompt
-    void setReturnColor(const color& color);
+    void setReturnColor(color color);
 
     /// @returns the current return string
     const std::string& getReturnStr() const;
@@ -110,16 +110,16 @@ private:
 /// @typedef Compare a function that is called with the converted value to check if it is still valid
 /// @param errorMsg the msg that will be put into data if the input is invalid
 /// @param data the data which and invalid input statement will be place if not able to convert
-/// @param value the value wanted
+/// @param value the value wanted converted from the string
 /// @param strValue the value as a string
 /// @param defaultValue the value will be assigned this value is the string is invalid
 /// @param comparisonFunc if the value does not fit this comparison then the input will no longer be valid
 /// @note also changes the return color to invalid input color if needed
 /// @returns false if the input is not valid for the given type 
-template<typename valueType, typename Compare = bool(valueType&), typename std::enable_if_t<std::is_same_v<valueType, int> || std::is_same_v<valueType, float> || 
+template<typename valueType, typename Compare = bool(valueType), typename std::enable_if_t<std::is_same_v<valueType, int> || std::is_same_v<valueType, float> || 
                                 std::is_same_v<valueType, unsigned long> || std::is_same_v<valueType, unsigned int> || std::is_same_v<valueType, bool>>* = nullptr>
 inline bool isValidInput(const std::string& errorMsg, Data& data, const std::string& strValue, 
-                        valueType& value, const valueType& defaultValue, Compare comp = [](valueType& value){ return true; })
+                        valueType& value, valueType defaultValue, Compare comp = [](valueType value){ return true; })
 {
     bool valid = false;
 
@@ -158,6 +158,10 @@ inline bool isValidInput(const std::string& errorMsg, Data& data, const std::str
 /// @note only give a value for str
 void print(const std::string& str, Data* input);
 
+/// @brief prints "use "help" `name` for more infomation"
+/// @note used as a commands function if used as a "namespace"
+void helpCommand(const std::string& name, Data* data);
+
 class Handler;
 
 class command
@@ -182,11 +186,11 @@ public:
     std::string getName() const;
     std::string getDescription() const;
     /// @returns the name separated by " - " and the description
-    std::string getNameDescription(const size_t& maxLength = SIZE_MAX) const;
+    std::string getNameDescription(size_t maxLength = SIZE_MAX) const;
     /// @param subCommandIndex is only for the recursive usage of this function
     /// @note does not add the current commands name and description
     /// @returns the name separated by " - " and the description of each sub command (with the max length given)
-    std::string getSubCommandsNameDescription(const size_t& maxLength = SIZE_MAX, size_t subCommandIndex = 1) const;
+    std::string getSubCommandsNameDescription(size_t maxLength = SIZE_MAX, size_t subCommandIndex = 1) const;
 
     /// @note data should only contain inputs not command names
     void invoke(Data& data);
@@ -208,16 +212,16 @@ class Handler
 public:
     /// @note if there exists a command that was added but its sub commands are not already added it will be added (sub commands will be added even if the main was skiped)
     /// @param replace if true any duplicate commands will be replaced otherwise they will be skiped
-    static void addCommand(const command& command, const bool& replace = false);
+    static void addCommand(const command& command, bool replace = false);
 
     /// @param commandPath the path to the parent command
     /// @param replace if true any duplicate commands will be replaced otherwise they will be skiped (sub commands will be added even if the main was skiped)
     /// @returns true for valid path OR false for invalid path
-    static bool addSubCommand(const std::vector<std::string>& commandPath, const command& command, const bool& replace = false);
+    static bool addSubCommand(const std::vector<std::string>& commandPath, const command& command, bool replace = false);
     /// @param strCommandPath the path to the parent command
     /// @param replace if true any duplicate commands will be replaced otherwise they will be skiped (sub commands will be added even if the main was skiped)
     /// @returns true for valid path OR false for invalid path
-    static bool addSubCommand(const std::string& strCommandPath, const command& command, const bool& replace = false);
+    static bool addSubCommand(const std::string& strCommandPath, const command& command, bool replace = false);
 
     static void removeAllCommands();
     /// @brief removes the given command and all of its sub commands
@@ -250,14 +254,14 @@ public:
 
     /// @note called when all commands are removed at once using "removeAllCommands"
     static EventHelper::Event onAllCommandsRemoved;
-    static void setThreadSafeEvents(const bool& threadSafe = true);
+    static void setThreadSafeEvents(bool threadSafe = true);
     static bool isThreadSafeEvents();
 
 protected:
     /// @param cmd the command that is wanted to be added
     /// @param _commands the commands we are trying to add to
     /// @param replace if the command should be replaced if there is a duplicate
-    static void m_addCommand(const command& cmd, std::list<command>& _commands, const bool& replace);
+    static void m_addCommand(const command& cmd, std::list<command>& _commands, bool replace);
 
     /// @brief tries to get the command from the given path
     /// @param list the list to search for the given command path

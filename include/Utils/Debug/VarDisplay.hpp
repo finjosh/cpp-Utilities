@@ -41,10 +41,10 @@ public:
 protected:
     /// @brief adds a var to the list
     /// @note used with the events from live vars
-    static void addVar(const std::string& name, const float& value);
+    static void addVar(const std::string& name, float value);
     /// @brief sets the value of a var 
     /// @note used with the events from live vars
-    static void setVar(const std::string& name, const float& value);
+    static void setVar(const std::string& name, float value);
     /// @brief removes a var from the list
     /// @note used with the events from live vars
     static void removeVar(const std::string& name);

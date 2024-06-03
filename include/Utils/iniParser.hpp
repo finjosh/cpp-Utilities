@@ -35,7 +35,7 @@ public:
     /// @brief creates the 'iniParser' opening the given file
     /// @exception does not open a file if there is no file with the given path
     /// @note Does NOT load the data
-    iniParser(std::string generic_path);
+    iniParser(const std::string& generic_path);
 
     /// @brief saves the loaded data before closing the folder and this obj being destructed
     ~iniParser();
@@ -43,7 +43,7 @@ public:
     /// @brief sets the file path
     /// @note Does NOT load the data
     /// @warning closes (no matter what) and saves the file that is open (if auto save is true), opens the new one if possible
-    void setFilePath(std::string generic_path);
+    void setFilePath(const std::string& generic_path);
     /// @brief returns a copy of the filepath
     std::string getFilePath() const;
 
@@ -101,55 +101,55 @@ public:
     /// @brief the map holding data from the section inputted which is stored as std::map<"KeyName", "KeyValue">
     /// @returns the map holding data for the given section if it exists, otherwise it returns iniParser::InvalidSectionData
     /// @warning DO NO EDIT GIVEN DATA
-    const std::map<std::string, std::string>& getSectionData(std::string SectionName) const;
+    const std::map<std::string, std::string>& getSectionData(const std::string& SectionName) const;
 
     /// @returns true if the Section data given is valid (there is some data in it)
     bool isSectionDataValid(const std::map<std::string, std::string>& SectionData) const;
 
     /// @warning if the data was never loaded then it will return "\0\0\0"
     /// @returns the keyValue as a String OR a string containing "\0\0" if there was no keyName found and "\0" for no sectionName found
-    std::string getValue(std::string SectionName, std::string keyName) const;
+    std::string getValue(const std::string& SectionName, const std::string& keyName) const;
     /// @param Section_Key_Name the pair is in order of SectionName then KeyName
     /// @warning if the data was never loaded then it will return "\0\0\0"
     /// @returns the keyValue as a String OR a string containing "\0\0" if there was no keyName found and "\0" for no sectionName found
-    std::string getValue(std::pair<std::string, std::string> Section_Key_Name) const;
+    std::string getValue(const std::pair<std::string, std::string>& Section_Key_Name) const;
     /// @brief sets the given value if possible
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @returns false if the value was not set meaning that there was either no sectionName of keyName
-    bool setValue(std::string SectionName, std::string keyName, std::string keyValue);
+    bool setValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue);
     /// @param Section_Key_Name the pair is in order of SectionName then KeyName
     /// @brief sets the given value if possible
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @returns false if the value was not set meaning that there was either no sectionName of keyName
-    bool setValue(std::pair<std::string, std::string> Section_Key_Name, std::string keyValue);
+    bool setValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue);
     /// @brief adds a value to the loadedData and will be added to the ini file at next save
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @note adds the SectionName if there is not already one
     /// @returns false if the inputted SectionName and KeyName already exist
-    bool addValue(std::string SectionName, std::string keyName, std::string keyValue);
+    bool addValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue);
     /// @param Section_Key_Name the pair is in order of SectionName then KeyName
     /// @brief adds a value to the loadedData and will be added to the ini file at next save
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @note adds the SectionName if there is not already one
     /// @returns false if the inputted SectionName and KeyName already exist
-    bool addValue(std::pair<std::string, std::string> Section_Key_Name, std::string keyValue);
+    bool addValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue);
     /// @brief removes a value from the loadedData and will be removed from the ini file at next save
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @returns false if the value was not found
-    bool removeValue(std::string SectionName, std::string keyName);
+    bool removeValue(const std::string& SectionName, const std::string& keyName);
     /// @param Section_Key_Name the pair is in order of SectionName then KeyName
     /// @brief removes a value from the loadedData and will be removed from the ini file at next save
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @returns false if the value was not found
-    bool removeValue(std::pair<std::string, std::string> Section_Key_Name);
+    bool removeValue(const std::pair<std::string, std::string>& Section_Key_Name);
     /// @brief adds a section to the loadedData and will be added to the ini file at next save
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @returns false if the inputted SectionName already exists
-    bool addSection(std::string SectionName);
+    bool addSection(const std::string& SectionName);
     /// @brief removes a section and all of its keyValues from the loadedData and will be removed from the ini file at next save
     /// @exception if the data was not loaded then it will always return false and does nothing
     /// @returns false if the inputted SectionName was not found
-    bool removeSection(std::string SectionName);
+    bool removeSection(const std::string& SectionName);
 
     /// @brief AutoSave[Default] = true;
     /// @param AutoSave false then the data will not be saved when closing the file or when destroying this obj
@@ -165,7 +165,7 @@ public:
     /// @param SectionName is used to add the value into the pre-loaded data for later use IF the load data function was successfully called
     /// @warning the data will be saved no matter if there is already a copy of it and will not be loaded into the LoadedData if there is a copy or the data was not loaded
     /// @returns false if the data was not able to be saved
-    bool addValue_ToEnd(std::string SectionName, std::string keyName, std::string keyValue);
+    bool addValue_ToEnd(const std::string& SectionName, const std::string& keyName, const std::string& keyValue);
 
     /// @brief attempts to create the given file
     void createFile(const std::string& filePath);

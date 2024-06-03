@@ -12,7 +12,12 @@ void printList(std::list<T> list)
 
 void StringHelperTest::test()
 {
-    using namespace std;
+    using namespace std;   
+
+    cout << "Outputs for StringHelper: " << endl;
+    // the main function continued in StringHelper are the following: 
+    //      trim, toLower, toInt, toUInt, toULong, toFloat, toLongDouble, toBool, FloatToStringRound
+    // the rest of the functions serve the same functionality 
 
     printList<float>(StringHelper::toList<float>("[7,6,5]", StringHelper::toFloat));
     printList<float>(StringHelper::toList<float>("7,6,5]", StringHelper::toFloat));
@@ -31,12 +36,7 @@ void StringHelperTest::test()
 
     cout << StringHelper::fromList<float>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl;
     cout << StringHelper::fromList<std::string>({"7","6","5","34","4","5","67","7","4","3","4","5","76"}, [](std::string str){ str.insert(str.begin(),'\"'); str.push_back('\"'); return str; }) << endl;
-    cout << StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl;    
-
-    cout << "Outputs for StringHelper: " << endl;
-    // the main function continued in StringHelper are the following: 
-    //      trim, toLower, toInt, toUInt, toULong, toFloat, toLongDouble, toBool, FloatToStringRound
-    // the rest of the functions serve the same functionality 
+    cout << StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl; 
 
     // for example trim and trim_copy
     std::string str = "      a string that needs to be trimmed          ";

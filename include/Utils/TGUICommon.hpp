@@ -22,7 +22,7 @@ public:
     /// @note enables, sets visible, and moves to front
     /// @param window the window to set state
     /// @param visible visible or not
-    static void setVisible(tgui::ChildWindow::Ptr window, const bool& visible);
+    static void setVisible(tgui::ChildWindow::Ptr window, bool visible);
     /// @note maximizing will make the window fullscreen
     /// @note locks the window postion when maximized
     /// @note if x and y layout is "100%" then assumes that the window is maximized

@@ -7,10 +7,10 @@ GraphData::GraphData()
     _graphType = GraphType::Scatter;
 }
 
-GraphData::GraphData(const sf::Color& color, const std::string& label, const GraphType& type) : _color(color), _label(label), _graphType(type)
+GraphData::GraphData(const sf::Color& color, const std::string& label, GraphType type) : _color(color), _label(label), _graphType(type)
 {}
 
-GraphData::GraphData(const std::vector<float>& xValues, const std::vector<float>& yValues, const sf::Color& color, const std::string& label, const GraphType& type)
+GraphData::GraphData(const std::vector<float>& xValues, const std::vector<float>& yValues, const sf::Color& color, const std::string& label, GraphType type)
                     : _xValues(xValues), _yValues(yValues), _color(color), _label(label), _graphType(type)
 {}
 
@@ -71,12 +71,12 @@ size_t GraphData::getDataLength() const
     return _xValues.size();
 }
 
-sf::Vector2f GraphData::getDataValue(const size_t& i) const
+sf::Vector2f GraphData::getDataValue(size_t i) const
 {
     return sf::Vector2f{_xValues[i], _yValues[i]};
 }
 
-void GraphData::setDataValue(const size_t& i, const sf::Vector2f& valuePair)
+void GraphData::setDataValue(size_t i, const sf::Vector2f& valuePair)
 {
     this->_xValues[i] = valuePair.x;
     this->_yValues[i] = valuePair.y;
@@ -107,7 +107,7 @@ GraphType GraphData::getGraphType() const
     return this->_graphType;
 }
 
-void GraphData::setGraphType(const GraphType& type)
+void GraphData::setGraphType(GraphType type)
 {
     this->_graphType = type;
 }
@@ -135,7 +135,7 @@ void GraphData::clearPairValues()
     this->_yValues.clear();
 }
 
-void GraphData::setThickness(const float& value)
+void GraphData::setThickness(float value)
 {
     _thickness = value;
 }
@@ -145,7 +145,7 @@ float GraphData::getThickness() const
     return _thickness;
 }
 
-void GraphData::setID(const size_t& id)
+void GraphData::setID(size_t id)
 {
     _ID = id;
 }
