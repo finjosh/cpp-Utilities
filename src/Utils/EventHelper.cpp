@@ -74,6 +74,11 @@ void Event::_invoke()
         function.second();
 }
 
+size_t Event::getNumCallbacks() const
+{
+    return m_functions.size();
+}
+
 // void Event::invokeThreadSafe()
 // {
 //     Event::ThreadSafe::addEvent(this);

@@ -29,6 +29,9 @@ public:
     /// @brief used to update the command prompts keyboard events
     static void UpdateEvent(const sf::Event& event);
 
+    /// @brief sets the Command::color default to the current tgui theme default
+    static void UpdateDefaultColor();
+
     /// @brief sets the command prompt as visible or not
     /// @param visible the state to set the command prompt to
     static void setVisible(bool visible = true);

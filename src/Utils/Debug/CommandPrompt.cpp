@@ -45,7 +45,6 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
         m_chatBox->setSize({"100%", "100%-25"});
         m_chatBox->setLinesStartFromTop();
         m_chatBox->setLineLimit(1028);
-        m_chatBox->setTextColor(tgui::Color::White);
         m_chatBox->setFocusable(false);
 
         // * setup for the command prompt custom commands
@@ -155,7 +154,7 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
             if (commandData.getReturnStr() != "")
             {
                 tColor = commandData.getReturnColor();
-                m_chatBox->addLine(commandData.getReturnStr(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a));
+                m_chatBox->addLine(commandData.getReturnStr(), {tColor.r, tColor.g, tColor.b, tColor.a});
             }
 
             m_textBox->setText("");
@@ -237,6 +236,12 @@ void Command::Prompt::UpdateEvent(const sf::Event& event)
             AutoFill();
         }
     }
+}
+
+void Command::Prompt::UpdateDefaultColor()
+{
+    tgui::Color temp = tgui::Theme::getDefault()->getGlobalProperty("TextColor").getColor();
+    Command::color::setDefaultColor({temp.getRed(), temp.getGreen(), temp.getBlue(), temp.getAlpha()});
 }
 
 void Command::Prompt::setVisible(bool visible)

@@ -45,8 +45,8 @@ int main()
 
     tgui::Gui gui{window};
     gui.setRelativeView({0, 0, 1920/(float)window.getSize().x, 1080/(float)window.getSize().y});
-    Command::color::setDefaultColor({255,255,255,255}); // white
     tgui::Theme::getDefault()->load("themes/Dark.txt");
+    Command::Prompt::UpdateDefaultColor();
     // -----------------------
 
     //! Adding a command for showing off the different themes
@@ -63,17 +63,17 @@ int main()
             Command::command{"dark", "Sets the them to the dark theme", {[](){ 
                 tgui::Theme::getDefault()->load("themes/Dark.txt"); 
                 // Note that command color does not update with theme so you have to set the default color
-                Command::color::setDefaultColor({255,255,255,255}); // white
+                Command::Prompt::UpdateDefaultColor();
             }}}, 
             Command::command{"black", "Sets the them to the black theme", {[](){ 
                 tgui::Theme::getDefault()->load("themes/Black.txt"); 
                 // Note that command color does not update with theme so you have to set the default color
-                Command::color::setDefaultColor({255,255,255,255}); // white
+                Command::Prompt::UpdateDefaultColor();
             }}},
             Command::command{"grey", "Sets the them to the transparent grey theme", {[](){ 
                 tgui::Theme::getDefault()->load("themes/TransparentGrey.txt"); 
                 // Note that command color does not update with theme so you have to set the default color
-                Command::color::setDefaultColor({0,0,0,255}); // black
+                Command::Prompt::UpdateDefaultColor();
             }}}
         }
     });

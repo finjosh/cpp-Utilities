@@ -286,7 +286,7 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
     std::vector<size_t> xValues;
     xValues.resize(m_iterations);
     std::iota(xValues.begin(), xValues.end(), m_startingValue);
-    data.addValue("General", "X", StringHelper::fromVector<size_t>(xValues, &std::to_string));
+    data.addValue("General", "X", StringHelper::fromVector<size_t>(xValues));
     data.SaveData();
     return data.getFilePath(); // path is just the file name in this case
 }
@@ -455,7 +455,7 @@ void TestHelper::graphData(const std::list<std::string>& files)
         while (window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape)
-                return;
+                window.close();
 
             gui.handleEvent(event);
         }
@@ -481,6 +481,7 @@ void TestHelper::graphData(const std::list<std::string>& files)
         window.display();
     }
     window.close();
+    graphThread->join();
 }
 
 bool TestHelper::makeGraph(Graph& graph, const iniParser& data, float thickness)

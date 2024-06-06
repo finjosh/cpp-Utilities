@@ -112,6 +112,8 @@ public:
         return m_enabled;
     }
 
+    size_t getNumCallbacks() const;
+
     class ThreadSafe
     {
     public:
