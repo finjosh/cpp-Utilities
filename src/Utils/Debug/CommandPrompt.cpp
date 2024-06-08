@@ -14,8 +14,13 @@ bool Command::Prompt::m_allowPrint = true;
 
 void Command::Prompt::init(tgui::Gui& sfmlGui)
 {
+    init(sfmlGui.getContainer());
+}
+
+void Command::Prompt::init(tgui::Container::Ptr parent)
+{
     m_parent = tgui::ChildWindow::create("Command Prompt", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
-    sfmlGui.add(m_parent);
+    parent->add(m_parent);
 
     // * setup of child window
     m_parent->setTitleAlignment(tgui::ChildWindow::TitleAlignment::Left);

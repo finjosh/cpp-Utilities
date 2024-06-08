@@ -6,8 +6,13 @@ tgui::ListView::Ptr TFuncDisplay::m_list = nullptr;
 
 void TFuncDisplay::init(tgui::Gui& gui)
 {
+    init(gui.getContainer());
+}
+
+void TFuncDisplay::init(tgui::Container::Ptr parent)
+{
     m_parent = tgui::ChildWindow::create("Terminating Functions", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
-    gui.add(m_parent);
+    parent->add(m_parent);
     
     m_parent->setSize({"20%","20%"});
     m_parent->setPosition({"70%","0%"});

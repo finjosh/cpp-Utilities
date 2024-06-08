@@ -10,6 +10,14 @@ tgui::ScrollablePanel::Ptr VarDisplay::m_scrollPanel = nullptr;
 
 void VarDisplay::init(tgui::Gui& gui)
 {
+    init(gui.getContainer());
+}
+
+void VarDisplay::init(tgui::Container::Ptr parent)
+{
+    if (!parent)
+        return;
+
     // adding any event updates for the new live var
     LiveVar::onVarAdded([](const std::string& name)
     { 
@@ -28,7 +36,7 @@ void VarDisplay::init(tgui::Gui& gui)
     m_parent = tgui::ChildWindow::create("Debugging Vars", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
     m_windowHandler.setMinimize_Maximize(m_parent);
     m_windowHandler.setSoftClose(m_parent);
-    gui.add(m_parent);
+    parent->add(m_parent);
 
     m_parent->setSize({"10%","15%"});
     m_parent->setPosition({"90%", "0%"});

@@ -23,6 +23,8 @@ class Prompt
 public:
     /// @brief initializes the command prompt UI with the given tgui::Gui
     static void init(tgui::Gui& sfmlGui);
+    /// @brief initializes the command prompt UI with the given widget as the parent
+    static void init(tgui::Container::Ptr parent);
     /// @brief used to erase all pointers to UI in tgui so the program can close without a crash
     static void close();
 

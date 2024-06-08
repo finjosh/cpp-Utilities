@@ -22,6 +22,8 @@ public:
     /// @brief creates all of the UI needed for the display to work
     /// @param gui used to initalized the UI for the display
     static void init(tgui::Gui& gui);
+    /// @brief initializes the TFuncDisplay UI with the given widget as the parent
+    static void init(tgui::Container::Ptr parent);
     /// @brief removes all of the pointers from storage so the program can close without a crash
     static void close();
 
