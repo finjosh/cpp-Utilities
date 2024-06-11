@@ -18,17 +18,31 @@ public:
         Running = 1
     };
 
-    struct data
+    class Data
     {
-        inline data(float deltaTime, float totalTime, bool isForceStop) : deltaTime(deltaTime), totalTime(totalTime), isForceStop(isForceStop) {};
-        const float deltaTime = 0.f;
-        const float totalTime = 0.f;
-        const bool isForceStop = false;
-        State state = State::Finished;
+    public:
+        inline Data() = default;
+        // inline Data(float deltaTime, float totalTime, bool isForceStop) : deltaTime(deltaTime), totalTime(totalTime), isForceStop(isForceStop) {};
 
-        inline void setRunning() { state = State::Running; }
+        void setRunning();
         /// @brief NOT required as state is by default finished
-        inline void setFinished() { state = State::Finished; }
+        void setFinished();
+        State getState() const;
+        float getDeltaTime() const;
+        float getTotalTime() const;
+        /// @returns true when this function will not be called anymore no matter its state (running or finished)
+        bool isForceStop() const;
+        /// @returns true if this function has been requested to stop
+        bool isStopRequested() const;
+
+    protected:
+        float m_deltaTime = 0.f;
+        float m_totalTime = 0.f;
+        bool m_isForceStop = false;
+        bool m_requestStop = false;
+        State m_state = State::Finished;
+
+        friend TerminatingFunction;
     };
 
     /// @brief Calling this function will call all Terminating Functions and erase ther from the list if they are finished running
@@ -39,17 +53,20 @@ public:
     /// @note when a function is removed or over its limit data will set "isForceStop" to true
     /// @warning The function will only be added if it is valid
     /// @returns the function typeid is "" if function is not valid
-    static std::string Add(funcHelper::funcDynamic<data*> function, float maxTime = std::numeric_limits<float>::infinity());
+    static std::string Add(funcHelper::funcDynamic<Data*> function, float maxTime = std::numeric_limits<float>::infinity());
     /// @brief clears all terminating functions from the list 
     /// @note does not give warning to any function
     static void clear();
     /// @brief erases the given function from the terminating functions list IF there is one in the list
-    /// @warning removes all functions with the same functionTypeid
+    /// @note removes all functions with the same functionTypeid
     static void remove(const std::string& functionTypeid);
     /// @brief erases the given function from the terminating functions list IF there is one in the list
-    /// @warning removes all functions with the same functionTypeid
-    /// @note bypasses the final call which gives warning of ending
+    /// @note removes all functions with the same functionTypeid
+    /// @warning bypasses the final call which gives warning of ending
     static void forceRemove(const std::string& functionTypeid);
+    /// @brief requests to stop the given function type id
+    /// @returns true if it was requested and false if function not found
+    static bool requestStop(const std::string& functionTypeid);
 
     /// @brief gets the string data from ever terminating function at the moment
     /// @return a list where each item is a list of: function name, total time running, max run time
@@ -58,43 +75,36 @@ public:
 protected:
     struct _tFunc
     {
-        inline _tFunc(funcHelper::funcDynamic<data*> func, float maxTime) : func(func), maxTime(maxTime) {};
+        _tFunc(funcHelper::funcDynamic<Data*> func, float maxTime) : m_func(func), m_maxTime(maxTime) {}
 
-        funcHelper::funcDynamic<data*> func;
-        float totalTime = 0.f;
-        float maxTime;
+        funcHelper::funcDynamic<Data*> m_func;
+        float m_totalTime = 0.f;
+        float m_maxTime = std::numeric_limits<float>().max();
+        bool m_requestStop = false;
 
-        inline bool operator== (const _tFunc& tFunc)
-        {
-            return func.getTypeid() == tFunc.func.getTypeid();
-        }
-
+        bool operator== (const _tFunc& tFunc) const;
+        bool operator== (const std::string& id) const;
+        bool operator< (const _tFunc& tFunc) const;
+        bool operator< (const std::string& id) const;
         /// @brief removes everything before "setFunction"
         /// @param typeID the typeID of the function
         /// @returns shortened id
-        inline std::string getShortenedID(const std::string& typeID)
-        {
-            return typeID.substr(typeID.find("setFunction")+11);
-        }
-
-        /// @return pair of strings first is name and second is total time
-        inline std::list<std::string> toString()
-        {
-            return {getShortenedID(func.getTypeid()), std::to_string(totalTime), std::to_string(maxTime)};
-        }
+        std::string getShortenedID(const std::string& typeID);
+        /// @return list with 3 strings (id, total time, max time)
+        std::list<std::string> toString();
     };
 
 private:
     inline TerminatingFunction() = default;
 
-    // second value is the current time the function has been running for
+    /// @warning you must free the pointer yourself
     static std::list<_tFunc> m_terminatingFunctions;
     static std::mutex m_lock;
 };
 
 typedef TerminatingFunction TFunc;
-typedef funcHelper::funcDynamic<TFunc::data*> TFunction;
-typedef TerminatingFunction::data TData;
+typedef funcHelper::funcDynamic<TFunc::Data*> TFunction;
+typedef TerminatingFunction::Data TData;
 typedef TerminatingFunction::State TState;
 
-#endif // TERMINATINGFUNCTION_H
+#endif

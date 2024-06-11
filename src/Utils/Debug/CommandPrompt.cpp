@@ -23,7 +23,7 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
     parent->add(m_parent);
 
     // * setup of child window
-    m_parent->setTitleAlignment(tgui::ChildWindow::TitleAlignment::Left);
+    m_parent->setTitleAlignment(tgui::HorizontalAlignment::Left);
     m_parent->setResizable();
     m_parent->setSize({"40%","35%"});
     m_parent->setPosition({"60%","65%"});
@@ -187,11 +187,9 @@ void Command::Prompt::UpdateEvent(const sf::Event& event)
         if (event.key.code == sf::Keyboard::Key::Tilde)
         {
             if (m_parent->isEnabled())
-            {
                 setVisible(false);
-            }
             else
-                setVisible();
+                setVisible(true);
         }
 
         // checking after checking the open and close key

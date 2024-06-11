@@ -25,8 +25,8 @@ void TerminatingFunctionTest::test()
     // data has the delta time the total running time and the state of the function
     // here is an example usage with total time
     TerminatingFunction::Add([](TData* data){ 
-        cout << "Total Time Running: " << data->totalTime << endl;
-        if (data->totalTime <= 2) 
+        cout << "Total Time Running: " << data->getTotalTime() << endl;
+        if (data->getTotalTime() <= 2) 
         {
             data->setRunning();
         }
@@ -40,11 +40,29 @@ void TerminatingFunctionTest::test()
     // normally infinitely running function but has max of 20 seconds
     TerminatingFunction::Add({[](TData* data){
         // note you can account for a early stop
-        if (data->isForceStop)
+        if (data->isForceStop())
         {
             std::cout << "Early stop at 20 seconds" << std::endl;
             // do stuff
         }
         data->setRunning();
     }}, 20.f);
+
+    temp = TerminatingFunction::Add({[](TData* data){
+        data->setRunning();
+        if (data->isStopRequested())
+        {
+            std::cout << "Stop was requested and handled" << std::endl;
+            data->setFinished();
+        }
+    }});
+    TerminatingFunction::Add([temp](TData* data){
+        data->setRunning();
+        if (data->getTotalTime() > 15)
+        {
+            data->setFinished();
+            std::cout << "Requesting stop" << std::endl;
+            TFunc::requestStop(temp);
+        }
+    });
 }

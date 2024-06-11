@@ -119,14 +119,14 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
     panel->add(subPanel);
     subPanel->setSize({"100%","50%"});
     subPanel->add(time);
-    time->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
+    time->setVerticalAlignment(tgui::VerticalAlignment::Center);
     time->setSize({"66%", "33%"});
     subPanel->add(IPS);
-    IPS->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
+    IPS->setVerticalAlignment(tgui::VerticalAlignment::Center);
     IPS->setSize({"66%", "33%"});
     IPS->setPosition({0, "33%"});
     subPanel->add(lastRuntime);
-    lastRuntime->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
+    lastRuntime->setVerticalAlignment(tgui::VerticalAlignment::Center);
     lastRuntime->setSize({"66%", "33%"});
     lastRuntime->setPosition({0, "66%"});
     subPanel->add(pause_resume);
@@ -355,8 +355,8 @@ void TestHelper::graphData(const std::list<std::string>& files)
     label->setSize({"60%", "66%"});
     label->setMaximumTextWidth(label->getSize().x);
     label->setPosition({"20%", 0});
-    label->setHorizontalAlignment(tgui::Label::HorizontalAlignment::Center);
-    label->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
+    label->setHorizontalAlignment(tgui::HorizontalAlignment::Center);
+    label->setVerticalAlignment(tgui::VerticalAlignment::Center);
     auto filesBox = tgui::ComboBox::create();
     childWindow->add(filesBox);
     filesBox->setSize({"100%", "34%"});
@@ -391,10 +391,13 @@ void TestHelper::graphData(const std::list<std::string>& files)
         Next->setEnabled(false);
         Last->setEnabled(false);
 
-        auto id = TFunc::Add([label](TData* data){
+        auto id = TFunc::Add([label, &graphThread](TData* data){
+            if (data->isForceStop())
+                graphThread = nullptr;
+
             data->setRunning();
             std::string temp = "Loading";
-            for (int i = 0; i < (int)(data->totalTime*2)%3 + 1; i++)
+            for (int i = 0; i < (int)(data->getTotalTime()*2)%3 + 1; i++)
                 temp += '.';
             label->setText(temp);
         });
@@ -481,7 +484,8 @@ void TestHelper::graphData(const std::list<std::string>& files)
         window.display();
     }
     window.close();
-    graphThread->join();
+    if (graphThread)
+        graphThread->join();
 }
 
 bool TestHelper::makeGraph(Graph& graph, const iniParser& data, float thickness)

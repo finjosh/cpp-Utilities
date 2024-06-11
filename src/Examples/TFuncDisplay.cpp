@@ -15,7 +15,7 @@ void TFuncDisplayTest::test()
 
     TFunc::Add([](TData* data)
     {
-        if (data->totalTime >= 2)
+        if (data->getTotalTime() >= 2)
         {
             TFuncDisplay::setVisible(true);
             return;
@@ -24,7 +24,7 @@ void TFuncDisplayTest::test()
     });
     TFunc::Add([](TData* data)
     {
-        if (data->totalTime >= 4)
+        if (data->getTotalTime() >= 4)
         {
             TFuncDisplay::setVisible(false);
             return;

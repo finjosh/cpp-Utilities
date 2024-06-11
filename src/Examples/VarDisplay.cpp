@@ -15,7 +15,7 @@ void VarDisplayTest::test()
 
     TFunc::Add([](TData* data)
     {
-        if (data->totalTime >= 2)
+        if (data->getTotalTime() >= 2)
         {
             VarDisplay::setVisible();
             return;
@@ -24,7 +24,7 @@ void VarDisplayTest::test()
     });
     TFunc::Add([](TData* data)
     {
-        if (data->totalTime >= 4)
+        if (data->getTotalTime() >= 4)
         {
             VarDisplay::setVisible(false);
             return;

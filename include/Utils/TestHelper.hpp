@@ -59,9 +59,12 @@ public:
     /// @param folder the folder where the ini files are stored (put "" for the current folder)
     /// @param suffix the required suffix for the file to have (anything before the .ini)
     /// @note creates a thread when ever loading a graph
+    /// @note if the window is closed before the thread is done this function will wait for thread to finish
     static void graphData(const std::string& folder = "", const std::string& suffix = "");
     /// @brief opens a window that attempts to graph all .ini files in the given folder
     /// @param files the list of paths to files that are to be graphed
+    /// @note creates a thread when ever loading a graph~
+    /// @note if the window is closed before the thread is done this function will wait for thread to finish
     static void graphData(const std::list<std::string>& files);
 
 protected:

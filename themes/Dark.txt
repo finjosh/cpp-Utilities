@@ -59,7 +59,7 @@ TitleColor = White; // *
 
 // Miscellaneous
 HeaderBackgroundColor = rgb(25,25,25); // *
-Padding = 0; // *
+Padding = 3; // *
 PaddingBetweenButtons = 1; // *
 ButtonDistanceFromSide = 3; // *
 RoundedBorderRadius = 4; // *
@@ -84,6 +84,7 @@ Button {
 Panel
 {
     RoundedBorderRadius = &RoundedBorderRadius;
+    Padding = &Padding;
 }
 
 ChatBox
@@ -94,6 +95,19 @@ ChatBox
 ComboBox
 {
     Padding = &Padding;
+}
+
+CheckBox
+{
+    BackgroundColor = &BackgroundColor;
+    BackgroundColorDisabled = &BackgroundColorDisabled;
+    BackgroundColorHover = &BackgroundColorHover;
+    Borders = &Borders;
+    BorderColorDisabled = &BorderColorDisabled;
+    BorderColor = &BorderColor;
+    BorderColorFocused = &BorderColorFocused;
+    BorderColorHover = &BorderColorHover;
+    TextColor = &TextColor;
 }
 
 EditBox

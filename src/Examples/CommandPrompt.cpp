@@ -9,10 +9,10 @@ void CommandPromptTest::test()
 
     // Other that the required functions you have
     // openPrompt which is for opening the window
-    TFunc::Add([](TData* data){ if (data->totalTime >= 3) Command::Prompt::setVisible(); else data->state = TState::Running; });
+    TFunc::Add([](TData* data){ if (data->getTotalTime() >= 3) Command::Prompt::setVisible(); else data->setRunning(); });
 
     // closePrompt
-    TFunc::Add([](TData* data){ if (data->totalTime >= 5) Command::Prompt::setVisible(false); else data->state = TState::Running; });
+    TFunc::Add([](TData* data){ if (data->getTotalTime() >= 5) Command::Prompt::setVisible(false); else data->setRunning(); });
 
     // print which prints to the command prompt
     Command::Prompt::print("Something was printed", Command::color(0,255,0));

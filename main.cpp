@@ -25,7 +25,7 @@ using namespace sf;
 
 int main()
 {
-    TestHelperTest::test();
+    // TestHelperTest::test();
     funcHelperTest::test();
     EventHelperTest::test();
     StopwatchTest::test();
@@ -90,7 +90,8 @@ int main()
     //* CommandPromptTest
     CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
     //* TFuncDisplayTest
-    TFuncDisplayTest::test();
+    // TFuncDisplayTest::test();
+    TFuncDisplay::setVisible(true);
 
     //* LiveVarTest
     LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
