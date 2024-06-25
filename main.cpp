@@ -137,11 +137,5 @@ int main()
         window.display();
     }
 
-    //! Required so that VarDisplay and CommandPrompt release all data
-    VarDisplay::close();
-    Command::Prompt::close();
-    TFuncDisplay::close();
-    //! --------------------------------------------------------------
-
     return EXIT_SUCCESS;
 }

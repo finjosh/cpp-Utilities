@@ -15,8 +15,7 @@ void VarDisplay::init(tgui::Gui& gui)
 
 void VarDisplay::init(tgui::Container::Ptr parent)
 {
-    if (!parent)
-        return;
+    TGUI_ASSERT(parent, "Need to give a valid parent for VarDisplay to init");
 
     // adding any event updates for the new live var
     LiveVar::onVarAdded([](const std::string& name)
@@ -34,6 +33,7 @@ void VarDisplay::init(tgui::Container::Ptr parent)
     });
 
     m_parent = tgui::ChildWindow::create("Debugging Vars", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Minimize);
+    m_parent->onClose(VarDisplay::close);
     m_windowHandler.setMinimize_Maximize(m_parent);
     m_windowHandler.setSoftClose(m_parent);
     parent->add(m_parent);
@@ -56,6 +56,8 @@ void VarDisplay::init(tgui::Container::Ptr parent)
 
 void VarDisplay::close()
 {
+    if (m_parent)
+        m_parent->destroy();
     m_parent = nullptr;
     m_varLabel = nullptr;
     m_scrollPanel = nullptr;

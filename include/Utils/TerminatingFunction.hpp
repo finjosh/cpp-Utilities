@@ -55,7 +55,7 @@ public:
     /// @returns the function typeid is "" if function is not valid
     static std::string Add(funcHelper::funcDynamic<Data*> function, float maxTime = std::numeric_limits<float>::infinity());
     /// @brief clears all terminating functions from the list 
-    /// @note does not give warning to any function
+    /// @note this gives warning to all functions before clearing (i.e. runs once more before clearing)
     static void clear();
     /// @brief erases the given function from the terminating functions list IF there is one in the list
     /// @note removes all functions with the same functionTypeid

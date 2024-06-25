@@ -31,7 +31,7 @@ public:
     static void init(tgui::Gui& gui);
     /// @brief initializes the Var display UI with the given widget as the parent
     static void init(tgui::Container::Ptr parent);
-    /// @brief removes all of the pointers from storage so the program can close without a crash
+    /// @brief completely removes the VarDisplay from the gui
     static void close();
 
     /// @brief updates the live vars

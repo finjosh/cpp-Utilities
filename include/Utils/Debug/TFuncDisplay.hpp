@@ -24,7 +24,7 @@ public:
     static void init(tgui::Gui& gui);
     /// @brief initializes the TFuncDisplay UI with the given widget as the parent
     static void init(tgui::Container::Ptr parent);
-    /// @brief removes all of the pointers from storage so the program can close without a crash
+    /// @brief completely removes the TFuncDisplay from the gui
     static void close();
 
     /// @brief Call this every frame to update the terminating functions being shown

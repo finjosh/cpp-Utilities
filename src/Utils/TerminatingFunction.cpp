@@ -120,7 +120,11 @@ std::string TerminatingFunction::Add(funcHelper::funcDynamic<Data*> function, fl
 void TerminatingFunction::clear()
 { 
     m_lock.lock(); 
-    TerminatingFunction::m_terminatingFunctions.clear(); 
+    for (auto function: m_terminatingFunctions)
+    {
+        function.m_maxTime = 0.f;
+    }
+    UpdateFunctions(0);
     m_lock.unlock(); 
 }
 

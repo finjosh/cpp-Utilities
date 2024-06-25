@@ -11,7 +11,10 @@ void TFuncDisplay::init(tgui::Gui& gui)
 
 void TFuncDisplay::init(tgui::Container::Ptr parent)
 {
+    TGUI_ASSERT(parent, "Need to give a valid parent for TFuncDisplay to init");
+
     m_parent = tgui::ChildWindow::create("Terminating Functions", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
+    m_parent->onClose(TFuncDisplay::close);
     parent->add(m_parent);
     
     m_parent->setSize({"20%","20%"});
@@ -38,6 +41,8 @@ void TFuncDisplay::init(tgui::Container::Ptr parent)
 
 void TFuncDisplay::close()
 {
+    if (m_parent)
+        m_parent->destroy();
     m_parent = nullptr;
     m_list = nullptr;
 }

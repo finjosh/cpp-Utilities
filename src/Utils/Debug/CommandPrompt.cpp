@@ -19,7 +19,10 @@ void Command::Prompt::init(tgui::Gui& sfmlGui)
 
 void Command::Prompt::init(tgui::Container::Ptr parent)
 {
+    TGUI_ASSERT(parent, "Need to give a valid parent for Command::Prompt to init");
+
     m_parent = tgui::ChildWindow::create("Command Prompt", tgui::ChildWindow::TitleButton::Close | tgui::ChildWindow::TitleButton::Maximize);
+    m_parent->onClose(Command::Prompt::close);
     parent->add(m_parent);
 
     // * setup of child window
@@ -174,6 +177,8 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
 
 void Command::Prompt::close()
 {
+    if (m_parent)
+        m_parent->destroy();
     m_parent = nullptr;
     m_textBox = nullptr;
     m_autoFillList = nullptr;

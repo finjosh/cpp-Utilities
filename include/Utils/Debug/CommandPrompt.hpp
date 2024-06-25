@@ -25,7 +25,7 @@ public:
     static void init(tgui::Gui& sfmlGui);
     /// @brief initializes the command prompt UI with the given widget as the parent
     static void init(tgui::Container::Ptr parent);
-    /// @brief used to erase all pointers to UI in tgui so the program can close without a crash
+    /// @brief completely removes the command prompt from the gui
     static void close();
 
     /// @brief used to update the command prompts keyboard events
