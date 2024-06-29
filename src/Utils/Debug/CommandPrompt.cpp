@@ -52,7 +52,7 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
         m_parent->add(m_chatBox);
         m_chatBox->setSize({"100%", "100%-25"});
         m_chatBox->setLinesStartFromTop();
-        m_chatBox->setLineLimit(1028);
+        m_chatBox->setLineLimit(256);
         m_chatBox->setFocusable(false);
 
         // * setup for the command prompt custom commands

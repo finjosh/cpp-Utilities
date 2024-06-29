@@ -2,24 +2,29 @@
 
 using namespace EventHelper;
 
-std::list<std::pair<Event*, std::function<void()>>> Event::ThreadSafe::_events;
+std::list<std::pair<Event*, std::function<void()>>> Event::ThreadSafe::m_events;
+std::mutex Event::ThreadSafe::m_lock;
 
 void Event::ThreadSafe::update()
 {
-    for (auto event: _events)
+    m_lock.lock();
+    for (auto event: m_events)
     {
-        event.second();
+        event.second.operator()();
     }
-    _events.clear(); // removing all the events in the queue
+    m_events.clear(); // removing all the events in the queue
+    m_lock.unlock();
 }
 
 void Event::ThreadSafe::removeEvent(Event* event)
 {
+    m_lock.lock();
     // removing from list
-    _events.remove_if(
+    m_events.remove_if(
         [event](const std::pair<EventHelper::Event *, std::function<void()>>& v){
             return v.first == event;
         });
+    m_lock.unlock();
 }
 
 std::deque<const void*> Event::m_parameters(5, nullptr);
@@ -59,8 +64,8 @@ bool Event::invoke(bool threadSafe, bool removeOtherInstances)
 
     if (threadSafe)
     {
-        if (removeOtherInstances) Event::ThreadSafe::removeEvent(this);
-        Event::ThreadSafe::addEvent(this, [this]{ Event::invokeFunc(&Event::_invoke, this); });
+        // if (removeOtherInstances) Event::ThreadSafe::removeEvent(this);
+        Event::ThreadSafe::addEvent(this, [this]{ Event::invokeFunc(&Event::_invoke, this); }, removeOtherInstances);
         return true;
     }
 
