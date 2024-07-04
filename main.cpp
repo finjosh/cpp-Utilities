@@ -51,7 +51,7 @@ int main()
 
     //! Adding a command for showing off the different themes
     Command::Handler::addCommand(Command::command{"setTheme", "Function used to set the theme of the UI (The previous outputs in the command prompt will not get updated color)", 
-        {Command::print, "Trying calling one of the sub commands"},
+        {Command::print, "Trying calling one of the sub commands"}, {},
         std::list<Command::command>{
             // Command::command{"default", "(Currently does not work, coming soon) Sets the theme back to default", {[](){ 
             //     tgui::Theme::setDefault(""); //! This does not work due to a tgui issue
@@ -112,12 +112,17 @@ int main()
         sf::Event event;
         while (window.pollEvent(event))
         {
-            gui.handleEvent(event);
+            //! Required CommandPrompt to work as intended
+            if (Command::Prompt::UpdateEvent(event))
+                continue;
+            //! ------------------------------------------
+            
+            if (gui.handleEvent(event))
+                continue;
 
-            //! Required for LiveVar and CommandPrompt to work as intended
+            //! Required for Live Vars to work as intended
             LiveVar::UpdateLiveVars(event);
-            Command::Prompt::UpdateEvent(event);
-            //! ----------------------------------------------------------
+            //! ------------------------------------------
 
             if (event.type == sf::Event::Closed)
                 window.close();

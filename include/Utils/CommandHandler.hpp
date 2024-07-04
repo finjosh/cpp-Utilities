@@ -159,25 +159,30 @@ inline bool isValidInput(const std::string& errorMsg, Data& data, const std::str
 }
 
 /// @brief template for printing something (can be used as the func for a command)
+/// @note these are not affected by the "canPrint()" state
 /// @note only give a value for str
 void print(const std::string& str, Data* input);
 
 /// @brief prints "use "help" `name` for more infomation"
-/// @note used as a commands function if used as a "namespace"
+/// @note these are not affected by the "canPrint()" state
 void helpCommand(const std::string& name, Data* data);
+#define helpPrint helpCommand
 
 class Handler;
 
+// TODO add the ability to give auto fill options (filler inputs for the command)
 class command
 {
 public:
-
     /// @param name name of the command
     /// @param description description of the command
     /// @param func the function to be called can take in Command Data if wanted
     /// @param subCommands sub commands that are required after the current function
+    /// @param possibleInputs are SOME/all possible inputs to this command/subCommand (also used with autoFill)
     command(const std::string& name, const std::string& description, 
-            const funcHelper::funcDynamic<Data*>& func = [](){}, const std::list<command>& subCommands = {});
+            const funcHelper::funcDynamic<Data*>& func = [](){}, 
+            const std::list<std::string>& possibleInputs = {},
+            const std::list<command>& subCommands = {});
     command(const command& command);
 
     bool operator< (const command& command) const;
@@ -195,12 +200,16 @@ public:
     /// @note does not add the current commands name and description
     /// @returns the name separated by " - " and the description of each sub command (with the max length given)
     std::string getSubCommandsNameDescription(size_t maxLength = SIZE_MAX, size_t subCommandIndex = 1) const;
+    /// @note this is NOT all possible inputs but some that are given by default
+    /// @returns a list of possible inputs
+    const std::list<std::string>& getPossibleInputs() const;
 
     /// @note data should only contain inputs not command names
     void invoke(Data& data);
 
 protected:
     std::list<command> m_subCommands;
+    std::list<std::string> m_possibleInputs;
 
 private:
     std::string m_name;

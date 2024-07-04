@@ -1,4 +1,4 @@
-#include "Utils/Debug/CommandHandler.hpp"
+#include "Utils/CommandHandler.hpp"
 
 using namespace Command;
 
@@ -183,14 +183,15 @@ void Data::deepParseCommand()
 
 // * Command
 
-command::command(const std::string& name, const std::string& description, const funcHelper::funcDynamic<Data*>& func, const std::list<command>& subCommands) :
-    m_name(name), m_description(description), m_function(func), m_subCommands(subCommands)
+command::command(const std::string& name, const std::string& description, const funcHelper::funcDynamic<Data*>& func, const std::list<std::string>& possibleInputs, const std::list<command>& subCommands) :
+    m_name(name), m_description(description), m_function(func), m_subCommands(subCommands), m_possibleInputs(possibleInputs)
 {
     m_subCommands.sort();
+    m_possibleInputs.sort();
 }
 
 command::command(const command& command) :
-    m_name(command.getName()), m_description(command.getDescription()), m_function(command.m_function), m_subCommands(command.m_subCommands)
+    m_name(command.getName()), m_description(command.getDescription()), m_function(command.m_function), m_subCommands(command.m_subCommands), m_possibleInputs(command.m_possibleInputs)
 {}
 
 bool command::operator< (const command& command) const
@@ -252,6 +253,11 @@ std::string command::getSubCommandsNameDescription(size_t maxLength, size_t subC
         --subCommandIndex;
     });
     return rtn;
+}
+
+const std::list<std::string>& Command::command::getPossibleInputs() const
+{
+    return m_possibleInputs;
 }
 
 void command::invoke(Data& data)
@@ -399,42 +405,45 @@ std::list<std::string> Handler::autoFillSearch(const std::string& search)
         if (input.getNumTokens() == 0) return rtn; // checking if the only thing imputed was help
     }
 
-    std::list<command>::iterator commandsIter = m_commands.begin();
     std::list<command>* commandsList = &m_commands;
+    command* lastValidCommand = nullptr;
 
     // finding which list to find auto fill for
     {
-        std::list<command>* tempList = &m_commands;
-        std::list<command>::iterator i = commandsIter;
+        std::list<command>::iterator i = m_commands.begin();;
         while (true)
         {
-            i = std::find_if(tempList->begin(), tempList->end(), [&input](const Command::command& v){return StringHelper::toLower_copy(v.getName()) == input.getToken(0);});
-            if (i != tempList->end() && input.getNumTokens() > 1)
+            i = std::find_if(commandsList->begin(), commandsList->end(), [&input](const Command::command& v){return StringHelper::toLower_copy(v.getName()) == input.getToken(0);});
+            if (i != commandsList->end() && input.getNumTokens() > 1)
             {
-                tempList = &i->m_subCommands;
+                commandsList = &i->m_subCommands;
+                lastValidCommand = &(*i);
                 input.removeToken(0);
             }
             else
             {
                 break;
             }
+        }    
+    }
+    
+    if (lastValidCommand != nullptr && input.getToken(input.getNumTokens()-1) == "")
+    {
+        for (auto i: lastValidCommand->getPossibleInputs())
+        {
+            rtn.emplace_back(i);
         }
-        commandsIter = tempList->begin();
-        commandsList = tempList;
     }
 
     for (std::list<command>::iterator i = commandsList->begin(); i != commandsList->end(); i++)
     {
         if (StringHelper::toLower_copy(i->getName()).starts_with(input.getToken(0)))
         {
-            foundCommand = true;
             rtn.push_back(i->getName() + " ");
         }
-        else if (foundCommand)
-        {
-            break;
-        }
     }
+
+    rtn.sort();
 
     return rtn;
 }

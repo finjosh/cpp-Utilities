@@ -6,7 +6,7 @@
 #include <iostream>
 
 //! Depends on FuncHelper and StringHelper
-#include "include/Utils/Debug/CommandHandler.hpp"
+#include "include/Utils/CommandHandler.hpp"
 
 class CommandHandlerTest
 {

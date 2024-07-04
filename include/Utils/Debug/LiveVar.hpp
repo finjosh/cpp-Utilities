@@ -13,8 +13,8 @@
 #include "Utils/funcHelper.hpp"
 #include "Utils/EventHelper.hpp"
 
-#if __has_include("CommandHandler.hpp")
-#include "CommandHandler.hpp" 
+#if __has_include("Utils/CommandHandler.hpp")
+#include "Utils/CommandHandler.hpp" 
 #endif
 
 #define VALUE_SET std::pair<sf::Keyboard::Key, float>
@@ -98,7 +98,7 @@ public:
         // if command handler is also in use then we add some commands for using the var display
         #ifdef COMMANDHANDLER_H
         //* adding commands for live vars to the command handler
-        Command::Handler::addCommand(Command::command("lVars", "Contains commands for live variables", {Command::print, "Trying using 'help lVars'"}, 
+        Command::Handler::addCommand(Command::command("lVars", "Contains commands for live variables", {Command::helpPrint, "Trying using 'help lVars'"}, {},
             //* sub commands for the lVars
             {
             Command::command("get", "[Name] | Gets the value for the given variable", {[](Command::Data* data){

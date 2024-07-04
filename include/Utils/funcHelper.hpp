@@ -6,6 +6,7 @@
 #include <functional>
 #include <utility>
 #include <deque>
+#include <cassert>
 
 #include <mutex>
 
@@ -36,7 +37,7 @@ public:
     }
 
     /// @returns true, if the function held is valid (not a nullptr)
-    inline bool valid() const { 
+    inline bool isValid() const { 
         return (bool)m_function; 
     }
 
@@ -44,13 +45,14 @@ public:
     inline _ReturnType invoke() const
     { 
         // auto func_copy = this->m_function; // incase the func is deleted during call
+        assert(("The function must be valid", this->isValid()));
         return this->m_function();
     }
 
     /// @brief invokes the currently set function
     inline _ReturnType operator() () const
     { 
-        return this->m_function(); 
+        return this->invoke(); 
     }
 
     inline const char* getTypeid() const

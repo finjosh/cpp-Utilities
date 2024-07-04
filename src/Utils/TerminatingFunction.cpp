@@ -106,7 +106,7 @@ void TerminatingFunction::UpdateFunctions(float deltaTime)
 std::string TerminatingFunction::Add(funcHelper::funcDynamic<Data*> function, float maxTime)
 { 
     m_lock.lock();
-    if (function.valid())
+    if (function.isValid())
     {
         TerminatingFunction::m_terminatingFunctions.emplace_back(function, maxTime); 
         

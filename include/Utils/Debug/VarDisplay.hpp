@@ -9,8 +9,8 @@
 #include "LiveVar.hpp" 
 #include "Utils/TGUICommon.hpp"
 
-#if __has_include("CommandHandler.hpp")
-#include "CommandHandler.hpp" 
+#if __has_include("Utils/CommandHandler.hpp")
+#include "Utils/CommandHandler.hpp" 
 #endif
 
 #include "TGUI/Backend/SFML-Graphics.hpp"

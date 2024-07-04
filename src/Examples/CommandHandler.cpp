@@ -51,7 +51,7 @@ void CommandHandlerTest::test()
 
     //* Commands
     // Examples of creating commands
-    Command::command("CommandName", "A description for the command", /*The function*/{Command::print, "This is a command"}, 
+    Command::command("CommandName", "A description for the command", /*The function*/{Command::print, "This is a command"}, {},
                     /*Sub commands*/ {Command::command("A sub Command", "It's description", {Command::print, "A sub command"})});
     auto roundCommand = Command::command("round", "Rounds the given float", {[](Command::Data* data)
     {

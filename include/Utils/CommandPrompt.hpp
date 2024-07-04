@@ -11,13 +11,14 @@
 #include "TGUI/Widgets/ListBox.hpp"
 #include "TGUI/Widgets/ChildWindow.hpp"
 
-#include "Utils/Debug/CommandHandler.hpp"
+#include "Utils/CommandHandler.hpp"
 #include "Utils/StringHelper.hpp"
 #include "Utils/TGUICommon.hpp"
 
 namespace Command
 {
 
+/// @note all UI functions only work if the intt function was called
 class Prompt
 {
 public:
@@ -29,7 +30,8 @@ public:
     static void close();
 
     /// @brief used to update the command prompts keyboard events
-    static void UpdateEvent(const sf::Event& event);
+    /// @returns true if the event was used by the command prompt
+    static bool UpdateEvent(const sf::Event& event);
 
     /// @brief sets the Command::color default to the current tgui theme default
     static void UpdateDefaultColor();
@@ -37,6 +39,8 @@ public:
     /// @brief sets the command prompt as visible or not
     /// @param visible the state to set the command prompt to
     static void setVisible(bool visible = true);
+    /// @brief focuses the input box for the command prompt
+    static void setInputBoxFocused(bool focused = true);
 
     /// @brief only prints to the command prompt IF the command prompt is set to true
     /// @note setting command prompt to allow prints is only done through the command prompt its self during runtime
@@ -81,6 +85,8 @@ private:
     static size_t m_maxHistory;
 
     static bool m_allowPrint;
+
+    static bool m_ignoreInputText;
 };
 
 }

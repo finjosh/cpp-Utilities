@@ -4,8 +4,8 @@
 #pragma once
 
 #include "TGUI/Widgets/ChildWindow.hpp"
-#if __has_include("Utils/Debug/CommandHandler.hpp")
-#include "Utils/Debug/CommandHandler.hpp" 
+#if __has_include("Utils/CommandHandler.hpp")
+#include "Utils/CommandHandler.hpp" 
 #endif
 
 namespace tguiCommon
@@ -45,7 +45,7 @@ public:
     static inline void createOpenCloseCommand(const std::string& windowName, tgui::ChildWindow::Ptr window)
     {
         Command::Handler::addCommand(Command::command(windowName, "Commands for the " + windowName + " window", 
-                                    [windowName](Command::Data* data){ data->setReturnStr("Try using 'help " + windowName + "'"); },
+                                    [windowName](Command::Data* data){ data->setReturnStr("Try using 'help " + windowName + "'"); }, {},
                                     {Command::command("open", "Opens the window", [window](){ ChildWindow::setVisible(window, true); }),
                                      Command::command("close", "Opens the window", [window](){ ChildWindow::setVisible(window, false); })}));
     }

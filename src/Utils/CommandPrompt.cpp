@@ -1,4 +1,4 @@
-#include "Utils/Debug/CommandPrompt.hpp"
+#include "Utils/CommandPrompt.hpp"
 
 tguiCommon::ChildWindow Command::Prompt::m_windowHandler;
 
@@ -11,6 +11,7 @@ std::list<std::string> Command::Prompt::m_commandHistory;
 size_t Command::Prompt::m_maxHistory = 64;
 
 bool Command::Prompt::m_allowPrint = true;
+bool Command::Prompt::m_ignoreInputText = false;
 
 void Command::Prompt::init(tgui::Gui& sfmlGui)
 {
@@ -58,10 +59,7 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
         // * setup for the command prompt custom commands
         {
             auto temp = m_chatBox.get();
-            Command::Handler::addCommand({"cp", "Prefix for any Command Prompt specific commands", {[](Command::Data* input)
-            { 
-                input->setReturnStr("Not a valid cp command. Try using 'help cp' for more info"); 
-            }},
+            Command::Handler::addCommand(command{"cp", "Prefix for any Command Prompt specific commands", {Command::helpPrint, "Not a valid cp command. Try using 'help cp' for more info"}, {},
             // list of sub commands
             {
                 Command::command("clear", "clears the command prompt", {[temp](){ temp->removeAllLines(); }}),
@@ -84,7 +82,7 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
                     m_allowPrint = StringHelper::toBool(input->getToken(0), m_allowPrint);
                     input->setReturnStr("Printing is now: ");
                     input->addToReturnStr(m_allowPrint ? "allowed" : "not allowed");
-                }}),
+                }}, {"True", "False"}),
                 Command::command("getPrintingAllowed", "prints if printing is allowed", {[](Command::Data* input)
                 {
                     input->setReturnStr(m_allowPrint ? "True" : "False");
@@ -185,31 +183,45 @@ void Command::Prompt::close()
     m_chatBox = nullptr;
 }
 
-void Command::Prompt::UpdateEvent(const sf::Event& event)
+bool Command::Prompt::UpdateEvent(const sf::Event& event)
 {
+    if (!m_parent)
+        return false;
+    if (m_ignoreInputText && event.type == sf::Event::TextEntered && (event.text.unicode == 96 || event.text.unicode == 126)) // TODO make this more dynamic
+    {
+        m_ignoreInputText = false;
+        return true;
+    }
     if (event.type == sf::Event::KeyPressed)
     {
-        if (event.key.code == sf::Keyboard::Key::Tilde)
+        if (event.key.code == sf::Keyboard::Key::Tilde) // TODO make this more dynamic
         {
             if (m_parent->isEnabled())
                 setVisible(false);
             else
+            {
                 setVisible(true);
+                m_textBox->setFocused(true);
+            }
+            m_ignoreInputText = true;
+            return true;
         }
 
         // checking after checking the open and close key
         if (!m_parent->isFocused())
-            return;
+            return false;
 
         if (event.key.code == sf::Keyboard::Key::Escape)
         {
             if (m_autoFillList->isVisible() && (m_textBox->isFocused() || m_autoFillList->isFocused()))
             {
                 m_autoFillList->setVisible(false);
+                return true;
             }
             else
             {
                 m_textBox->setFocused(false);
+                return true;
             }
         }
 
@@ -228,6 +240,8 @@ void Command::Prompt::UpdateEvent(const sf::Event& event)
 
             m_autoFillList->setSelectedItemByIndex(temp);
             m_textBox->setCaretPosition(m_textBox->getText().size());
+
+            return true;
         }
 
         if (event.key.code == sf::Keyboard::Key::Down)
@@ -236,14 +250,17 @@ void Command::Prompt::UpdateEvent(const sf::Event& event)
             {
                 m_autoFillList->setSelectedItemByIndex((m_autoFillList->getSelectedItemIndex() + 1)%m_autoFillList->getItemCount());
                 m_textBox->setCaretPosition(m_textBox->getText().size());
+                return true;
             }
         }
 
         if (event.key.code == sf::Keyboard::Key::Tab)
         {
             AutoFill();
+            return true;
         }
     }
+    return false;
 }
 
 void Command::Prompt::UpdateDefaultColor()
@@ -254,6 +271,8 @@ void Command::Prompt::UpdateDefaultColor()
 
 void Command::Prompt::setVisible(bool visible)
 {
+    if (!m_parent)
+        return;
     if (visible)
     {
         m_parent->setVisible(true);
@@ -265,6 +284,13 @@ void Command::Prompt::setVisible(bool visible)
         m_parent->setVisible(false);
         m_parent->setEnabled(false);
     }
+}
+
+void Command::Prompt::setInputBoxFocused(bool focused)
+{
+    if (!m_parent)
+        return;
+    m_textBox->setFocused(focused);
 }
 
 void Command::Prompt::print(const tgui::String& str, Command::color color)
