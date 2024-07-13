@@ -64,7 +64,6 @@ bool Event::invoke(bool threadSafe, bool removeOtherInstances)
 
     if (threadSafe)
     {
-        // if (removeOtherInstances) Event::ThreadSafe::removeEvent(this);
         Event::ThreadSafe::addEvent(this, [this]{ Event::invokeFunc(&Event::_invoke, this); }, removeOtherInstances);
         return true;
     }

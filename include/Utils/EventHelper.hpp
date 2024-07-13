@@ -18,7 +18,7 @@ class Event
 {
 public:
 
-    virtual ~Event() 
+    ~Event()
     {
         // removing pointer to this event in thread safe in case it is still in queue
         Event::ThreadSafe::removeEvent(this);

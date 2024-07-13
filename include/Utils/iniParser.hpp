@@ -33,24 +33,23 @@ public:
     /// @brief creates the 'iniParser' with a 'null' file path not opening any file
     iniParser();
     /// @brief creates the 'iniParser' opening the given file
-    /// @exception does not open a file if there is no file with the given path
     /// @note Does NOT load the data
     iniParser(const std::string& generic_path);
 
     /// @brief saves the loaded data before closing the folder and this obj being destructed
     ~iniParser();
 
-    /// @brief sets the file path
     /// @note Does NOT load the data
-    /// @warning closes (no matter what) and saves the file that is open (if auto save is true), opens the new one if possible
-    void setFilePath(const std::string& generic_path);
+    /// @warning closes (no matter what) and saves the file that is open (if auto save is true)
+    /// @returns true if the file was found and opened, false otherwise
+    bool setFile(const std::string& generic_path);
     /// @brief returns a copy of the filepath
     std::string getFilePath() const;
 
     /// @returns true if there is an open file
     bool isOpen() const;
     /// @returns true if the data was loaded
-    /// @note there could still be format errors
+    /// @note there could still be format errors (i.e. lost data)
     bool isDataLoaded() const;
     /// @brief allows the iniParser to override any data that was in the file (data does not have to be loaded first)
     /// @note if there was any data already loaded that data will be kept, also sets (isDataLoaded=true)
@@ -61,11 +60,11 @@ public:
     /// @exception any faulty formatted data is erased
     /// @warning if any data was loaded before it will be unloaded
     /// @returns if data was loaded (NOT if there was a format error)
-    bool LoadData();
+    bool loadData();
 
     /// @brief counts as loading data and will override any data in the opened file
     /// @returns false if there is no file open 
-    bool SetData(const std::map<std::string, std::map<std::string, std::string>>& Data);
+    bool setData(const std::map<std::string, std::map<std::string, std::string>>& Data);
 
     /// @brief unloads the data that is stored
     /// @warning will save the data if autosave is on
@@ -79,8 +78,7 @@ public:
     /// @brief erases the errors from loading data
     void clearFormatErrors();
 
-    /// @note first is for section format error and second is for key format error
-    /// @returns a pointer to an array of size 2 with the formatErrors if any
+    /// @returns a struct storing the current format errors states
     const formatError getFormatErrors() const;
 
     /// @return true if error
@@ -93,18 +91,15 @@ public:
     /// @brief creates a copy of the current file with a Error suffix on the name (Writes a log error)
     /// @note Does not edit the loaded data
     /// @warning does not save any data that was changed
-    void CopyFile_Error();
+    void createCopy_error();
 
     /// @brief the entire map holding all the loaded data data is stored as follows std::map<"SectionName", std::map<"KeyName", "KeyValue">>
     /// @warning DO NOT EDIT GIVEN DATA
     const std::map<std::string, std::map<std::string, std::string>>& getLoadedData() const;
     /// @brief the map holding data from the section inputted which is stored as std::map<"KeyName", "KeyValue">
-    /// @returns the map holding data for the given section if it exists, otherwise it returns iniParser::InvalidSectionData
+    /// @returns the map holding data for the given section if it exists, otherwise it returns nullptr
     /// @warning DO NO EDIT GIVEN DATA
-    const std::map<std::string, std::string>& getSectionData(const std::string& SectionName) const;
-
-    /// @returns true if the Section data given is valid (there is some data in it)
-    bool isSectionDataValid(const std::map<std::string, std::string>& SectionData) const;
+    const std::map<std::string, std::string>* getSectionData(const std::string& SectionName) const;
 
     /// @warning if the data was never loaded then it will return "\0\0\0"
     /// @returns the keyValue as a String OR a string containing "\0\0" if there was no keyName found and "\0" for no sectionName found
@@ -160,18 +155,10 @@ public:
 
     /// @brief saves the data by rewriting the entire file
     /// @returns false if the data was not able to be saved or the data was never loaded
-    bool SaveData();
-    /// @brief saves the newly added value directly to the end of the file no matter the SectionName
-    /// @param SectionName is used to add the value into the pre-loaded data for later use IF the load data function was successfully called
-    /// @warning the data will be saved no matter if there is already a copy of it and will not be loaded into the LoadedData if there is a copy or the data was not loaded
-    /// @returns false if the data was not able to be saved
-    bool addValue_ToEnd(const std::string& SectionName, const std::string& keyName, const std::string& keyValue);
+    bool save();
 
     /// @brief attempts to create the given file
-    void createFile(const std::string& filePath);
-
-    /// @brief Used to check if the returned Section Data is valid
-    static const std::map<std::string, std::string> InvalidSectionData;
+    static void createFile(const std::filesystem::path& filePath);
 
 private:
 

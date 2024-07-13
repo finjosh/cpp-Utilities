@@ -8,11 +8,11 @@ void iniParserTest::test()
     cout << "Outputs for ini Parser" << endl;
     // first we want to open the file
     iniParser file;
-    file.setFilePath("testing.ini");
+    file.setFile("testing.ini");
 
     if (file.isOpen())
     {
-        file.LoadData();
+        file.loadData();
         if (!file.isDataLoaded())
         {
             cout << "Data was not loaded" << endl;
@@ -26,7 +26,7 @@ void iniParserTest::test()
             // This makes a copy of the data in the file and continues with the program
             // any data that was formatted properly will still be loaded
             // This will not override any older error files
-            file.CopyFile_Error();
+            file.createCopy_error();
         }
     }
     else
@@ -40,7 +40,10 @@ void iniParserTest::test()
     // NOTE: if autosave is off then it will only save when calling the save function explicitly 
     
     file.addValue("Test", "v", "789");
-    file.SaveData();
+    file.save();
+
+    file.createFile("iniParser/CreatingFile.ini");
+    file.createFile("CreatingFile.ini");
 
     cout << "Getting the var we just added: " << file.getValue("Test", "v") << endl;
 }

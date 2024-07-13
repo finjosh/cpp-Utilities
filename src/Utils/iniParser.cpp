@@ -1,7 +1,5 @@
 #include "Utils/iniParser.hpp"
 
-const std::map<std::string, std::string> iniParser::InvalidSectionData;
-
 iniParser::iniParser()
 {
     this->m_filePath = "NULL";
@@ -28,7 +26,7 @@ iniParser::~iniParser()
     }
 }
 
-void iniParser::setFilePath(const std::string& generic_path)
+bool iniParser::setFile(const std::string& generic_path)
 {
     if (this->isOpen())
     {
@@ -42,8 +40,10 @@ void iniParser::setFilePath(const std::string& generic_path)
         if (this->m_file.is_open())
         {
             this->m_filePath = generic_path;
+            return true;
         }
     }
+    return false;
 }
 
 std::string iniParser::getFilePath() const
@@ -58,7 +58,7 @@ bool iniParser::isDataLoaded() const
 void iniParser::overrideData()
 { this->m_DataWasLoaded = true; }
 
-bool iniParser::LoadData()
+bool iniParser::loadData()
 {
     // clearing any old data
     this->unloadData();
@@ -136,7 +136,7 @@ bool iniParser::LoadData()
     return true;
 }
 
-bool iniParser::SetData(const std::map<std::string, std::map<std::string, std::string>>& Data)
+bool iniParser::setData(const std::map<std::string, std::map<std::string, std::string>>& Data)
 {
     if (this->isOpen())
     {
@@ -149,7 +149,7 @@ bool iniParser::SetData(const std::map<std::string, std::map<std::string, std::s
 
 void iniParser::unloadData()
 {
-    if (this->m_DataWasLoaded && this->m_AutoSave) this->SaveData();
+    if (this->m_DataWasLoaded && this->m_AutoSave) this->save();
     this->m_DataWasLoaded = false;
     this->m_loadedData.clear();
 }
@@ -190,7 +190,7 @@ void iniParser::clearSectionError()
     m_loadedDataErrors.section = false;
 }
 
-void iniParser::CopyFile_Error()
+void iniParser::createCopy_error()
 {
     auto tempPath = this->m_filePath;
     tempPath.replace_filename((tempPath.stem().generic_string() + "Error.ini"));
@@ -206,14 +206,11 @@ void iniParser::CopyFile_Error()
 const std::map<std::string, std::map<std::string, std::string>>& iniParser::getLoadedData() const
 { return this->m_loadedData; }
 
-const std::map<std::string, std::string>& iniParser::getSectionData(const std::string& SectionName) const
+const std::map<std::string, std::string>* iniParser::getSectionData(const std::string& SectionName) const
 {
     const auto& temp = this->m_loadedData.find(SectionName);
-    return (temp == this->m_loadedData.end() ? iniParser::InvalidSectionData : temp->second);
+    return (temp == this->m_loadedData.end() ? nullptr : &temp->second);
 }
-
-bool iniParser::isSectionDataValid(const std::map<std::string, std::string>& SectionData) const
-{ return (SectionData != iniParser::InvalidSectionData); }
 
 std::string iniParser::getValue(const std::string& SectionName, const std::string& keyName) const
 {
@@ -328,12 +325,12 @@ void iniParser::setAutoSave(bool AutoSave)
 bool iniParser::isAutoSave() const
 { return this->m_AutoSave; }
 
-bool iniParser::SaveData()
+bool iniParser::save()
 {
-    if (this->m_DataWasLoaded)
+    if (this->m_DataWasLoaded && this->isOpen())
     {
         std::ofstream file(this->m_filePath, std::ios_base::binary);
-        if (!this->isOpen()) return false;
+        if (!file.is_open()) return false;
 
         for (auto& Section: this->m_loadedData)
         {
@@ -352,45 +349,10 @@ bool iniParser::SaveData()
     return false;
 }
 
-bool iniParser::addValue_ToEnd(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
+void iniParser::createFile(const std::filesystem::path& filePath)
 {
-    bool returnValue = false;
+    if (!std::filesystem::exists(filePath) && filePath.has_parent_path())
+        std::filesystem::create_directories(filePath.parent_path());
 
-    if (this->m_DataWasLoaded)
-    {
-        // checking if section name is already a thing in the loaded data if it is not it gets added
-        auto section = this->m_loadedData.find(SectionName);
-        if (section == this->m_loadedData.end())
-            return false;
-
-        // checking if key name is already a thing in the loaded data if it is not it gets added
-        auto key = section->second.find(keyName);
-        if (key == section->second.end())
-        {
-            section->second.insert({keyName, keyValue});
-            returnValue = true;
-        }
-    }
-    else returnValue = true;
-
-    if (returnValue == true)
-    {
-        if (!this->m_file.is_open()) return false;
-
-        // opening and out stream to append to the file
-        std::ofstream file(this->m_filePath, std::ios_base::app | std::ios_base::binary);
-        if (!this->isOpen()) return false;
-
-        // save directly to end of file
-        file << '\n' << keyName << '=' << keyValue;
-
-        return true;
-    }
-
-    return false;
-}
-
-void iniParser::createFile(const std::string& filePath)
-{
     std::ofstream(filePath, std::ios_base::binary);
 }

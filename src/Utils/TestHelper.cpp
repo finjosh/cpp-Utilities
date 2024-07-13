@@ -68,7 +68,7 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
 
     iniParser data;
     // if the y data size there is no test to do
-    data.setFilePath(folderPath + m_name + "Test" + suffix + ".ini");
+    data.setFile(folderPath + m_name + "Test" + suffix + ".ini");
     if (m_yData.size() == 0 || (data.isOpen() && fileExists == FileExists::DoNothing))
     {
         return "";
@@ -261,22 +261,22 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
     }
 
     size_t temp = 0;
-    data.setFilePath(folderPath + m_name + "Test" + suffix + ".ini");
+    data.setFile(folderPath + m_name + "Test" + suffix + ".ini");
     while (data.isOpen() && fileExists != FileExists::Replace)
     {
         temp++;
-        data.setFilePath(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
+        data.setFile(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
     }
 
     if (temp == 0)
     {
         data.createFile(folderPath + m_name + "Test" + suffix + ".ini");
-        data.setFilePath(folderPath + m_name + "Test" + suffix + ".ini");
+        data.setFile(folderPath + m_name + "Test" + suffix + ".ini");
     }
     else
     {
         data.createFile(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
-        data.setFilePath(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
+        data.setFile(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
     }
     data.overrideData();
     data.addValue("General", "XLabel", m_xName);
@@ -287,7 +287,7 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
     xValues.resize(m_iterations);
     std::iota(xValues.begin(), xValues.end(), m_startingValue);
     data.addValue("General", "X", StringHelper::fromVector<size_t>(xValues));
-    data.SaveData();
+    data.save();
     return data.getFilePath(); // path is just the file name in this case
 }
 
@@ -403,7 +403,7 @@ void TestHelper::graphData(const std::list<std::string>& files)
         });
         graphThread = new std::thread([&graph, &state, path, id, filesBox, Next, Last](){ 
             iniParser temp(path);
-            if (temp.LoadData() && makeGraph(graph, temp)) 
+            if (temp.loadData() && makeGraph(graph, temp)) 
                 state = graphState::Finished; 
             else 
                 state = graphState::Failed; 
