@@ -1,4 +1,9 @@
 #include "Utils/StringHelper.hpp"
+#include <charconv>
+#include <algorithm>
+#include <sstream>
+#include <ostream>
+#include <iomanip>
 
 const char *const StringHelper::whitespaceDelimiters = " \t\n\r\f\v";
 
@@ -120,6 +125,9 @@ bool StringHelper::toBool(const std::string& string, bool defaultValue)
 
 std::string StringHelper::FloatToStringRound(float value, unsigned int decimalRoundingPlace)
 { 
-    std::string temp = std::to_string(value); 
-    return temp.substr(0, temp.length() - (decimalRoundingPlace == 0 ? 7 : 6 - decimalRoundingPlace));
+    std::ostringstream oss;
+    oss.imbue(std::locale::classic());
+    oss << std::fixed << std::setprecision(static_cast<int>(decimalRoundingPlace));
+    oss << value;
+    return {oss.str()};
 }

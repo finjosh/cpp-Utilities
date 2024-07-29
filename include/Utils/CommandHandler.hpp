@@ -21,7 +21,7 @@ namespace Command
 /// @note if you want a constructor from sf::Color make sure to include the CommandHandler include AFTER sfml color include
 struct color
 {
-    /// @brief default color is white 
+    /// @brief default is the default color
     color(uint8_t r = _default_text_color.r, uint8_t g = _default_text_color.g, uint8_t b = _default_text_color.b, uint8_t a = _default_text_color.a);
     #ifdef SFML_COLOR_HPP
     inline color(const sf::Color& color) : r(color.r), g(color.g), b(color.b), a(color.a) {};

@@ -74,8 +74,12 @@ bool Event::invoke(bool threadSafe, bool removeOtherInstances)
 
 void Event::_invoke()
 {
-    for (const auto& function : m_functions)
-        function.second();
+    auto function = m_functions.begin();
+    while (function != m_functions.end())
+    {
+        auto temp = function++;
+        (*temp).second();
+    }
 }
 
 size_t Event::getNumCallbacks() const

@@ -64,7 +64,9 @@ public:
             m_functions[id] = func;
         else
         {
-            m_functions[id] = [=]{ invokeFunc(func, args...); };
+            m_functions[id] = [=]{ 
+                invokeFunc(func, args...); 
+            };
         }
         return id;
     }

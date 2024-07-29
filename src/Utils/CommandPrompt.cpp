@@ -218,7 +218,7 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
                 m_autoFillList->setVisible(false);
                 return true;
             }
-            else
+            else if (m_textBox->isFocused())
             {
                 m_textBox->setFocused(false);
                 return true;
@@ -293,9 +293,9 @@ void Command::Prompt::setInputBoxFocused(bool focused)
     m_textBox->setFocused(focused);
 }
 
-void Command::Prompt::print(const tgui::String& str, Command::color color)
+void Command::Prompt::print(const tgui::String& str, Command::color color, bool forcePrint)
 {
-    if (m_chatBox && m_allowPrint)
+    if (m_chatBox && (m_allowPrint || forcePrint))
         m_chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
 }
 

@@ -7,11 +7,11 @@ PROJECT:=utils
 # the directory in which all .o and .d files will be made
 OBJ_O_DIR:=bin
 # the include flags for compilation by default includes the project directory and include directory
-INCLUDE_DIRS=/VSCodeFolder/Libraries/SFML-2.6.1/include /VSCodeFolder/Libraries/TGUI-1.3/include
+INCLUDE_DIRS=/VSCodeFolder/Libraries/SFML-2.6.1/include /VSCodeFolder/Libraries/TGUI-1.4/include
 # extra include flags
 INCLUDE_FLAGS=-D SFML_STATIC
 # the paths to libs for linking
-LIB_DIRS=/VSCodeFolder/Libraries/SFML-2.6.1/lib /VSCodeFolder/Libraries/TGUI-1.3/lib
+LIB_DIRS=/VSCodeFolder/Libraries/SFML-2.6.1/lib /VSCodeFolder/Libraries/TGUI-1.4/lib
 # source files directory (the project directory is automatically added)
 SRC:=src
 # the directory for lib files that are made with "make libs"
@@ -30,8 +30,10 @@ LINKERFLAGS:=-ltgui-s -lsfml-graphics-s -lsfml-window-s \
 			-lstdc++ 
 # flags to generate dependencies for all .o files
 DEPFLAGS:=-MP -MD
+DEBUG_FLAGS = -g
+RELEASE_FLAGS = -O3
 # any compiler options -Wextra -Wall
-COMPILE_OPTIONS:=-std=c++20 -g -static
+COMPILE_OPTIONS:=-std=c++20 -static ${DEBUG_FLAGS}
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
 

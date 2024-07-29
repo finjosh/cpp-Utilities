@@ -190,8 +190,8 @@ void GraphTest::test(tgui::Gui& gui)
     _graph.Update();
 
     list->getRenderer()->setSpaceBetweenWidgets(10);
-    list->setSize({"100% - 15", list->getWidgets().back()->getPosition().y + list->getWidgets().back()->getFullSize().y + 15});
-    list->onSizeChange([list](){list->setSize({"100% - 15", list->getWidgets().back()->getPosition().y + list->getWidgets().back()->getFullSize().y + 15});});
+    list->setSize({"100%", list->getWidgets().back()->getPosition().y + list->getWidgets().back()->getFullSize().y + 15});
+    // list->onSizeChange([list](){list->setSize({"100% - 15", list->getWidgets().back()->getPosition().y + list->getWidgets().back()->getFullSize().y + 15});});
 
     tguiCommon::ChildWindow::setSoftClose(parent);
     _windowData.setMaximize(parent);

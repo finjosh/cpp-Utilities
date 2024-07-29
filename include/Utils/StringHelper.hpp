@@ -3,10 +3,7 @@
 
 #pragma once
 
-#include <charconv>
-#include <algorithm>
 #include <string>
-#include <stdexcept>
 #include <list>
 #include <vector>
 
@@ -88,7 +85,6 @@ public:
     /** @brief Converts a float to a string while rounding its decimal value
      *  @param value is the float value to be converted
      *  @param decimalRoundingPlace is the number of decimals to round to
-     *  @warning max rounding of 6
     */
     static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
 
