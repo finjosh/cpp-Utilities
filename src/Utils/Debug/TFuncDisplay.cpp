@@ -52,8 +52,8 @@ void TFuncDisplay::update()
     if (!m_parent->isVisible() || m_windowHandler.isMinimized(m_parent))
         return;
 
-    float scrollPositionV = m_list->getVerticalScrollbarValue();
-    float scrollPositionH = m_list->getHorizontalScrollbarValue();
+    float scrollPositionV = m_list->getVerticalScrollbar()->getValue();
+    float scrollPositionH = m_list->getHorizontalScrollbar()->getValue();
 
     m_list->removeAllItems();
     for (auto funcData: TerminatingFunction::getStringData())
@@ -61,8 +61,8 @@ void TFuncDisplay::update()
         m_list->addItem({tgui::String(funcData.front()), tgui::String(*++funcData.begin()), tgui::String(funcData.back())});
     }
 
-    m_list->setVerticalScrollbarValue(scrollPositionV);
-    m_list->setHorizontalScrollbarValue(scrollPositionH);
+    m_list->getVerticalScrollbar()->setValue(scrollPositionV);
+    m_list->getHorizontalScrollbar()->setValue(scrollPositionH);
 }
 
 void TFuncDisplay::setVisible(bool visible)

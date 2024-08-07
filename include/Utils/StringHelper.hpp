@@ -227,6 +227,9 @@ public:
         return rtn;
     }
 
+    /// @note each token is trimmed
+    static std::vector<std::string> tokenize(const std::string& str, char delim);
+
 private:
     inline StringHelper() = default;
     static const char *const whitespaceDelimiters;

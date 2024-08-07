@@ -58,6 +58,7 @@ public:
     /// @note this gives warning to all functions before clearing (i.e. runs once more before clearing)
     static void clear();
     /// @brief erases the given function from the terminating functions list IF there is one in the list
+    /// @note this will still call the function one more time so it has warning of ending
     /// @note removes all functions with the same functionTypeid
     static void remove(const std::string& functionTypeid);
     /// @brief erases the given function from the terminating functions list IF there is one in the list

@@ -122,7 +122,7 @@ void TerminatingFunction::clear()
     m_lock.lock(); 
     for (auto function: m_terminatingFunctions)
     {
-        function.m_maxTime = 0.f;
+        function.m_maxTime = -1.f;
     }
     UpdateFunctions(0);
     m_lock.unlock(); 

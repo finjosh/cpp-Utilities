@@ -131,3 +131,18 @@ std::string StringHelper::FloatToStringRound(float value, unsigned int decimalRo
     oss << value;
     return {oss.str()};
 }
+
+std::vector<std::string> StringHelper::tokenize(const std::string& str, char delim)
+{
+    std::vector<std::string> tokens;
+
+    std::size_t start = 0;
+    std::size_t end = 0;
+    while ((end = str.find(delim, start)) != std::string::npos) {
+        tokens.push_back(StringHelper::trim_copy(str.substr(start, end - start)));
+        start = end + 1;
+    }
+
+    tokens.push_back(StringHelper::trim_copy(str.substr(start)));
+    return tokens;
+}

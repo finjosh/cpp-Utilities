@@ -11,7 +11,7 @@ Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFM
   - Version: 2.6.1
 
 ### [TGUI](https://tgui.eu/)
-  - Version: 1.4
+  - Version: 1.x (2024-08-05)
 
 # Utilities breakdown
 | File | Brief Description | Dependencies |
