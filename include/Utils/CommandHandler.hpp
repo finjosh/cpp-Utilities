@@ -163,7 +163,7 @@ inline bool isValidInput(const std::string& errorMsg, Data& data, const std::str
 /// @note only give a value for str
 void print(const std::string& str, Data* input);
 
-/// @brief prints "use "help" `name` for more infomation"
+/// @brief prints "use "help `name`" for more infomation"
 /// @note these are not affected by the "canPrint()" state
 void helpCommand(const std::string& name, Data* data);
 #define helpPrint helpCommand

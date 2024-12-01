@@ -132,6 +132,54 @@ std::string StringHelper::FloatToStringRound(float value, unsigned int decimalRo
     return {oss.str()};
 }
 
+std::string StringHelper::intToHex(std::uint8_t value)
+{
+    std::string rtn;
+    rtn += intToHex_char(value >> 4);
+    rtn += intToHex_char(value);
+    return rtn;
+}
+
+char StringHelper::intToHex_char(std::uint8_t value)
+{
+    switch (value & 0b00001111)
+    {
+    case 0b0000:
+        return '0';
+    case 0b0001:
+        return '1';
+    case 0b0010:
+        return '2';
+    case 0b0011:
+        return '3';
+    case 0b0100:
+        return '4';
+    case 0b0101:
+        return '5';
+    case 0b0110:
+        return '6';
+    case 0b0111:
+        return '7';
+    case 0b1000:
+        return '8';
+    case 0b1001:
+        return '9';
+    case 0b1010:
+        return 'A';
+    case 0b1011:
+        return 'B';
+    case 0b1100:
+        return 'C';
+    case 0b1101:
+        return 'D';
+    case 0b1110:
+        return 'E';
+    case 0b1111:
+        return 'F';
+    }
+    return '0';
+}
+
 std::vector<std::string> StringHelper::tokenize(const std::string& str, char delim)
 {
     std::vector<std::string> tokens;

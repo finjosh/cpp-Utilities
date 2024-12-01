@@ -25,7 +25,7 @@ void Command::print(const std::string& str, Data* input)
 
 void Command::helpCommand(const std::string& name, Data* data)
 {
-    data->setReturnStr("Use \"help\" " + name + " for more infomation");
+    data->setReturnStr("Use \"help " + name + "\" for more infomation");
 }
 
 // * Command Data

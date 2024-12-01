@@ -2,6 +2,8 @@
 PROJECT_DIR_TEMP:=$(patsubst %/makefile,%, $(abspath $(lastword ${MAKEFILE_LIST})))
 #! DONT EDIT ABOVE THIS
 
+# the number is how many tasks are going to be used for compiling (should be the number of threads your cpu has for best performance)
+MAKEFLAGS=-j16
 # exe name
 PROJECT:=utils
 # the directory in which all .o and .d files will be made
@@ -33,7 +35,7 @@ DEPFLAGS:=-MP -MD
 DEBUG_FLAGS = -g
 RELEASE_FLAGS = -O3
 # any compiler options -Wextra -Wall
-COMPILE_OPTIONS:=-std=c++20 -static ${DEBUG_FLAGS}
+COMPILE_OPTIONS:=-std=c++20 -static ${RELEASE_FLAGS}
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
 
@@ -76,6 +78,7 @@ BIN_DIRS=$(foreach dir,$(call FIXPATH,$(SOURCEDIRS)),$(patsubst $(call FIXPATH,$
 
 # so there is no file that gets mistaked with the tasks listed
 .PHONY = all info clean lib run
+
 
 all: ${BIN_DIRS} ${PROJECT}
 

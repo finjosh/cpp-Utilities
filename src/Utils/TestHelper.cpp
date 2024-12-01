@@ -279,14 +279,14 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
         data.setFile(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
     }
     data.overrideData();
-    data.addValue("General", "XLabel", m_xName);
-    data.addValue("General", "YLabel", "Time (" + timeFormatStr + ")");
-    data.addValue("General", "Average Test Time", std::to_string(totalTime/m_repetitions));
-    data.addValue(m_name, "Values", StringHelper::fromVector<float>(m_yData));
+    data.setValue("General", "XLabel", m_xName);
+    data.setValue("General", "YLabel", "Time (" + timeFormatStr + ")");
+    data.setValue("General", "Average Test Time", std::to_string(totalTime/m_repetitions));
+    data.setValue(m_name, "Values", StringHelper::fromVector<float>(m_yData));
     std::vector<size_t> xValues;
     xValues.resize(m_iterations);
     std::iota(xValues.begin(), xValues.end(), m_startingValue);
-    data.addValue("General", "X", StringHelper::fromVector<size_t>(xValues));
+    data.setValue("General", "X", StringHelper::fromVector<size_t>(xValues));
     data.save();
     return data.getFilePath(); // path is just the file name in this case
 }
@@ -391,10 +391,7 @@ void TestHelper::graphData(const std::list<std::string>& files)
         Next->setEnabled(false);
         Last->setEnabled(false);
 
-        auto id = TFunc::Add([label, &graphThread](TData* data){
-            if (data->isForceStop())
-                graphThread = nullptr;
-
+        auto id = TFunc::Add([label](TData* data){
             data->setRunning();
             std::string temp = "Loading";
             for (int i = 0; i < (int)(data->getTotalTime()*2)%3 + 1; i++)
@@ -465,17 +462,20 @@ void TestHelper::graphData(const std::list<std::string>& files)
         TerminatingFunction::UpdateFunctions(deltaTime);
 
         window.draw(graph);
-        if (graphThread && state != graphState::Updating)
+        if (state != graphState::Updating)
         {
             if (state == graphState::Finished)
                 label->setText(*currentFile);
             else if (state == graphState::Failed)
                 label->setText("Failed to Graph");
-            graphThread->join();
-            graphThread = nullptr;
+            if (graphThread)
+            {
+                graphThread->join();
+                graphThread = nullptr;
+            }
             filesBox->setEnabled(true);
-            Next->setEnabled(true);
-            Last->setEnabled(true);
+            Last->setEnabled(currentFile != files.begin());
+            Next->setEnabled(currentFile != --files.end());
         }
 
         // draw for tgui
@@ -490,20 +490,29 @@ void TestHelper::graphData(const std::list<std::string>& files)
 
 bool TestHelper::makeGraph(Graph& graph, const iniParser& data, float thickness)
 {
-    if (data.getValue("General", "X") == "\0")
+    if (data.getValue("General", "X") == nullptr)
         return false;
 
     graph.clearDataSets();
-    graph.setXLable(data.getValue("General", "XLabel"));
-    graph.setYLable(data.getValue("General", "YLabel"));
+    if (auto xLabel = data.getValue("General", "XLabel"))
+        graph.setXLable(*xLabel);
+    else
+        graph.setXLable("Unable to Parse");
+    if (auto yLabel = data.getValue("General", "YLabel"))
+        graph.setYLable(*yLabel);
+    else    
+        graph.setYLable("Unable to Parse");
+
     GraphData graphData;
-    graphData.setXValues(StringHelper::toVector<float>(data.getValue("General", "X")));
+    if (auto xValues = data.getValue("General", "X"))
+        graphData.setXValues(StringHelper::toVector<float>(*xValues));
     
     for (auto i: data.getLoadedData())
     {
         if (i.first == "General")
             continue;
-        graphData.setYValues(StringHelper::toVector<float>(data.getValue(i.first, "Values")));
+        if (auto yValues = data.getValue(i.first, "Values"))
+        graphData.setYValues(StringHelper::toVector<float>(*yValues));
         graphData.setLabel(i.first);
 
         graphData.setThickness(thickness);

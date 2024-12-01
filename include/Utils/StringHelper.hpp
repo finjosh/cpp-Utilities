@@ -1,5 +1,5 @@
-#ifndef STRINGHELPER_H
-#define STRINGHELPER_H
+#ifndef STRING_HELPER_H
+#define STRING_HELPER_H
 
 #pragma once
 
@@ -87,6 +87,10 @@ public:
      *  @param decimalRoundingPlace is the number of decimals to round to
     */
     static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
+    /// @returns the value as a string containing the two chars that represent it in hex
+    static std::string intToHex(std::uint8_t value);
+    /// @returns the hex char representing the first 4 bits in the given int
+    static char intToHex_char(std::uint8_t value);
 
     template <typename T = float, typename ConvertFunc = T(const std::string&, T)>
     static inline std::list<T> toList(const std::string& str, const ConvertFunc& convFunc = &StringHelper::toFloat, T defaultValue = 0)

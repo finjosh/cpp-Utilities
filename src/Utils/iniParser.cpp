@@ -1,4 +1,79 @@
 #include "Utils/iniParser.hpp"
+#include <cassert>
+
+//* iniParser::SectionData defs
+
+std::string* iniParser::SectionData::getValue(const std::string& key)
+{
+    auto interator = m_data.find(key);
+    if (interator == m_data.end())
+        return nullptr;
+
+    return &(interator->second);
+}
+
+const std::string* iniParser::SectionData::getValue(const std::string& key) const
+{
+    auto interator = m_data.find(key);
+    if (interator == m_data.end())
+        return nullptr;
+
+    return &(interator->second);
+}
+
+std::string& iniParser::SectionData::operator[](const std::string& key)
+{ 
+    auto interator = m_data.find(key);
+    if (interator == m_data.end())
+        return m_data.insert({key, ""}).first->second;
+
+    return interator->second;
+}
+
+const std::map<std::string, std::string>& iniParser::SectionData::getData() const
+{ return m_data; }
+
+void iniParser::SectionData::insert(const std::string& key, const std::string& value)
+{ m_data.insert({key, value}); }
+
+void iniParser::SectionData::setValue(const std::string& key, const std::string& value)
+{
+    auto iterator = m_data.find(key);
+    if (iterator == m_data.end())
+        this->insert(key, value);
+    else
+        iterator->second = value;
+}
+
+void iniParser::SectionData::changeValue(const std::string& key, const std::string& value)
+{ this->setValue(key, value); }
+
+bool iniParser::SectionData::changeKey(const std::string& originalKey, const std::string& newKey)
+{
+    auto iterator = m_data.find(originalKey);
+    if (iterator == m_data.end())
+        return false;
+    std::string temp = iterator->second;
+    m_data.erase(iterator);
+    m_data.insert({newKey, temp});
+    return true;
+}
+
+bool iniParser::SectionData::remove(const std::string& key)
+{
+    auto iterator = m_data.find(key);
+    if (iterator == m_data.end())
+        return false;
+    m_data.erase(iterator);
+    return true;
+}
+
+void iniParser::SectionData::clear()
+{ m_data.clear(); }
+
+//* iniParser defs
+
+iniParser::SectionData iniParser::m_invalidSectionData;
 
 iniParser::iniParser()
 {
@@ -68,7 +143,7 @@ bool iniParser::loadData()
     
     bool gettingSectionData = false;
     std::string currentSectionName = "";
-    std::map<std::string, std::string> currentSectionData;
+    SectionData currentSectionData;
 
     while (std::getline(this->m_file, curLine))
     {
@@ -120,7 +195,7 @@ bool iniParser::loadData()
             }
 
             // if data was there insert into map
-            currentSectionData.insert({curLine.substr(0, temp), curLine.substr(temp+1)});
+            currentSectionData.insert(curLine.substr(0, temp), curLine.substr(temp+1));
         }
     }
 
@@ -136,7 +211,7 @@ bool iniParser::loadData()
     return true;
 }
 
-bool iniParser::setData(const std::map<std::string, std::map<std::string, std::string>>& Data)
+bool iniParser::setData(const std::map<std::string, SectionData>& Data)
 {
     if (this->isOpen())
     {
@@ -165,7 +240,7 @@ void iniParser::clearFormatErrors()
     m_loadedDataErrors.key = false;
 }
 
-const iniParser::formatError iniParser::getFormatErrors() const
+const iniParser::FormatErrors iniParser::getFormatErrors() const
 {
     return m_loadedDataErrors;
 }
@@ -190,9 +265,12 @@ void iniParser::clearSectionError()
     m_loadedDataErrors.section = false;
 }
 
-void iniParser::createCopy_error()
+void iniParser::createCopyError(const std::string path)
 {
     auto tempPath = this->m_filePath;
+    if (path != "" && std::filesystem::exists(path))
+        tempPath.parent_path() = path;
+
     tempPath.replace_filename((tempPath.stem().generic_string() + "Error.ini"));
     long long i = 1;
     while (std::filesystem::exists(tempPath))
@@ -203,121 +281,270 @@ void iniParser::createCopy_error()
     std::filesystem::copy_file(this->m_filePath, tempPath);
 }
 
-const std::map<std::string, std::map<std::string, std::string>>& iniParser::getLoadedData() const
+const std::map<std::string, iniParser::SectionData>& iniParser::getLoadedData() const
 { return this->m_loadedData; }
 
-const std::map<std::string, std::string>* iniParser::getSectionData(const std::string& SectionName) const
+iniParser::SectionData* iniParser::getSection(const std::string& section)
 {
-    const auto& temp = this->m_loadedData.find(SectionName);
-    return (temp == this->m_loadedData.end() ? nullptr : &temp->second);
+    if (!m_DataWasLoaded)
+        return nullptr;
+
+    auto iterator = m_loadedData.find(section);
+    if (iterator == m_loadedData.end())
+        return nullptr;
+
+    return &(iterator->second);
 }
 
-std::string iniParser::getValue(const std::string& SectionName, const std::string& keyName) const
+const iniParser::SectionData* iniParser::getSection(const std::string& section) const
 {
-    if (!this->m_DataWasLoaded) return "\0\0\0";
+    if (!m_DataWasLoaded)
+        return nullptr;
 
-    auto section = this->m_loadedData.find(SectionName);
-    if (section == this->m_loadedData.end())
-        return "\0";
+    auto iterator = m_loadedData.find(section);
+    if (iterator == m_loadedData.end())
+        return nullptr;
 
-    auto key = section->second.find(keyName);
-    if (key == section->second.end())
-        return "\0\0";
-
-    return key->second;
+    return &(iterator->second);
 }
 
-std::string iniParser::getValue(const std::pair<std::string, std::string>& Section_Key_Name) const
-{ return this->getValue(Section_Key_Name.first, Section_Key_Name.second); }
-
-bool iniParser::setValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
+const std::string* iniParser::getValue(const std::string& section, const std::string& key) const
 {
-    if (!this->m_DataWasLoaded) return false;
+    if (!m_DataWasLoaded)
+        return nullptr;
+
+    auto iter = this->getSection(section);
+    if (iter == nullptr)
+        return nullptr;
     
-    auto section = this->m_loadedData.find(SectionName);
-    if (section == this->m_loadedData.end())
+    return iter->getValue(key);
+}
+
+const std::string* iniParser::getValue(const std::pair<std::string, std::string>& sectionKeyPair) const
+{
+    if (!m_DataWasLoaded)
+        return nullptr;
+
+    auto iter = this->getSection(sectionKeyPair.first);
+    if (iter == nullptr)
+        return nullptr;
+    
+    return iter->getValue(sectionKeyPair.second);
+}
+
+const iniParser::SectionData* iniParser::operator[](const std::string& section) const
+{ return getSection(section); }
+
+iniParser::SectionData& iniParser::operator[](const std::string& section)
+{ 
+    if (!m_DataWasLoaded)
+    {
+        assert(m_DataWasLoaded && "Data must be loaded to get valid SectionData");
+        m_invalidSectionData.clear(); // making sure it is empty
+        return m_invalidSectionData;
+    }
+
+    auto iterator = m_loadedData.find(section);
+    if (iterator == m_loadedData.end())
+        return m_loadedData.insert({section, SectionData{}}).first->second;
+
+    return iterator->second;
+}
+
+bool iniParser::addSection(const std::string& section)
+{
+    if (!m_DataWasLoaded)
         return false;
 
-    auto key = section->second.find(keyName);
-    if (key == section->second.end())
+    auto iter = m_loadedData.find(section);
+    if (iter == m_loadedData.end())
+    {
+        m_loadedData.insert({section, SectionData{}});
+        return true; // section was added
+    }
+
+    return false; // section already exists
+}
+
+void iniParser::setSection(const std::string& section, const SectionData& sectionData)
+{
+    if (!m_DataWasLoaded)
+        return;
+
+    auto sectionIter = m_loadedData.find(section);
+    if (sectionIter == m_loadedData.end())
+        m_loadedData.insert({section, sectionData});
+    else
+        sectionIter->second = sectionData;
+}
+
+void iniParser::setValue(const std::string& section, const std::string& key, const std::string& value)
+{
+    if (!m_DataWasLoaded)
+        return;
+
+    auto sectionIter = m_loadedData.find(section);
+    if (sectionIter == m_loadedData.end())
+        sectionIter = m_loadedData.insert({section, SectionData{}}).first;
+    
+    sectionIter->second.setValue(key, value);
+}
+
+void iniParser::setValue(const std::pair<std::string, std::string>& sectionKeyPair, const std::string& value)
+{
+    if (!m_DataWasLoaded)
+        return;
+
+    auto sectionIter = m_loadedData.find(sectionKeyPair.first);
+    if (sectionIter == m_loadedData.end())
+        sectionIter = m_loadedData.insert({sectionKeyPair.first, SectionData{}}).first;
+    
+    sectionIter->second.setValue(sectionKeyPair.second, value);
+}
+
+bool iniParser::removeSection(const std::string& section)
+{
+    if (!m_DataWasLoaded)
         return false;
 
-    key->second = keyValue;
+    auto iter = m_loadedData.find(section);
+    if (iter == m_loadedData.end())
+        return false;
+
+    m_loadedData.erase(iter);
     return true;
 }
 
-bool iniParser::setValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
-{ return this->setValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
-
-bool iniParser::addValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
+bool iniParser::removeValue(const std::string& section, const std::string& key)
 {
-    if (!this->m_DataWasLoaded) return false;
-    
-    auto section = this->m_loadedData.find(SectionName);
-    if (section == this->m_loadedData.end())
-    {
-        this->m_loadedData.insert({SectionName, std::map<std::string, std::string>()});
-        this->m_loadedData.find(SectionName)->second.insert({keyName, keyValue});
-        return true;
-    }
-
-    auto key = section->second.find(keyName);
-    if (key == section->second.end())
-    {
-        section->second.insert({keyName, keyValue});
-        return true;
-    }
-
-    return false;
-}
-
-bool iniParser::addValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
-{ return this->addValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
-
-bool iniParser::removeValue(const std::string& SectionName, const std::string& keyName)
-{
-    if (!this->m_DataWasLoaded) return false;
-    
-    auto section = this->m_loadedData.find(SectionName);
-    if (section == this->m_loadedData.end())
+    if (!m_DataWasLoaded)
         return false;
 
-    auto key = section->second.find(keyName);
-    if (key == section->second.end())
+    auto sectionIter = this->getSection(section);
+    if (sectionIter == nullptr)
         return false;
 
-    section->second.erase(key);
-    return true;
+    return sectionIter->remove(key);
 }
 
-bool iniParser::removeValue(const std::pair<std::string, std::string>& Section_Key_Name)
-{ return this->removeValue(Section_Key_Name.first, Section_Key_Name.second); }
-
-bool iniParser::addSection(const std::string& SectionName)
+bool iniParser::removeValue(const std::pair<std::string, std::string>& sectionKeyPair)
 {
-    if (!this->m_DataWasLoaded) return false;
-    
-    auto section = this->m_loadedData.find(SectionName);
-    if (section == this->m_loadedData.end())
-    {
-        this->m_loadedData.insert({SectionName, std::map<std::string, std::string>()});
-        return true;
-    }
-
-    return false;
-}
-
-bool iniParser::removeSection(const std::string& SectionName)
-{
-    if (!this->m_DataWasLoaded) return false;
-    
-    auto section = this->m_loadedData.find(SectionName);
-    if (section == this->m_loadedData.end())
+    if (!m_DataWasLoaded)
         return false;
 
-    this->m_loadedData.erase(section);
-    return true;
+    auto sectionIter = this->getSection(sectionKeyPair.first);
+    if (sectionIter == nullptr)
+        return false;
+
+    return sectionIter->remove(sectionKeyPair.second);
 }
+
+// std::string iniParser::getValue(const std::string& SectionName, const std::string& keyName) const
+// {
+//     if (!this->m_DataWasLoaded) return "\0\0\0";
+
+//     auto section = this->m_loadedData.find(SectionName);
+//     if (section == this->m_loadedData.end())
+//         return "\0";
+
+//     const std::string* key = section->second.find(keyName);
+//     if (key == nullptr)
+//         return "\0\0";
+
+//     return *key;
+// }
+
+// std::string iniParser::getValue(const std::pair<std::string, std::string>& Section_Key_Name) const
+// { return this->getValue(Section_Key_Name.first, Section_Key_Name.second); }
+
+// bool iniParser::setValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
+// {
+//     if (!this->m_DataWasLoaded) return false;
+    
+//     auto section = this->m_loadedData.find(SectionName);
+//     if (section == this->m_loadedData.end())
+//         return false;
+
+//     auto key = section->second.get(keyName);
+//     if (key == nullptr)
+//         return false;
+
+//     key = keyValue;
+//     return true;
+// }
+
+// bool iniParser::setValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
+// { return this->setValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
+
+// bool iniParser::addValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
+// {
+//     if (!this->m_DataWasLoaded) return false;
+    
+//     auto section = this->m_loadedData.find(SectionName);
+//     if (section == this->m_loadedData.end())
+//     {
+//         this->m_loadedData.insert({SectionName, std::map<std::string, std::string>()});
+//         this->m_loadedData.find(SectionName)->second.insert({keyName, keyValue});
+//         return true;
+//     }
+
+//     auto key = section->second.find(keyName);
+//     if (key == section->second.end())
+//     {
+//         section->second.insert({keyName, keyValue});
+//         return true;
+//     }
+
+//     return false;
+// }
+
+// bool iniParser::addValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
+// { return this->addValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
+
+// bool iniParser::removeValue(const std::string& SectionName, const std::string& keyName)
+// {
+//     if (!this->m_DataWasLoaded) return false;
+    
+//     auto section = this->m_loadedData.find(SectionName);
+//     if (section == this->m_loadedData.end())
+//         return false;
+
+//     auto key = section->second.find(keyName);
+//     if (key == section->second.end())
+//         return false;
+
+//     section->second.erase(key);
+//     return true;
+// }
+
+// bool iniParser::removeValue(const std::pair<std::string, std::string>& Section_Key_Name)
+// { return this->removeValue(Section_Key_Name.first, Section_Key_Name.second); }
+
+// bool iniParser::addSection(const std::string& SectionName)
+// {
+//     if (!this->m_DataWasLoaded) return false;
+    
+//     auto section = this->m_loadedData.find(SectionName);
+//     if (section == this->m_loadedData.end())
+//     {
+//         this->m_loadedData.insert({SectionName, std::map<std::string, std::string>()});
+//         return true;
+//     }
+
+//     return false;
+// }
+
+// bool iniParser::removeSection(const std::string& SectionName)
+// {
+//     if (!this->m_DataWasLoaded) return false;
+    
+//     auto section = this->m_loadedData.find(SectionName);
+//     if (section == this->m_loadedData.end())
+//         return false;
+
+//     this->m_loadedData.erase(section);
+//     return true;
+// }
 
 void iniParser::setAutoSave(bool AutoSave)
 { this->m_AutoSave = AutoSave; }
@@ -332,14 +559,14 @@ bool iniParser::save()
         std::ofstream file(this->m_filePath, std::ios_base::binary);
         if (!file.is_open()) return false;
 
-        for (auto& Section: this->m_loadedData)
+        for (auto section = m_loadedData.begin(); section != m_loadedData.end(); section++)
         {
-            if (Section != this->m_loadedData.begin().operator*()) file << "\n";
-            file << '[' << Section.first << "]\n";
-            for (std::map<std::string, std::string>::iterator key = Section.second.begin(); key != Section.second.end(); key++)
+            if (section != this->m_loadedData.begin()) file << "\n";
+            file << '[' << section->first << "]\n";
+            for (std::map<std::string, std::string>::const_iterator key = section->second.getData().begin(); key != section->second.getData().end(); key++)
             {
                 file << key->first << '=' << key->second;
-                if (key != (--Section.second.end())) file << "\n";
+                if (key != (--section->second.getData().end())) file << "\n";
             }
         }
 
@@ -351,7 +578,10 @@ bool iniParser::save()
 
 void iniParser::createFile(const std::filesystem::path& filePath)
 {
-    if (!std::filesystem::exists(filePath) && filePath.has_parent_path())
+    if (std::filesystem::exists(filePath))
+        return;
+
+    if (filePath.has_parent_path())
         std::filesystem::create_directories(filePath.parent_path());
 
     std::ofstream(filePath, std::ios_base::binary);
