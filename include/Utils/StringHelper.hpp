@@ -92,7 +92,7 @@ public:
     /// @returns the hex char representing the first 4 bits in the given int
     static char intToHex_char(std::uint8_t value);
 
-    template <typename T = float, typename ConvertFunc = T(const std::string&, T)>
+    template <typename T = float, typename ConvertFunc = T(const std::string&, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::list<T> toList(const std::string& str, const ConvertFunc& convFunc = &StringHelper::toFloat, T defaultValue = 0)
     {
         std::list<T> rtn;
@@ -105,13 +105,14 @@ public:
         while (pos < last)
         {
             size_t nextPos = str.find_first_of(',', pos); // finding first comma
+
             if (nextPos == std::string::npos) 
             {
                 nextPos = str.find_first_of(']', pos);
                 if (nextPos == std::string::npos) 
                     nextPos = last;
             }
-            std::string temp = str.substr(pos,nextPos-pos); // getting string between comma
+            std::string temp = str.substr(pos,nextPos-pos); // getting string between quotes
             pos = nextPos+1;
             trim(temp);
             rtn.emplace_back(convFunc(temp, defaultValue));
@@ -133,7 +134,7 @@ public:
         return rtn;
     }
 
-    template <typename T = float>
+    template <typename T = float, typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::string fromList(const std::list<T>& list)
     {
         std::string rtn = "[";
@@ -146,7 +147,7 @@ public:
         return rtn;
     }
 
-    template <typename T = float, typename ConvertFunc = T(const std::string&, T)>
+    template <typename T = float, typename ConvertFunc = T(const std::string&, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::vector<T> toVector(const std::string& str, const ConvertFunc& convFunc = StringHelper::toFloat, T defaultValue = 0)
     {
         std::vector<T> rtn;
@@ -159,13 +160,14 @@ public:
         while (pos < last)
         {
             size_t nextPos = str.find_first_of(',', pos); // finding first comma
+
             if (nextPos == std::string::npos) 
             {
                 nextPos = str.find_first_of(']', pos);
                 if (nextPos == std::string::npos) 
                     nextPos = last;
             }
-            std::string temp = str.substr(pos,nextPos-pos); // getting string between comma
+            std::string temp = str.substr(pos,nextPos-pos); // getting string between quotes
             pos = nextPos+1;
             trim(temp);
             rtn.emplace_back(convFunc(temp, defaultValue));
@@ -187,7 +189,7 @@ public:
         return rtn;
     }
 
-    template <typename T = float>
+    template <typename T = float, typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::string fromVector(const std::vector<T>& vector)
     {
         std::string rtn = "[";
@@ -201,7 +203,7 @@ public:
     }
 
     /// @tparam ConvertFunc takes the type that is stored in the list and returns a string
-    template <typename Iter, typename T = float, typename ConvertFunc = std::string(T)>
+    template <typename Iter, typename T = float, typename ConvertFunc = std::string(T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::string fromContainer(Iter begin, Iter end, const ConvertFunc& convFunc)
     {
         std::string rtn = "[";
@@ -216,7 +218,7 @@ public:
         return rtn;
     }
 
-    template <typename Iter, typename T = float>
+    template <typename Iter>
     static inline std::string fromContainer(Iter begin, Iter end)
     {
         std::string rtn = "[";
@@ -224,6 +226,35 @@ public:
         while (current != end)
         {
             rtn += std::to_string(*current) + ',';
+            current++;
+        }
+        if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);
+        rtn += ']';
+        return rtn;
+    }
+
+    /// @note assumes quotations `"` around the string for each element
+    /// @param quotation the type of quotation to use
+    static std::string fromVector(const std::vector<std::string>& vector, char quotation = '"');
+    /// @note adds quotations `"` around the string for each element
+    /// @param quotation the type of quotation to use
+    static std::vector<std::string> toVector(const std::string& str, char quotation = '"');
+    /// @note adds quotations `"` around the string for each element
+    /// @param quotation the type of quotation to use
+    static std::list<std::string> toList(const std::string& str, char quotation = '"');
+    /// @note assumes quotations `"` around the string for each element
+    /// @param quotation the type of quotation to use
+    static std::string fromList(const std::list<std::string>& list, char quotation = '"');
+    /// @note assumes quotations `"` around the string for each element
+    /// @param quotation the type of quotation to use
+    template <typename Iter>
+    static std::string fromContainerString(Iter begin, Iter end, char quotation = '"')
+    {
+        std::string rtn = "[";
+        Iter current = begin;
+        while (current != end)
+        {
+            rtn += quotation + *current + quotation + ',';
             current++;
         }
         if (rtn.back() == ',') rtn.erase(rtn.size()-1,1);

@@ -35,7 +35,7 @@ void StringHelperTest::test()
     std::cout << "\n";
 
     cout << StringHelper::fromList<float>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl;
-    cout << StringHelper::fromList<std::string>({"7","6","5","34","4","5","67","7","4","3","4","5","76"}, [](std::string str){ str.insert(str.begin(),'\"'); str.push_back('\"'); return str; }) << endl;
+    cout << StringHelper::fromList({"7","6","5","34","4","5","67","7","4","3","4","5","76"}) << endl;
     cout << StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl; 
 
     // for example trim and trim_copy

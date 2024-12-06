@@ -1,4 +1,5 @@
 #include "Utils/iniParser.hpp"
+#include "Utils/StringHelper.hpp"
 #include <cassert>
 
 //* iniParser::SectionData defs
@@ -322,18 +323,25 @@ const std::string* iniParser::getValue(const std::string& section, const std::st
 
 const std::string* iniParser::getValue(const std::pair<std::string, std::string>& sectionKeyPair) const
 {
-    if (!m_DataWasLoaded)
+    return getValue(sectionKeyPair.first, sectionKeyPair.second);
+}
+
+std::string* iniParser::getValue(const std::string& section, const std::string& key)
+{
+        if (!m_DataWasLoaded)
         return nullptr;
 
-    auto iter = this->getSection(sectionKeyPair.first);
+    auto iter = this->getSection(section);
     if (iter == nullptr)
         return nullptr;
     
-    return iter->getValue(sectionKeyPair.second);
+    return iter->getValue(key);
 }
 
-const iniParser::SectionData* iniParser::operator[](const std::string& section) const
-{ return getSection(section); }
+std::string* iniParser::getValue(const std::pair<std::string, std::string>& sectionKeyPair)
+{
+    return getValue(sectionKeyPair.first, sectionKeyPair.second);
+}
 
 iniParser::SectionData& iniParser::operator[](const std::string& section)
 { 

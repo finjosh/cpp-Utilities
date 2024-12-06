@@ -3,8 +3,6 @@
 
 #pragma once
 
-#include "StringHelper.hpp"
-
 #include <filesystem>
 #include <string>
 #include <fstream>
@@ -150,11 +148,8 @@ public:
     /// @exception if the section or key does not exist returns nullptr
     /// @returns the pointer to the value with the given section and key
     const std::string* getValue(const std::pair<std::string, std::string>& sectionKeyPair) const;
-    /// @note same as "getSection"
-    /// @exception if the data is not loaded then returns nullptr
-    /// @exception if the section does not exist returns nullptr
-    /// @returns the pointer to the SectionData with the given name
-    const SectionData* operator[](const std::string& section) const;
+    std::string* getValue(const std::string& section, const std::string& key);
+    std::string* getValue(const std::pair<std::string, std::string>& sectionKeyPair);
     /// @exception if data is not loaded then an empty SectionData will be returned (also asserts)
     /// @note if the section does not exist then it will be made
     /// @note if you need a getter without making the SectionData if it does not exist use "getSection"
