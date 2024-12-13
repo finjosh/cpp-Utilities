@@ -132,7 +132,7 @@ std::string StringHelper::FloatToStringRound(float value, unsigned int decimalRo
     return {oss.str()};
 }
 
-std::string StringHelper::intToHex(std::uint8_t value)
+std::string StringHelper::intToHex(uint8_t value)
 {
     std::string rtn;
     rtn += intToHex_char(value >> 4);
@@ -140,7 +140,7 @@ std::string StringHelper::intToHex(std::uint8_t value)
     return rtn;
 }
 
-char StringHelper::intToHex_char(std::uint8_t value)
+char StringHelper::intToHex_char(uint8_t value)
 {
     switch (value & 0b00001111)
     {

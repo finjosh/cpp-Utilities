@@ -5,7 +5,7 @@ Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFM
 
 ### Tested with: 
   - Compiler: g++
-  - Version: g++.exe (Rev3, Built by MSYS2 project) 12.1.0
+  - Version: g++.exe (Rev3, Built by MSYS2 project) 14.2.0
 
 ### [SFML](https://www.sfml-dev.org/index.php)
   - Version: 2.6.1

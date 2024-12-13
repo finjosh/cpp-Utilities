@@ -1,4 +1,5 @@
 #include "Utils/TerminatingFunction.hpp"
+#include <algorithm>
 
 void TerminatingFunction::Data::setRunning()
 {
@@ -140,7 +141,7 @@ void TerminatingFunction::remove(const std::string& functionTypeid)
 void TerminatingFunction::forceRemove(const std::string& functionTypeid)
 {
     m_lock.lock();
-    std::remove(m_terminatingFunctions.begin(), m_terminatingFunctions.end(), functionTypeid);
+    auto temp = std::remove(m_terminatingFunctions.begin(), m_terminatingFunctions.end(), functionTypeid); 
     m_lock.unlock();
 }
 

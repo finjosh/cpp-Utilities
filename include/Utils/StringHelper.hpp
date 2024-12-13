@@ -6,6 +6,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <stdint.h>
 
 class StringHelper
 {
@@ -88,9 +89,9 @@ public:
     */
     static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
     /// @returns the value as a string containing the two chars that represent it in hex
-    static std::string intToHex(std::uint8_t value);
+    static std::string intToHex(uint8_t value);
     /// @returns the hex char representing the first 4 bits in the given int
-    static char intToHex_char(std::uint8_t value);
+    static char intToHex_char(uint8_t value);
 
     template <typename T = float, typename ConvertFunc = T(const std::string&, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::list<T> toList(const std::string& str, const ConvertFunc& convFunc = &StringHelper::toFloat, T defaultValue = 0)
