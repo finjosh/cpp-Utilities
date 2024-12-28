@@ -109,27 +109,30 @@ void LiveVar::UpdateLiveVars(const sf::Event& event)
 void LiveVar::incrementKeys(sf::Keyboard::Key increaseKey, sf::Keyboard::Key decreaseKey, float increment,
                             float min, float max, float* value, const sf::Event& event)
 {
-    if (event.type != sf::Event::KeyPressed) return;
-    if (event.key.code == increaseKey)
+    if (const sf::Event::KeyPressed* keyPressed = event.getIf<sf::Event::KeyPressed>())
     {
-        (*value) = std::min(max, (*value) + increment);
-    }
-    else if (event.key.code == decreaseKey)
-    {
-        (*value) = std::max(min, (*value) - increment);
+        if (keyPressed->code == increaseKey)
+        {
+            (*value) = std::min(max, (*value) + increment);
+        }
+        else if (keyPressed->code == decreaseKey)
+        {
+            (*value) = std::max(min, (*value) - increment);
+        }
     }
 }
 
 void LiveVar::presetKeys(const std::list<std::pair<sf::Keyboard::Key, float>>& values, float* value, const sf::Event& event)
 {
-    if (event.type != sf::Event::KeyPressed) return;
-
-    for (std::list<std::pair<sf::Keyboard::Key, float>>::const_iterator i = values.begin(); i != values.end(); i++)
+    if (const sf::Event::KeyPressed* keyPressed = event.getIf<sf::Event::KeyPressed>())
     {
-        if (event.key.code == i->first)
+        for (std::list<std::pair<sf::Keyboard::Key, float>>::const_iterator i = values.begin(); i != values.end(); i++)
         {
-            (*value) = i->second;
-            return;
+            if (keyPressed->code == i->first)
+            {
+                (*value) = i->second;
+                return;
+            }
         }
     }
 }

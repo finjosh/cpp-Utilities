@@ -104,22 +104,21 @@ int main()
         window.clear();
         // updating the delta time var
         deltaTime = deltaClock.restart().asSeconds();
-        sf::Event event;
-        while (window.pollEvent(event))
+        while (const std::optional<sf::Event> event = window.pollEvent())
         {
             //! Required CommandPrompt to work as intended
-            if (Command::Prompt::UpdateEvent(event))
+            if (Command::Prompt::UpdateEvent(event.value()))
                 continue;
             //! ------------------------------------------
             
-            if (gui.handleEvent(event))
+            if (gui.handleEvent(event.value()))
                 continue;
 
             //! Required for Live Vars to work as intended
-            LiveVar::UpdateLiveVars(event);
+            LiveVar::UpdateLiveVars(event.value());
             //! ------------------------------------------
 
-            if (event.type == sf::Event::Closed)
+            if (event->is<sf::Event::Closed>())
                 window.close();
         }
         //! Updates all the vars being displayed

@@ -176,7 +176,7 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
 void Command::Prompt::close()
 {
     if (m_parent)
-        m_parent->destroy();
+        m_parent->getParent()->remove(m_parent);
     m_parent = nullptr;
     m_textBox = nullptr;
     m_autoFillList = nullptr;
@@ -187,14 +187,18 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
 {
     if (!m_parent)
         return false;
-    if (m_ignoreInputText && event.type == sf::Event::TextEntered && (event.text.unicode == 96 || event.text.unicode == 126)) // TODO make this more dynamic
+    if (m_ignoreInputText)
     {
-        m_ignoreInputText = false;
-        return true;
+        if (const sf::Event::TextEntered* textEntered = event.getIf<sf::Event::TextEntered>())
+            if (textEntered->unicode == 96 || textEntered->unicode == 126) // TODO make this more dynamic
+            {
+                m_ignoreInputText = false;
+                return true;
+            }
     }
-    if (event.type == sf::Event::KeyPressed)
+    if (const sf::Event::KeyPressed* keyPressed = event.getIf<sf::Event::KeyPressed>())
     {
-        if (event.key.code == sf::Keyboard::Key::Tilde) // TODO make this more dynamic
+        if (keyPressed->code == sf::Keyboard::Key::Grave) // TODO make this more dynamic
         {
             if (m_parent->isEnabled())
                 setVisible(false);
@@ -211,7 +215,7 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
         if (!m_parent->isFocused())
             return false;
 
-        if (event.key.code == sf::Keyboard::Key::Escape)
+        if (keyPressed->code == sf::Keyboard::Key::Escape)
         {
             if (m_autoFillList->isVisible() && (m_textBox->isFocused() || m_autoFillList->isFocused()))
             {
@@ -225,7 +229,7 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
             }
         }
 
-        if (event.key.code == sf::Keyboard::Key::Up && (m_textBox->isFocused() || m_autoFillList->isFocused()))
+        if (keyPressed->code == sf::Keyboard::Key::Up && (m_textBox->isFocused() || m_autoFillList->isFocused()))
         {
             if (!m_autoFillList->isVisible() && m_commandHistory.size() != 0)
             {
@@ -244,7 +248,7 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
             return true;
         }
 
-        if (event.key.code == sf::Keyboard::Key::Down)
+        if (keyPressed->code == sf::Keyboard::Key::Down)
         {
             if (m_autoFillList->isVisible())
             {
@@ -254,7 +258,7 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
             }
         }
 
-        if (event.key.code == sf::Keyboard::Key::Tab)
+        if (keyPressed->code == sf::Keyboard::Key::Tab)
         {
             AutoFill();
             return true;

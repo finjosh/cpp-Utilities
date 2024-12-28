@@ -9,27 +9,33 @@ PROJECT:=utils
 # the directory in which all .o and .d files will be made
 OBJ_O_DIR:=bin
 # the include flags for compilation by default includes the project directory and include directory
-INCLUDE_DIRS=/VSCodeFolder/Libraries/SFML-2.6.1/include /VSCodeFolder/Libraries/TGUI-1.x/include
+INCLUDE_DIRS=/VSCodeFolder/Libraries/SFML-3.0.0/include /VSCodeFolder/Libraries/TGUI-1.7/include
 # extra include flags
 INCLUDE_FLAGS=-D SFML_STATIC
 # the paths to libs for linking
-LIB_DIRS=/VSCodeFolder/Libraries/SFML-2.6.1/lib /VSCodeFolder/Libraries/TGUI-1.x/lib
+LIB_DIRS=/VSCodeFolder/Libraries/SFML-3.0.0/lib V:/VSCodeFolder/Libraries/TGUI-1.7/lib
 # source files directory (the project directory is automatically added)
 SRC:=src
 # the directory for lib files that are made with "make libs"
 LIB_DIR:=libs
 # the directories where all the source files that you want in the lib are
 LIB_SOURCE:=src/Utils src/External
+# entirely hard coded sources
+LIB_NO_GRAPHICS_SOURCE:=V:\Git_projects\cpp-Utilities\src\Utils\CommandHandler.cpp V:\Git_projects\cpp-Utilities\src\Utils\EventHelper.cpp V:\Git_projects\cpp-Utilities\src\Utils\iniParser.cpp V:\Git_projects\cpp-Utilities\src\Utils\Log.cpp V:\Git_projects\cpp-Utilities\src\Utils\StringHelper.cpp V:\Git_projects\cpp-Utilities\src\Utils\TerminatingFunction.cpp
 
 # compiler command
 CC:=g++
 # linker flags for compilation
 # add "-mwindows" to disable the terminal
-LINKERFLAGS:=-ltgui-s -lsfml-graphics-s -lsfml-window-s \
-			-lsfml-system-s -lsfml-audio-s -lsfml-network-s \
-			-lws2_32 -lflac -lvorbisenc -lvorbisfile -lvorbis \
-			-logg -lopenal32 -lopengl32 -lwinmm -lgdi32 -lfreetype \
+LINKERFLAGS:=-ltgui-s \
+			-lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lopengl32 -lfreetype \
+			-lsfml-window-s -lsfml-system-s -lopengl32 -lwinmm -lgdi32 \
+			-lsfml-audio-s -lsfml-system-s -lFLAC -lvorbisenc -lvorbisfile -lvorbis -logg \
+			-lsfml-network-s -lsfml-system-s -lws2_32 \
+			-lsfml-system-s -lwinmm \
 			-lstdc++ 
+# only when making the ignore lib (ONLY INCLUDE THE GIVEN HERE)
+LINKERFLAGS_IGNORE:=
 # flags to generate dependencies for all .o files
 DEPFLAGS:=-MP -MD
 DEBUG_FLAGS = -g
@@ -50,7 +56,7 @@ ifeq ($(OS),Windows_NT)
 	MD:=mkdir
 # if you are using wsl or something which requires a more exact path add it here (this path will be added in front of all lib_dirs and include_dirs)
 	DRIVEPATH:=
-else
+else #! this does not work
 	EXE:=
 	FIXPATH=$(subst \,/,$1)
 	PROJECT_DIR:=$(call FIXPATH,${PROJECT_DIR_TEMP})
@@ -71,13 +77,14 @@ LIBSRC:=$(foreach D,${LIBSOURCEDIRS},$(wildcard ${D}/*.cpp))
 # Create an object file of every cpp file
 OBJECTS:=$(patsubst ${PROJECT_DIR}%,${PROJECT_DIR}/${OBJ_O_DIR}%,$(call FIXPATH,$(patsubst %.cpp,%.o,${SRC})))
 LIBOBJECTS:=$(patsubst ${PROJECT_DIR}%,${PROJECT_DIR}/${OBJ_O_DIR}%,$(call FIXPATH,$(patsubst %.cpp,%.o,${LIBSRC})))
+LIBOBJECTS_NO_GRAPHICS=$(patsubst ${PROJECT_DIR}%,${PROJECT_DIR}/${OBJ_O_DIR}%,$(call FIXPATH,$(patsubst %.cpp,%.o,${LIB_NO_GRAPHICS_SOURCE})))
 # Creating dependency files
 DEPFILES=$(patsubst %.o,%.d,${OBJECTS})
 # All bin directories
 BIN_DIRS=$(foreach dir,$(call FIXPATH,$(SOURCEDIRS)),$(patsubst $(call FIXPATH,$(PROJECT_DIR)%),$(call FIXPATH,$(PROJECT_DIR)/$(OBJ_O_DIR)%),$(dir)))
 
-# so there is no file that gets mistaked with the tasks listed
-.PHONY = all info clean lib run
+# so there is no file that gets mistake with the tasks listed
+.PHONY = all info clean lib run ignore_lib
 
 
 all: ${BIN_DIRS} ${PROJECT}
@@ -93,6 +100,7 @@ ${PROJECT_DIR}/${OBJ_O_DIR}%.o:${PROJECT_DIR}%.cpp
 # build the lib with the same compile options
 lib: ${BIN_DIRS} ${LIB_DIR} ${LIBOBJECTS}
 	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}.a) ${LIBOBJECTS}
+	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}_no_graphics.a) ${LIBOBJECTS_NO_GRAPHICS}
 	@echo Libs created
 
 # include the dependencies

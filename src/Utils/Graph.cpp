@@ -1,58 +1,61 @@
 #include "Utils/Graph.hpp"
 
-size_t Graph::_lastID = 0;
-std::map<std::string, GraphType> Graph::_stringToGraphType = {{"scatter", GraphType::Scatter}, {"histogram", GraphType::Histogram}, {"line", GraphType::Line}, {"bar", GraphType::Bar}};
-std::map<GraphType, std::string> Graph::_graphTypeToString = {{GraphType::Scatter, "scatter"}, {GraphType::Histogram, "histogram"}, {GraphType::Line, "line"}, {GraphType::Bar, "bar"}};
+size_t Graph::m_lastID = 0;
+std::map<std::string, GraphType> Graph::m_stringToGraphType = {{"scatter", GraphType::Scatter}, {"histogram", GraphType::Histogram}, {"line", GraphType::Line}, {"bar", GraphType::Bar}};
+std::map<GraphType, std::string> Graph::m_graphTypeToString = {{GraphType::Scatter, "scatter"}, {GraphType::Histogram, "histogram"}, {GraphType::Line, "line"}, {GraphType::Bar, "bar"}};
 
 void Graph::draw(sf::RenderTarget &target, sf::RenderStates states) const
 {
-    sf::RectangleShape temp(_size);
-    temp.setOrigin(_origin);
-    temp.setPosition(_position);
-    temp.setRotation(_rotation);
-    temp.setTexture(&_texture);
+    sf::RectangleShape temp(m_size);
+    temp.setOrigin(m_origin);
+    temp.setPosition(m_position);
+    temp.setRotation(m_rotation);
+    temp.setTexture(&m_texture);
     target.draw(temp, states);
 }
 
 GraphType Graph::strToType(const std::string& str)
 {
-    auto temp = _stringToGraphType.find(StringHelper::toLower_copy(str));
-    if (temp == _stringToGraphType.end())
+    auto temp = m_stringToGraphType.find(StringHelper::toLower_copy(str));
+    if (temp == m_stringToGraphType.end())
         return GraphType::Line;
     return temp->second;
 }
 
 std::string Graph::typeToString(GraphType type)
 {
-    auto temp = _graphTypeToString.find(type);
-    if (temp == _graphTypeToString.end())
+    auto temp = m_graphTypeToString.find(type);
+    if (temp == m_graphTypeToString.end())
         return "Not in dictionary";
     return temp->second;
 }
 
 void Graph::Update()
 {
-    if (_wasChanged)
+    if (m_wasChanged)
     {
-        if (!_axesSetup)
+        if (!m_axesSetup)
             setupAxes(); 
         sf::RenderTexture render;
         sf::ContextSettings settings;
-        settings.antialiasingLevel = _antialiasingLevel;
-        render.create(_resolution.x, _resolution.y, settings);
-        sf::RectangleShape background(sf::Vector2f((int)_resolution.x, (int)_resolution.y));
-        background.setFillColor(_backgroundColor);
+        settings.antiAliasingLevel = m_antialiasingLevel;
+        if (!render.resize(m_resolution, settings))
+        {
+            throw std::runtime_error("Unable to resize sf::RenderTexture");
+        }
+        sf::RectangleShape background(sf::Vector2f((int)m_resolution.x, (int)m_resolution.y));
+        background.setFillColor(m_backgroundColor);
         render.draw(background);
-        render.draw(drawBackgroundLines());
+        drawBackgroundLines(render);
 
         bool renderedAxis = false;
         std::list<sw::Spline> splineData;
-        for (const GraphData& data: _dataSets)
+        for (const GraphData& data: m_dataSets)
         {
             if (!renderedAxis && data.getGraphType() == GraphType::Scatter)
             {
-                render.draw(drawAxisLines());
-                render.draw(drawAxisStepIndicators());
+                drawAxisLines(render);
+                drawAxisStepIndicators(render);
                 renderedAxis = true;
             }
             updateSpline(splineData,data);
@@ -64,203 +67,215 @@ void Graph::Update()
         }
         if (!renderedAxis)
         {
-            render.draw(drawAxisLines());
-            render.draw(drawAxisStepIndicators());
+            drawAxisLines(render);
+            drawAxisStepIndicators(render);
         }
-        auto text = drawTextElements();
-        for (auto& i: text)
-        {
-            render.draw(i);
-        }
+        drawTextElements(render);
 
         render.display();
-        _texture = render.getTexture();
+        m_texture = render.getTexture();
 
-        _wasChanged = false;
+        m_wasChanged = false;
     }
 }
 
-sf::VertexArray Graph::drawBackgroundLines()
+/// @warning assumes that vertexArr has a primitive type of triangles
+/// @param topLeft x is left value y is top value
+/// @param bottomRight x is right value and y is bottom value for rect bounds
+static void drawRectangleViaTriangles(sf::VertexArray& vertexArr, sf::Vector2f topLeft, sf::Vector2f bottomRight, sf::Color color = sf::Color::White)
 {
-    sf::VertexArray rtn;
-    rtn.setPrimitiveType(sf::PrimitiveType::Quads);
+    // top left triangle
+    vertexArr.append(sf::Vertex({topLeft.x, bottomRight.y})); // left bottom
+    vertexArr.append(sf::Vertex({topLeft.x, topLeft.y})); // left top
+    vertexArr.append(sf::Vertex({bottomRight.x, topLeft.y})); // right top
+    // bottom right triangle
+    vertexArr.append(sf::Vertex({topLeft.x, bottomRight.y})); // left bottom
+    vertexArr.append(sf::Vertex({bottomRight.x, topLeft.y})); // right top
+    vertexArr.append(sf::Vertex({bottomRight.x, bottomRight.y})); // right bottom
+}
 
+void Graph::drawBackgroundLines(sf::RenderTarget& target) const
+{
+    sf::VertexArray vertexArr;
+    vertexArr.setPrimitiveType(sf::PrimitiveType::Triangles);
+
+    float lineThickness = m_backgroundLinesThickness/2;
     // x axis
-    for (float x = _xBounds.first; roundTo(x, _decimalPrecision) <= roundTo(_xBounds.second, _decimalPrecision); x += _StepSize.x)
+    for (float x = m_xBounds.first; roundTo(x, m_decimalPrecision) <= roundTo(m_xBounds.second, m_decimalPrecision); x += m_StepSize.x)
     {
-        sf::Vector2f temp(_backgroundLinesThickness/2, 0);
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, _yBounds.first)) - temp));
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, _yBounds.first)) + temp));
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, _yBounds.second)) + temp));
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, _yBounds.second)) - temp));
+        drawRectangleViaTriangles(vertexArr, convertValueToPoint(sf::Vector2f{x, m_yBounds.second}) - sf::Vector2f{lineThickness, 0}, 
+                                             convertValueToPoint(sf::Vector2f{x, m_yBounds.first}) + sf::Vector2f{lineThickness, 0}, m_backgroundLinesColor);
+        // // top left triangle
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, m_yBounds.first)) - temp)); // bottom left
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, m_yBounds.first)) + temp)); // top left
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, m_yBounds.second)) + temp)); // top right
+        // // bottom right triangle
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, m_yBounds.first)) - temp)); // bottom left
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, m_yBounds.second)) + temp)); // top right
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(x, m_yBounds.second)) - temp)); // bottom right
     }
 
     // y axis
-    for (float y = _yBounds.first; roundTo(y, _decimalPrecision) <= roundTo(_yBounds.second, _decimalPrecision); y += _StepSize.y)
+    for (float y = m_yBounds.first; roundTo(y, m_decimalPrecision) <= roundTo(m_yBounds.second, m_decimalPrecision); y += m_StepSize.y)
     {
-        sf::Vector2f temp(0, _backgroundLinesThickness/2);
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(_xBounds.first, y)) + temp));
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(_xBounds.first, y)) - temp));
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(_xBounds.second, y)) - temp));
-        rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(_xBounds.second, y)) + temp));
+        drawRectangleViaTriangles(vertexArr, convertValueToPoint(sf::Vector2f{m_xBounds.first, y}) + sf::Vector2f{0, lineThickness}, 
+                                             convertValueToPoint(sf::Vector2f{m_xBounds.second, y}) - sf::Vector2f{0, lineThickness}, m_backgroundLinesColor);
+        // // top left triangle
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(m_xBounds.first, y)) + temp)); // left bottom
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(m_xBounds.first, y)) - temp)); // left top
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(m_xBounds.second, y)) - temp)); // right top
+        // // bottom right triangle
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(m_xBounds.first, y)) + temp)); // left bottom
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(m_xBounds.second, y)) - temp)); // right top
+        // rtn.append(sf::Vertex(convertValueToPoint(sf::Vector2f(m_xBounds.second, y)) + temp)); // right bottom
     }
 
-    return rtn;
+    target.draw(vertexArr);
 }
 
-sf::VertexArray Graph::drawAxisStepIndicators()
+void Graph::drawAxisStepIndicators(sf::RenderTarget& target) const
 {
-    sf::VertexArray rtn;
-    rtn.setPrimitiveType(sf::PrimitiveType::Quads);
+    sf::VertexArray vertexArr;
+    vertexArr.setPrimitiveType(sf::PrimitiveType::Triangles);
 
     // x axis
     int AxisIndicatorIndex = 0;
-    for (float x = _xBounds.first; roundTo(x, _decimalPrecision) <= roundTo(_xBounds.second, _decimalPrecision); x += _StepSize.x)
+    for (float x = m_xBounds.first; roundTo(x, m_decimalPrecision) <= roundTo(m_xBounds.second, m_decimalPrecision); x += m_StepSize.x)
     {
-        sf::Vector2f LinePos(_margin + (AxisIndicatorIndex * (_resolution.x - _margin*2) / _numSteps.x), _resolution.y - _margin - _axesThickness/2 /* sub 5 for the thickness of the bar*/);
+        sf::Vector2f LinePos(m_margin + (AxisIndicatorIndex * (m_resolution.x - m_margin*2) / m_numSteps.x), m_resolution.y - m_margin - m_axesThickness/2 /* sub 5 for the thickness of the bar*/);
 
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x, LinePos.y - (_margin * 0.15f)), _axesColor)); // top left
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x, LinePos.y + (_margin * 0.15f)), _axesColor)); // bottom left
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x + _axesThickness, LinePos.y + (_margin * 0.15f)), _axesColor)); // bottom right
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x + _axesThickness, LinePos.y - (_margin * 0.15f)), _axesColor)); // top right
+        drawRectangleViaTriangles(vertexArr, sf::Vector2f{LinePos.x, LinePos.y - (m_margin * 0.15f)}, 
+                                             sf::Vector2f{LinePos.x + m_axesThickness, LinePos.y + (m_margin * 0.15f)}, m_axesColor);
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x, LinePos.y - (m_margin * 0.15f)), m_axesColor)); // top left
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x, LinePos.y + (m_margin * 0.15f)), m_axesColor)); // bottom left
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x + m_axesThickness, LinePos.y + (m_margin * 0.15f)), m_axesColor)); // bottom right
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x + m_axesThickness, LinePos.y - (m_margin * 0.15f)), m_axesColor)); // top right
 
         AxisIndicatorIndex++;
     }
 
     // y axis
     AxisIndicatorIndex = 0;
-    for (float y = _yBounds.first; roundTo(y, _decimalPrecision) <= roundTo(_yBounds.second, _decimalPrecision); y += _StepSize.y)
+    for (float y = m_yBounds.first; roundTo(y, m_decimalPrecision) <= roundTo(m_yBounds.second, m_decimalPrecision); y += m_StepSize.y)
     {
-        sf::Vector2f LinePos(_margin + _axesThickness/2, _resolution.y - _margin - (AxisIndicatorIndex * (_resolution.y - _margin*2) / _numSteps.y) - _axesThickness);
+        sf::Vector2f LinePos(m_margin + m_axesThickness/2, m_resolution.y - m_margin - (AxisIndicatorIndex * (m_resolution.y - m_margin*2) / m_numSteps.y) - m_axesThickness);
 
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x - (_margin * 0.15f), LinePos.y), _axesColor)); // bottom left
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x + (_margin * 0.15f), LinePos.y), _axesColor)); // bottom right
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x + (_margin * 0.15f), LinePos.y + _axesThickness), _axesColor)); // top right
-        rtn.append(sf::Vertex(sf::Vector2f(LinePos.x - (_margin * 0.15f), LinePos.y + _axesThickness), _axesColor)); // top left
+        drawRectangleViaTriangles(vertexArr, sf::Vector2f{LinePos.x - (m_margin * 0.15f), LinePos.y + m_axesThickness}, 
+                                             sf::Vector2f{LinePos.x + (m_margin * 0.15f), LinePos.y}, m_axesColor);
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x - (m_margin * 0.15f), LinePos.y), m_axesColor)); // bottom left
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x + (m_margin * 0.15f), LinePos.y), m_axesColor)); // bottom right
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x + (m_margin * 0.15f), LinePos.y + m_axesThickness), m_axesColor)); // top right
+        // vertexArr.append(sf::Vertex(sf::Vector2f(LinePos.x - (m_margin * 0.15f), LinePos.y + m_axesThickness), m_axesColor)); // top left
 
         AxisIndicatorIndex++;
     }
 
-    return rtn;
+    target.draw(vertexArr);
 }
 
-sf::VertexArray Graph::drawAxisLines()
+void Graph::drawAxisLines(sf::RenderTarget& target) const
 {
-    sf::VertexArray rtn;
-    rtn.setPrimitiveType(sf::PrimitiveType::Quads);
+    sf::VertexArray vertexArr;
+    vertexArr.setPrimitiveType(sf::PrimitiveType::Triangles);
 
-    // Y-axis
-    rtn.append(sf::Vertex(sf::Vector2f(_margin, _margin), _axesColor)); // top left
-    rtn.append(sf::Vertex(sf::Vector2f(_margin, _resolution.y - _margin), _axesColor)); // bottom left
-    rtn.append(sf::Vertex(sf::Vector2f(_margin + _axesThickness, _resolution.y - _margin), _axesColor)); // bottom right
-    rtn.append(sf::Vertex(sf::Vector2f(_margin + _axesThickness, _margin), _axesColor)); // top right
+    // Y - axis
+    drawRectangleViaTriangles(vertexArr, sf::Vector2f{(float)m_margin, (float)m_margin}, 
+                                         sf::Vector2f{(float)(m_margin + m_axesThickness), (float)(m_resolution.y - m_margin)}, m_axesColor);
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_margin, m_margin), m_axesColor)); // top left
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_margin, m_resolution.y - m_margin), m_axesColor)); // bottom left
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_margin + m_axesThickness, m_resolution.y - m_margin), m_axesColor)); // bottom right
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_margin + m_axesThickness, m_margin), m_axesColor)); // top right
     
-    //BottomRight
-    rtn.append(sf::Vertex(sf::Vector2f(_margin, _resolution.y - _margin), _axesColor)); // bottom left
-    rtn.append(sf::Vertex(sf::Vector2f(_resolution.x - _margin, _resolution.y - _margin), _axesColor)); // bottom right
-    rtn.append(sf::Vertex(sf::Vector2f(_resolution.x - _margin, _resolution.y - _margin - _axesThickness), _axesColor)); // top right
-    rtn.append(sf::Vertex(sf::Vector2f(_margin, _resolution.y - _margin - _axesThickness), _axesColor)); // top left
+    // X - axis
+    drawRectangleViaTriangles(vertexArr, sf::Vector2f{(float)m_margin, (float)(m_resolution.y - m_margin - m_axesThickness)}, 
+                                         sf::Vector2f{(float)(m_resolution.x - m_margin), (float)(m_resolution.y - m_margin)}, m_axesColor);
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_margin, m_resolution.y - m_margin), m_axesColor)); // bottom left
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_resolution.x - m_margin, m_resolution.y - m_margin), m_axesColor)); // bottom right
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_resolution.x - m_margin, m_resolution.y - m_margin - m_axesThickness), m_axesColor)); // top right
+    // vertexArr.append(sf::Vertex(sf::Vector2f(m_margin, m_resolution.y - m_margin - m_axesThickness), m_axesColor)); // top left
 
-    return rtn;
+    target.draw(vertexArr);
 }
 
-std::list<sf::Text> Graph::drawTextElements()
+void Graph::drawTextElements(sf::RenderTarget& target)
 {
-    _charSize = _charSize < 0 ? static_cast<unsigned int>(_margin * 0.3) : _charSize;
-    std::list<sf::Text> rtn;
-
+    m_charSize = m_charSize < 0 ? static_cast<unsigned int>(m_margin * 0.3) : m_charSize;
     /*
      * Axis Labels
      */
-    sf::Text xAxisLabel;
-    xAxisLabel.setFont(_font);
-    xAxisLabel.setCharacterSize(_charSize);
-    xAxisLabel.setFillColor(_axesColor);
-    xAxisLabel.setString(_xAxisLabel);
+    sf::Text xAxisLabel(m_font, m_xAxisLabel, m_charSize);
+    xAxisLabel.setFillColor(m_axesColor);
 
-    xAxisLabel.setPosition(_resolution.x - _margin/2 + xAxisLabel.getLocalBounds().height, _resolution.y - _margin - xAxisLabel.getLocalBounds().width);
+    xAxisLabel.setPosition({m_resolution.x - m_margin/2 + xAxisLabel.getLocalBounds().size.y, m_resolution.y - m_margin - xAxisLabel.getLocalBounds().size.x});
 
-    xAxisLabel.rotate(90);
+    xAxisLabel.rotate(sf::degrees(90));
 
-    rtn.push_back(xAxisLabel);
+    target.draw(xAxisLabel);
 
-    sf::Text yAxisLabel;
-    yAxisLabel.setFont(_font);
-    yAxisLabel.setCharacterSize(_charSize);
-    yAxisLabel.setFillColor(_axesColor);
-    yAxisLabel.setString(_yAxisLabel);
+    sf::Text yAxisLabel(m_font, m_yAxisLabel, m_charSize);
+    yAxisLabel.setFillColor(m_axesColor);
 
-    yAxisLabel.setPosition(_margin, _margin/2 - yAxisLabel.getLocalBounds().height);
+    yAxisLabel.setPosition({(float)m_margin, (float)m_margin/2 - yAxisLabel.getLocalBounds().size.y});
 
-    rtn.push_back(yAxisLabel);
+    target.draw(yAxisLabel);
 
     /*
      * Axis indicator text
      */
     // x axis
     int AxisIndicatorIndex = 0;
-    for (float x = _xBounds.first; roundTo(x, _decimalPrecision) <= roundTo(_xBounds.second, _decimalPrecision); x += _StepSize.x)
+    for (float x = m_xBounds.first; roundTo(x, m_decimalPrecision) <= roundTo(m_xBounds.second, m_decimalPrecision); x += m_StepSize.x)
     {
-        sf::Vector2f LinePos(_margin + (AxisIndicatorIndex * (_resolution.x - _margin*2) / _numSteps.x), _resolution.y - _margin - _axesThickness/2 /* sub 5 for the thickness of the bar*/);
+        sf::Vector2f LinePos(m_margin + (AxisIndicatorIndex * (m_resolution.x - m_margin*2) / m_numSteps.x), m_resolution.y - m_margin - m_axesThickness/2 /* sub 5 for the thickness of the bar*/);
 
         //text
-        sf::Text indicatorText;
-        indicatorText.setCharacterSize(_charSize);
-        indicatorText.setFont(_font);
-        indicatorText.setString(toString(roundTo(x, _decimalPrecision), _decimalPrecision));
-        indicatorText.setFillColor(_axesColor);
+        sf::Text indicatorText(m_font, StringHelper::FloatToStringRound(roundTo(x, m_decimalPrecision), m_decimalPrecision), m_charSize);
+        indicatorText.setFillColor(m_axesColor);
 
         sf::FloatRect tDimension = indicatorText.getLocalBounds();
-        indicatorText.setOrigin(tDimension.left + tDimension.width / 2, tDimension.top + tDimension.height / 2);
-        indicatorText.setPosition(LinePos.x, LinePos.y + (_margin/2) + (_margin * 0.15f));
-        indicatorText.setRotation(_xTextRotation);
+        indicatorText.setOrigin({tDimension.size.x / 2, tDimension.size.y / 2});
+        indicatorText.setPosition({LinePos.x, LinePos.y + (m_margin/2) + (m_margin * 0.15f)});
+        indicatorText.setRotation(m_xTextRotation);
 
-        rtn.emplace_back(indicatorText);
+        target.draw(indicatorText);
         AxisIndicatorIndex++;
     }
 
     // y axis
     AxisIndicatorIndex = 0;
-    for (float y = _yBounds.first; roundTo(y, _decimalPrecision) <= roundTo(_yBounds.second, _decimalPrecision); y += _StepSize.y)
+    for (float y = m_yBounds.first; roundTo(y, m_decimalPrecision) <= roundTo(m_yBounds.second, m_decimalPrecision); y += m_StepSize.y)
     {
-        sf::Vector2f LinePos(_margin + _axesThickness/2, _resolution.y - _margin - (AxisIndicatorIndex * (_resolution.y - _margin*2) / _numSteps.y) - _axesThickness);
+        sf::Vector2f LinePos(m_margin + m_axesThickness/2, m_resolution.y - m_margin - (AxisIndicatorIndex * (m_resolution.y - m_margin*2) / m_numSteps.y) - m_axesThickness);
 
         //text
-        sf::Text indicatorText;
-        indicatorText.setCharacterSize(_charSize);
-        indicatorText.setFont(_font);
-        indicatorText.setString(toString(roundTo(y, _decimalPrecision), _decimalPrecision));
-        indicatorText.setFillColor(_axesColor);
+        sf::Text indicatorText(m_font, StringHelper::FloatToStringRound(roundTo(y, m_decimalPrecision), m_decimalPrecision), m_charSize);
+        indicatorText.setFillColor(m_axesColor);
 
         sf::FloatRect tDimension = indicatorText.getLocalBounds();
-        indicatorText.setOrigin(tDimension.width/2, tDimension.height/2);
-        indicatorText.rotate(_yTextRotation);
-        indicatorText.setPosition(indicatorText.getGlobalBounds().width/2 + (_margin * 0.15f), LinePos.y);
+        indicatorText.setOrigin({tDimension.size.x/2, tDimension.size.y/2});
+        indicatorText.rotate(m_yTextRotation);
+        indicatorText.setPosition({indicatorText.getGlobalBounds().size.x/2 + (m_margin * 0.15f), LinePos.y});
 
-        rtn.emplace_back(indicatorText);
+        target.draw(indicatorText);
         AxisIndicatorIndex++;
     }
 
     //* legend 
-    sf::Vector2f legendPos(_resolution.x - (_margin * 0.2), 0);
-    sf::Text segmentLegend;
-    segmentLegend.setFont(_font);
-    segmentLegend.setCharacterSize(_charSize);
-    for (auto& dataset : _dataSets)
+    sf::Vector2f legendPos(m_resolution.x - (m_margin * 0.2), 0);
+    sf::Text segmentLegend(m_font, "", m_charSize);
+    for (auto& dataset : m_dataSets)
     {
         segmentLegend.setPosition(legendPos);
         segmentLegend.setFillColor(dataset.getColor());
         segmentLegend.setString(dataset.getLabel());
 
         sf::FloatRect dim = segmentLegend.getLocalBounds();
-        segmentLegend.move(-dim.width, 0);
+        segmentLegend.move({-dim.size.x, 0});
 
-        legendPos += sf::Vector2f(0, segmentLegend.getGlobalBounds().height + (_margin * 0.1));
+        legendPos += sf::Vector2f(0, segmentLegend.getGlobalBounds().size.y + (m_margin * 0.1));
 
-        rtn.push_back(segmentLegend);
+        target.draw(segmentLegend);
     }
-
-    return rtn;
 }
 
 void Graph::updateSpline(std::list<sw::Spline>& splineData, const GraphData& dataset)
@@ -308,13 +323,13 @@ void Graph::updateSpline(std::list<sw::Spline>& splineData, const GraphData& dat
         for (size_t i = 0; i < dataset.getDataLength(); i++)
         {
             sf::Vector2f value = dataset.getDataValue(i);
-            if (value.x >= currentValue + _StepSize.x)
+            if (value.x >= currentValue + m_StepSize.x)
             {
-                currentValue += _StepSize.x;
+                currentValue += m_StepSize.x;
 
-                float barWidth = convertValueToPoint({currentValue,0}).x - convertValueToPoint({currentValue - _StepSize.x,0}).x;
+                float barWidth = convertValueToPoint({currentValue,0}).x - convertValueToPoint({currentValue - m_StepSize.x,0}).x;
                 auto point = convertValueToPoint({currentValue, yValue});
-                splineData.push_back({{sf::Vector2f(point.x - barWidth/2, _resolution.y - _margin - 5)}, 
+                splineData.push_back({{sf::Vector2f(point.x - barWidth/2, m_resolution.y - m_margin - 5)}, 
                                         {sf::Vector2f(point.x - barWidth/2, point.y)}});
                 auto& spline = splineData.back();
                 spline.setColor(dataset.getColor());
@@ -333,7 +348,7 @@ void Graph::updateSpline(std::list<sw::Spline>& splineData, const GraphData& dat
             //Generate bars
             sf::Vector2f ValuePosition(convertValueToPoint(dataset.getDataValue(i)));
 
-            splineData.push_back({{sf::Vector2f(ValuePosition.x, _resolution.y - _margin)}, {ValuePosition}});
+            splineData.push_back({{sf::Vector2f(ValuePosition.x, m_resolution.y - m_margin)}, {ValuePosition}});
             
             auto& spline = splineData.back();
             spline.setColor(dataset.getColor());
@@ -347,10 +362,10 @@ void Graph::updateSpline(std::list<sw::Spline>& splineData, const GraphData& dat
     }
 }
 
-sf::Vector2f Graph::convertValueToPoint(const sf::Vector2f& dataValue)
+sf::Vector2f Graph::convertValueToPoint(const sf::Vector2f& dataValue) const
 {
-   return sf::Vector2f(_margin + _axesThickness/2 + ((dataValue.x - _xBounds.first) / (_xBounds.second - _xBounds.first)) * (_resolution.x - _margin*2),
-                        _resolution.y - _margin - _axesThickness/2 - ((dataValue.y - _yBounds.first) / (_yBounds.second - _yBounds.first)) * (_resolution.y - _margin*2)); 
+   return sf::Vector2f(m_margin + m_axesThickness/2 + ((dataValue.x - m_xBounds.first) / (m_xBounds.second - m_xBounds.first)) * (m_resolution.x - m_margin*2),
+                        m_resolution.y - m_margin - m_axesThickness/2 - ((dataValue.y - m_yBounds.first) / (m_yBounds.second - m_yBounds.first)) * (m_resolution.y - m_margin*2)); 
 }
 
 std::string Graph::toString(float d, size_t precision)
@@ -360,82 +375,94 @@ std::string Graph::toString(float d, size_t precision)
 
 Graph::Graph(const sf::Vector2f& position, const sf::Vector2f& size, const sf::Font& font, const std::string& xLabel, const std::string& yLabel, 
                 const sf::Color& backgroundColor, unsigned int antialiasingLevel, float margin, const sf::Vector2u& resolution, unsigned int decimalPrecision)
-: _font(font), _xAxisLabel(xLabel), _yAxisLabel(yLabel), _antialiasingLevel(antialiasingLevel), _margin(margin), _resolution(resolution), _backgroundColor(backgroundColor), 
-_decimalPrecision(decimalPrecision), _position(position), _size(size)
-{}
+: m_font(font), m_xAxisLabel(xLabel), m_yAxisLabel(yLabel), m_antialiasingLevel(antialiasingLevel), m_resolution(resolution), m_backgroundColor(backgroundColor), 
+m_decimalPrecision(decimalPrecision), m_position(position), m_size(size)
+{
+    setMargin(margin); // setting here so that char size is auto set
+}
 
 void Graph::setPostion(const sf::Vector2f& pos)
 {
-    _position = pos;
+    m_position = pos;
 }
 
-void Graph::setRotation(float degree)
+void Graph::setRotation(sf::Angle angle)
 {
-    _rotation = degree;
+    m_rotation = angle;
 }
 
 void Graph::setOrigin(const sf::Vector2f& origin)
 {
-    _origin = origin;
+    m_origin = origin;
 }
 
 void Graph::setSize(const sf::Vector2f& size)
 {
-    _size = size;
+    m_size = size;
 }
 
 void Graph::setResolution(const sf::Vector2u& resolution)
 {
-    this->_resolution = resolution;
-    this->_wasChanged = true;
+    this->m_resolution = resolution;
+    this->m_wasChanged = true;
 }
 
 void Graph::setXLable(const std::string& xLabel)
 {
-    this->_xAxisLabel = xLabel;
-    this->_wasChanged = true;
+    this->m_xAxisLabel = xLabel;
+    this->m_wasChanged = true;
 }
 
 void Graph::setYLable(const std::string& yLabel)
 {
-    this->_yAxisLabel = yLabel;
-    this->_wasChanged = true;
+    this->m_yAxisLabel = yLabel;
+    this->m_wasChanged = true;
 }
 
 void Graph::setAntialiasingLevel(unsigned int antialiasingLevel)
 {
-    this->_antialiasingLevel = antialiasingLevel;
-    this->_wasChanged = true;
+    this->m_antialiasingLevel = antialiasingLevel;
+    this->m_wasChanged = true;
 }
 
 void Graph::setMargin(float margin)
 {
-    this->_margin = margin;
-    this->_wasChanged = true;
+    this->m_margin = margin;
+    this->m_wasChanged = true;
 }
 
 void Graph::setBackgroundColor(const sf::Color& color)
 {
-    this->_backgroundColor = color;
-    this->_wasChanged = true;
+    this->m_backgroundColor = color;
+    this->m_wasChanged = true;
 }
 
 void Graph::setDecimalPrecision(unsigned int decimalPrecision)
 {
-    _decimalPrecision = decimalPrecision < 6 ? decimalPrecision : 6;
-    this->_wasChanged = true;
+    m_decimalPrecision = decimalPrecision < 6 ? decimalPrecision : 6;
+    this->m_wasChanged = true;
 }
 
 void Graph::setAxesThickness(unsigned int thickness)
 {
-    _axesThickness = thickness;
-    this->_wasChanged = true;
+    m_axesThickness = thickness;
+    this->m_wasChanged = true;
 }
 
 void Graph::setBackgroundLinesThickness(unsigned int thickness)
 {
-    _backgroundLinesThickness = thickness;
-    this->_wasChanged = true;
+    m_backgroundLinesThickness = thickness;
+    this->m_wasChanged = true;
+}
+
+void Graph::setBackgroundLinesColor(sf::Color color)
+{
+    m_backgroundLinesColor = color;
+}
+
+sf::Color Graph::getBackgroundLinesColor() const
+{
+    return m_backgroundLinesColor;
 }
 
 sf::Vector2f Graph::getMinValue(const GraphData& graphData) const
@@ -456,7 +483,7 @@ sf::Vector2f Graph::getMinValue(const GraphData& graphData) const
         float xMin = *std::min_element(graphData.getXValues().begin(), graphData.getXValues().end());
         float xMax = *std::max_element(graphData.getXValues().begin(), graphData.getXValues().end());
 
-        float stepSize = (xMax - xMin) / (float)_numSteps.x;
+        float stepSize = (xMax - xMin) / (float)m_numSteps.x;
 
         float yMin = INFINITY;
 
@@ -494,7 +521,7 @@ sf::Vector2f Graph::getMaxValue(const GraphData& graphData) const
         float xMin = *std::min_element(graphData.getXValues().begin(), graphData.getXValues().end());
         float xMax = *std::max_element(graphData.getXValues().begin(), graphData.getXValues().end());
 
-        float stepSize = (xMax - xMin) / (float)_numSteps.x;
+        float stepSize = (xMax - xMin) / (float)m_numSteps.x;
 
         float yMax = -INFINITY;
 
@@ -520,7 +547,7 @@ void Graph::setupAxes()
     float xMin = INFINITY;
     float yMin = INFINITY;
 
-    for (const auto& dataset : this->_dataSets)
+    for (const auto& dataset : this->m_dataSets)
     {
         if (!dataset.isValid()) continue;
         auto min = getMinValue(dataset);
@@ -538,7 +565,7 @@ void Graph::setupAxes()
     float xMax = -INFINITY;
     float yMax = -INFINITY;
 
-    for (const auto& dataset : this->_dataSets)
+    for (const auto& dataset : this->m_dataSets)
     {
         if (!dataset.isValid()) continue;
         auto max = getMaxValue(dataset);
@@ -553,134 +580,134 @@ void Graph::setupAxes()
         }
     }
 
-    _xBounds.first = xMin;
-    _xBounds.second = xMax;
+    m_xBounds.first = xMin;
+    m_xBounds.second = xMax;
 
-    _yBounds.first = yMin;
-    _yBounds.second = yMax;
+    m_yBounds.first = yMin;
+    m_yBounds.second = yMax;
 
-    _StepSize.x = (xMax - xMin) / (float)_numSteps.x;
-    _StepSize.y = (yMax - yMin) / (float)_numSteps.y;
+    m_StepSize.x = (xMax - xMin) / (float)m_numSteps.x;
+    m_StepSize.y = (yMax - yMin) / (float)m_numSteps.y;
 
-    this->_wasChanged = true;
-    this->_axesSetup = false;
+    this->m_wasChanged = true;
+    this->m_axesSetup = false;
 }
 
 void Graph::setupAxes(unsigned int xSteps, unsigned int ySteps)
 {
-    _numSteps.x = xSteps;
-    _numSteps.y = ySteps;
+    m_numSteps.x = xSteps;
+    m_numSteps.y = ySteps;
 
     this->setupAxes(); // using the setupAxis to find bounds automatically
 
-    this->_wasChanged = true;
-    this->_axesSetup = true;
+    this->m_wasChanged = true;
+    this->m_axesSetup = true;
 }
 
 size_t Graph::addDataSet(const GraphData& data_set)
 {
-    this->_dataSets.push_back(data_set);
-    _dataSets.back().setID(++_lastID);
-    _dataSets.sort([](GraphData& i, GraphData& j){ return (i.getGraphType() < j.getGraphType()); });
-    _wasChanged = true;
-    return _lastID;
+    this->m_dataSets.push_back(data_set);
+    m_dataSets.back().setID(++m_lastID);
+    m_dataSets.sort([](GraphData& i, GraphData& j){ return (i.getGraphType() < j.getGraphType()); });
+    m_wasChanged = true;
+    return m_lastID;
 }
 
 void Graph::clearDataSets()
 {
-    this->_dataSets.clear();
-    _wasChanged = true;
+    this->m_dataSets.clear();
+    m_wasChanged = true;
 }
 
 void Graph::removeDataSet(size_t ID)
 {
-    auto temp = std::find_if(this->_dataSets.begin(), this->_dataSets.end(), [ID](const GraphData& temp){ return temp.getID() == ID; });
-    if (temp == this->_dataSets.end()) return;
-    this->_dataSets.erase(temp);
-    _wasChanged = true;
+    auto temp = std::find_if(this->m_dataSets.begin(), this->m_dataSets.end(), [ID](const GraphData& temp){ return temp.getID() == ID; });
+    if (temp == this->m_dataSets.end()) return;
+    this->m_dataSets.erase(temp);
+    m_wasChanged = true;
 }
 
 GraphData* Graph::getDataSet(size_t ID)
 {
-    auto temp = std::find_if(this->_dataSets.begin(), this->_dataSets.end(), [ID](const GraphData& temp){ return temp.getID() == ID; }).operator->();
-    if (temp == this->_dataSets.end().operator->()) return nullptr;
-    this->_wasChanged = true;
+    auto temp = std::find_if(this->m_dataSets.begin(), this->m_dataSets.end(), [ID](const GraphData& temp){ return temp.getID() == ID; }).operator->();
+    if (temp == this->m_dataSets.end().operator->()) return nullptr;
+    this->m_wasChanged = true;
     return temp;
 }
 
 sf::Vector2f Graph::getPosition() const
 {
-    return _position;
+    return m_position;
 }
 
-float Graph::getRotation() const
+sf::Angle Graph::getRotation() const
 {
-    return _rotation;
+    return m_rotation;
 }
 
 sf::Vector2f Graph::getOrigin() const
 {
-     return _origin;
+     return m_origin;
 }
 
 sf::Vector2f Graph::getSize() const
 {
-    return _size;
+    return m_size;
 }
 
 sf::Vector2u Graph::getResolution() const
 {
-    return _resolution;
+    return m_resolution;
 }
 
 std::string Graph::getXLable() const
 {
-    return _xAxisLabel;
+    return m_xAxisLabel;
 }
 
 std::string Graph::getYLable() const
 {
-    return _yAxisLabel;
+    return m_yAxisLabel;
 }
 
 unsigned int Graph::getAntialiasingLevel() const
 {
-    return _antialiasingLevel;
+    return m_antialiasingLevel;
 }
 
 float Graph::getMargin() const
 {
-    return _margin;
+    return m_margin;
 }
 
 sf::Color Graph::getBackgroundColor() const
 {
-    return _backgroundColor;
+    return m_backgroundColor;
 }
 
 unsigned int Graph::getDecimalPrecision() const
 {
-    return _decimalPrecision;
+    return m_decimalPrecision;
 }
 
 unsigned int Graph::getAxesThickness() const
 {
-    return _axesThickness;
+    return m_axesThickness;
 }
 
 unsigned int Graph::getBackgroundLinesThickness() const
 {
-    return _backgroundLinesThickness;
+    return m_backgroundLinesThickness;
 }
 
 sf::Texture Graph::getTexture_copy() const
 {
-    return _texture;
+    return m_texture;
 }
 
 sf::Texture& Graph::getTexture()
 {
-    return _texture;
+    return m_texture;
 }
 
 float Graph::roundTo(float value, uint8_t precision) const
@@ -689,57 +716,57 @@ float Graph::roundTo(float value, uint8_t precision) const
     return roundTo(value*10,precision-1)/10;
 }
 
-void Graph::setXTextRotation(float rotation)
+void Graph::setXTextRotation(sf::Angle rotation)
 {
-    _xTextRotation = rotation;
-    _wasChanged = true;
+    m_xTextRotation = rotation;
+    m_wasChanged = true;
 }
 
-float Graph::getXTextRotation() const
+sf::Angle Graph::getXTextRotation() const
 {
-    return _xTextRotation;
+    return m_xTextRotation;
 }
 
-void Graph::setYTextRotation(float rotation)
+void Graph::setYTextRotation(sf::Angle rotation)
 {
-    _yTextRotation = rotation;
-    _wasChanged = true;
+    m_yTextRotation = rotation;
+    m_wasChanged = true;
 }
 
-float Graph::getYTextRotation() const
+sf::Angle Graph::getYTextRotation() const
 {
-    return _yTextRotation;
+    return m_yTextRotation;
 }
 
 float Graph::getCharSize() const
 {
-    return (_charSize < 0 ? _margin*0.35 : _charSize);
+    return m_charSize < 0 ? static_cast<unsigned int>(m_margin * 0.3) : m_charSize;
 }
 
 void Graph::setCharSize(float size)
 {
-    _charSize = size;
-    _wasChanged = true;
+    m_charSize = size;
+    m_wasChanged = true;
 }
 
 void Graph::setFont(const sf::Font& font)
 {
-    _font = font;
-    _wasChanged = true;
+    m_font = font;
+    m_wasChanged = true;
 }
 
 const sf::Font& Graph::getFont() const
 {
-    return _font;
+    return m_font;
 }
 
 void Graph::setAxesColor(const sf::Color& color)
 {
-    _axesColor = color;
-    _wasChanged = true;
+    m_axesColor = color;
+    m_wasChanged = true;
 }
 
 sf::Color Graph::getAxesColor() const
 {
-    return _axesColor;
+    return m_axesColor;
 }

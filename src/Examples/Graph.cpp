@@ -7,7 +7,10 @@ void GraphTest::test(tgui::Gui& gui)
 {
     VarDisplay::setVisible();
     sf::Font font;
-    font.loadFromFile("JetBrainsMono-Regular.ttf");
+    if (!font.openFromFile("JetBrainsMono-Regular.ttf"))
+    {
+        throw std::runtime_error("Unable to open font file (\"JetBrainsMono-Regular.ttf\")");
+    }
     GraphData data({1,2,3,4,5,6,7}, {3,2,7,14,3,9,0}, sf::Color::Magenta, "Random Data", GraphType::Line);
     _graph.setXLable("X data label");
     _graph.setYLable("Y data label");
@@ -38,8 +41,8 @@ void GraphTest::test(tgui::Gui& gui)
     LiveVar::initVar("(3) Decimal Precision", _graph.getDecimalPrecision(), 1, sf::Keyboard::Key::Num3,sf::Keyboard::Key::E, 0, 6);
     LiveVar::initVar("(4) Margin", _graph.getMargin(), 1, sf::Keyboard::Key::Num4,sf::Keyboard::Key::R, 0);
     LiveVar::initVar("(5) Resolution (x and y)", _graph.getResolution().x, 64, sf::Keyboard::Key::Num5,sf::Keyboard::Key::T, 0, 4000);
-    LiveVar::initVar("(6) X Axis Text Rotation", _graph.getXTextRotation(), 1, sf::Keyboard::Key::Num6,sf::Keyboard::Key::Y);
-    LiveVar::initVar("(7) Y Axis Text Rotation", _graph.getYTextRotation(), 1, sf::Keyboard::Key::Num7,sf::Keyboard::Key::U);
+    LiveVar::initVar("(6) X Axis Text Rotation", _graph.getXTextRotation().asDegrees(), 1, sf::Keyboard::Key::Num6,sf::Keyboard::Key::Y);
+    LiveVar::initVar("(7) Y Axis Text Rotation", _graph.getYTextRotation().asDegrees(), 1, sf::Keyboard::Key::Num7,sf::Keyboard::Key::U);
     LiveVar::initVar("(8) CharSize", _graph.getCharSize(), 1, sf::Keyboard::Key::Num8, sf::Keyboard::Key::I, 1);
     LiveVar::getVarEvent("(0) Add Random Value")->connect([reloadPicture](){ 
         auto temp = _graph.getDataSet(12);
@@ -69,11 +72,11 @@ void GraphTest::test(tgui::Gui& gui)
         reloadPicture();
     });
     LiveVar::getVarEvent("(6) X Axis Text Rotation")->connect([reloadPicture](const float& value){ 
-        _graph.setXTextRotation(value);
+        _graph.setXTextRotation(sf::degrees(value));
         reloadPicture();
     });
     LiveVar::getVarEvent("(7) Y Axis Text Rotation")->connect([reloadPicture](const float& value){ 
-        _graph.setYTextRotation(value);
+        _graph.setYTextRotation(sf::degrees(value));
         reloadPicture();
     });
     LiveVar::getVarEvent("(8) CharSize")->connect([reloadPicture](const float& value){ 

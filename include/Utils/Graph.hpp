@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <map>
 
 #include "SFML/Graphics.hpp"
 #include "External/Spline.hpp"
@@ -16,49 +17,50 @@
 class Graph : public sf::Drawable
 {
 private:
-    static std::map<std::string, GraphType> _stringToGraphType;
-    static std::map<GraphType, std::string> _graphTypeToString;
+    static std::map<std::string, GraphType> m_stringToGraphType;
+    static std::map<GraphType, std::string> m_graphTypeToString;
 
-    static size_t _lastID;
+    static size_t m_lastID;
 
     /// @brief the size of the image when drawn to the main window
-    sf::Vector2f _size = {1000,1000};
+    sf::Vector2f m_size = {1000,1000};
     /// @brief the resolution that the original graph is drawn at
-    sf::Vector2u _resolution = {1000,1000};
-    sf::Texture _texture;
+    sf::Vector2u m_resolution = {1000,1000};
+    sf::Texture m_texture;
     // sf::Sprite _graphImage;
-    sf::Color _backgroundColor;
-    sf::Vector2f _position;
-    float _rotation = 0;
-    sf::Vector2f _origin;
-    float _charSize = -1;
+    sf::Color m_backgroundColor;
+    sf::Vector2f m_position;
+    sf::Angle m_rotation = sf::Angle::Zero;
+    sf::Vector2f m_origin;
+    float m_charSize = -1;
 
-    std::list<GraphData> _dataSets;
+    std::list<GraphData> m_dataSets;
 
-    sf::Font _font;
+    sf::Font m_font;
 
-    std::string _xAxisLabel = "X";
-    std::string _yAxisLabel = "Y";
+    std::string m_xAxisLabel = "X";
+    std::string m_yAxisLabel = "Y";
 
-    sf::Color _axesColor = sf::Color::White;
-    unsigned int _axesThickness = 10;
-    unsigned int _backgroundLinesThickness = 3;
-    unsigned int _margin = 75;
-    float _xTextRotation = 45;
-    float _yTextRotation = 45;
-    unsigned int _antialiasingLevel = 0;
+    sf::Color m_axesColor = sf::Color::White;
+    unsigned int m_axesThickness = 10;
+    unsigned int m_backgroundLinesThickness = 3;
+    sf::Color m_backgroundLinesColor = sf::Color::White;
+    unsigned int m_margin = 75;
+    sf::Angle m_xTextRotation = sf::degrees(45);
+    sf::Angle m_yTextRotation = sf::degrees(45);
+    unsigned int m_antialiasingLevel = 0;
     /// @brief min, max
-    std::pair<float, float> _xBounds;
+    std::pair<float, float> m_xBounds;
     /// @brief min, max
-    std::pair<float, float> _yBounds;
+    std::pair<float, float> m_yBounds;
     /// @brief the number of coord steps for the x and y axis
-    sf::Vector2u _numSteps = sf::Vector2u(10, 10);
-    sf::Vector2f _StepSize;
-    size_t _decimalPrecision = 2;
+    sf::Vector2u m_numSteps = sf::Vector2u(10, 10);
+    sf::Vector2f m_StepSize;
+    size_t m_decimalPrecision = 2;
 
     /// @brief used to reduce the amount of times that the graph is redrawn
-    bool _wasChanged = true;
-    bool _axesSetup = false;
+    bool m_wasChanged = true;
+    bool m_axesSetup = false;
 
     /// @brief SFML Function override
     /// @param target sf::RenderTarget
@@ -66,7 +68,7 @@ private:
     void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
     /// @brief converts the given data value into a position vector
-    sf::Vector2f convertValueToPoint(const sf::Vector2f& dataValue);
+    sf::Vector2f convertValueToPoint(const sf::Vector2f& dataValue) const;
 
     /// @brief updates the given spline to work with the given data
     /// @param splineData should be empty
@@ -86,24 +88,18 @@ public:
     static std::string typeToString(GraphType type);
 
     /// @brief used to update the graph if anything was changed
+    /// @throws if the render texture is not able to resize to the stored resolution
     void Update();
 
     /// @brief draws the background lines for the graph
-    /// @returns the vertex array that can be used to draw to a renderer
-    sf::VertexArray drawBackgroundLines();
+    void drawBackgroundLines(sf::RenderTarget& target) const;
     /// @brief draws the axis step lines
-    /// @returns the vertex array that can be used to draw to a renderer
-    sf::VertexArray drawAxisStepIndicators();
+    void drawAxisStepIndicators(sf::RenderTarget& target) const;
     /// @brief draws the axis lines for x and y
     /// @returns the vertex array that can be used to draw to a renderer
-    sf::VertexArray drawAxisLines();
+    void drawAxisLines(sf::RenderTarget& target) const;
     /// @brief draws all the text elements for the graph
-    /// @returns a list of all the text elements that need to be drawn
-    std::list<sf::Text> drawTextElements();
-    /// @brief draws the data sets that are stored
-    /// @param renderTarget the target which the data will be drawn to
-    /// @param contextSettings the settings for drawing
-    // void drawData(sf::RenderTarget& renderTarget);
+    void drawTextElements(sf::RenderTarget& target);
 
     /// @brief Creates a string representation of a float with 'precision' number of digits after comma
     /// @param d float to convert
@@ -133,8 +129,9 @@ public:
     void setPostion(const sf::Vector2f& pos);
     sf::Vector2f getPosition() const;
     /// @brief does not effect texture
-    void setRotation(float degree);
-    float getRotation() const;
+    /// @note rotates the drawn graph
+    void setRotation(sf::Angle angle);
+    sf::Angle getRotation() const;
     /// @brief does not effect texture
     void setOrigin(const sf::Vector2f& origin);
     sf::Vector2f getOrigin() const;
@@ -162,16 +159,18 @@ public:
     /// @brief the thickness of the the background indicator lines
     void setBackgroundLinesThickness(unsigned int thickness = 3);
     unsigned int getBackgroundLinesThickness() const;
+    void setBackgroundLinesColor(sf::Color color = sf::Color::White);
+    sf::Color getBackgroundLinesColor() const;
     /// @brief sets the rotation of the x axis text indicators
     /// @note default = 45
-    void setXTextRotation(float rotation);
+    void setXTextRotation(sf::Angle angle);
     /// @returns the rotation of the x axis text indicators
-    float getXTextRotation() const;
+    sf::Angle getXTextRotation() const;
     /// @brief sets the rotation of the y axis text indicators
     /// @note default = 45
-    void setYTextRotation(float rotation);
+    void setYTextRotation(sf::Angle rotation);
     /// @returns the rotation of the y axis text indicators
-    float getYTextRotation() const;
+    sf::Angle getYTextRotation() const;
     /// @brief the size of characters on the graph
     /// @note if the graph has not been made yet returns some negative number
     float getCharSize() const;

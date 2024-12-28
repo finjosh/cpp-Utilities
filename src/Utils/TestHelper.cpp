@@ -75,7 +75,7 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
     }
 
     auto desktopMode = sf::VideoMode::getDesktopMode();
-    sf::RenderWindow window(sf::VideoMode(desktopMode.width / 3, desktopMode.height / 3, desktopMode.bitsPerPixel), "Test: " + m_name, sf::Style::Resize);
+    sf::RenderWindow window(sf::VideoMode({desktopMode.size.x / 3, desktopMode.size.y / 3}, desktopMode.bitsPerPixel), "Test: " + m_name, sf::Style::Resize);
     tgui::Gui gui{window};
 
     std::list<std::string> themePaths = {"Assets/themes/Dark.txt", "themes/Dark.txt",
@@ -189,20 +189,19 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
         second += deltaTime;
         window.clear();
 
-        sf::Event event;
-        while (window.pollEvent(event))
+        while (std::optional<sf::Event> event = window.pollEvent())
         {
-            if (event.type == sf::Event::Closed)
+            if (event->is<sf::Event::Closed>())
                 return "";
 
-            if (event.type == sf::Event::Resized)
+            if (event->is<sf::Event::Resized>())
             {
                 panel->setSize(window.getSize().x, window.getSize().y);
                 panel->updateChildrenWithAutoLayout();
                 gui.setTextSize(window.getSize().x/20);
             }
 
-            gui.handleEvent(event);
+            gui.handleEvent(event.value());
         }
 
         if (!paused)
@@ -319,7 +318,7 @@ void TestHelper::graphData(const std::string& folder, const std::string& suffix)
 void TestHelper::graphData(const std::list<std::string>& files)
 {
     auto screenMode = sf::VideoMode::getDesktopMode();
-    sf::RenderWindow window(screenMode, "Test: " + m_name, sf::Style::Fullscreen);
+    sf::RenderWindow window(screenMode, "Test: " + m_name, sf::State::Fullscreen);
     tgui::Gui gui{window};
     gui.setTextSize(window.getSize().x/100);
 
@@ -378,7 +377,10 @@ void TestHelper::graphData(const std::list<std::string>& files)
     std::thread* graphThread = nullptr;
     Graph graph;
     sf::Font font;
-    font.loadFromMemory(static_cast<const unsigned char*>(defaultFontBytes), sizeof(defaultFontBytes));
+    if (!font.openFromMemory(static_cast<const unsigned char*>(defaultFontBytes), sizeof(defaultFontBytes)))
+    {
+        throw std::runtime_error("Unable to load default TGUI font from memory");
+    }
     graph.setFont(font);
     graph.setResolution({window.getSize().x, window.getSize().y});
     graph.setSize({(float)window.getSize().x, (float)window.getSize().y});
@@ -451,13 +453,15 @@ void TestHelper::graphData(const std::list<std::string>& files)
         deltaTime = deltaClock.restart().asSeconds();
         window.clear();
 
-        sf::Event event;
-        while (window.pollEvent(event))
+        while (std::optional<sf::Event> event = window.pollEvent())
         {
-            if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape)
+            if (event->is<sf::Event::Closed>())
                 window.close();
+            else if (const sf::Event::KeyPressed* key = event->getIf<sf::Event::KeyPressed>())
+                if (key->code == sf::Keyboard::Key::Escape)
+                    window.close();
 
-            gui.handleEvent(event);
+            gui.handleEvent(event.value());
         }
         TerminatingFunction::UpdateFunctions(deltaTime);
 

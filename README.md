@@ -3,15 +3,18 @@ C++ utility classes that I have made during other projects and think would be us
 
 Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFML](https://www.sfml-dev.org/index.php)) and the "Texus' Graphical User Interface" ([TGUI](https://tgui.eu/))
 
+This library is also used in my [Networking library](https://github.com/finjosh/cpp-Networking-Library) and [Game Framework](https://github.com/finjosh/cpp-Game-Framework)
+
 ### Tested with: 
   - Compiler: g++
   - Version: g++.exe (Rev2, Built by MSYS2 project) 14.2.0
+  - To use the prebuilt libs you have to use the ucrt MSYS2 mingw build for g++ 14.2.0
 
 ### [SFML](https://www.sfml-dev.org/index.php)
-  - Version: 2.6.1
+  - Version: 3.0.0
 
 ### [TGUI](https://tgui.eu/)
-  - Version: 1.x (2024-08-20)
+  - Version: 1.7
 
 # Utilities breakdown
 | File | Brief Description | Dependencies |

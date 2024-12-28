@@ -42,7 +42,7 @@ void TFuncDisplay::init(tgui::Container::Ptr parent)
 void TFuncDisplay::close()
 {
     if (m_parent)
-        m_parent->destroy();
+        m_parent->getParent()->remove(m_parent);
     m_parent = nullptr;
     m_list = nullptr;
 }

@@ -57,7 +57,7 @@ void VarDisplay::init(tgui::Container::Ptr parent)
 void VarDisplay::close()
 {
     if (m_parent)
-        m_parent->destroy();
+        m_parent->getParent()->remove(m_parent);
     m_parent = nullptr;
     m_varLabel = nullptr;
     m_scrollPanel = nullptr;
