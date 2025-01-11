@@ -28,6 +28,10 @@ void iniParserTest::test()
             // This will not override any older error files
             file.createCopyError();
         }
+        else
+        {
+            cout << "Data was loaded successfully" << endl;
+        }
     }
     else
     {

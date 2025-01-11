@@ -6,15 +6,15 @@ Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFM
 This library is also used in my [Networking library](https://github.com/finjosh/cpp-Networking-Library) and [Game Framework](https://github.com/finjosh/cpp-Game-Framework)
 
 ### Tested with: 
-  - Compiler: g++
-  - Version: g++.exe (Rev2, Built by MSYS2 project) 14.2.0
-  - To use the prebuilt libs you have to use the ucrt MSYS2 mingw build for g++ 14.2.0
+    - Compiler: g++
+    - Version: g++.exe (Rev2, Built by MSYS2 project) 14.2.0
+    - To use the prebuilt libs you have to use the ucrt MSYS2 mingw build for g++ 14.2.0
 
 ### [SFML](https://www.sfml-dev.org/index.php)
-  - Version: 3.0.0
+    - Version: 3.0.0
 
 ### [TGUI](https://tgui.eu/)
-  - Version: 1.7
+    - Version: 1.7
 
 # Utilities breakdown
 | File | Brief Description | Dependencies |

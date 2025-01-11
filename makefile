@@ -17,7 +17,7 @@ LIB_DIRS=/VSCodeFolder/Libraries/SFML-3.0.0/lib V:/VSCodeFolder/Libraries/TGUI-1
 # source files directory (the project directory is automatically added)
 SRC:=src
 # the directory for lib files that are made with "make libs"
-LIB_DIR:=libs
+LIB_DIR:=lib
 # the directories where all the source files that you want in the lib are
 LIB_SOURCE:=src/Utils src/External
 # entirely hard coded sources
@@ -38,10 +38,11 @@ LINKERFLAGS:=-ltgui-s \
 LINKERFLAGS_IGNORE:=
 # flags to generate dependencies for all .o files
 DEPFLAGS:=-MP -MD
-DEBUG_FLAGS = -g
+DEBUG_FLAGS = -g -D _DEBUG
 RELEASE_FLAGS = -O3
+CURRENT_FLAGS = ${DEBUG_FLAGS}
 # any compiler options -Wextra -Wall
-COMPILE_OPTIONS:=-std=c++20 -static ${RELEASE_FLAGS}
+COMPILE_OPTIONS=-std=c++20 -static ${CURRENT_FLAGS}
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
 
@@ -84,8 +85,7 @@ DEPFILES=$(patsubst %.o,%.d,${OBJECTS})
 BIN_DIRS=$(foreach dir,$(call FIXPATH,$(SOURCEDIRS)),$(patsubst $(call FIXPATH,$(PROJECT_DIR)%),$(call FIXPATH,$(PROJECT_DIR)/$(OBJ_O_DIR)%),$(dir)))
 
 # so there is no file that gets mistake with the tasks listed
-.PHONY = all info clean lib run ignore_lib
-
+.PHONY = all info clean libs libs-r libs-d run clean_object clean_exe clean_libs
 
 all: ${BIN_DIRS} ${PROJECT}
 
@@ -97,11 +97,24 @@ ${PROJECT}: ${OBJECTS}
 ${PROJECT_DIR}/${OBJ_O_DIR}%.o:${PROJECT_DIR}%.cpp
 	${CC} ${COMPILE_OPTIONS} ${INCLUDES} ${DEPFLAGS} -c -o ${@} ${<}
 
+libs: 
+	make libs-r 
+	make libs-d
+
 # build the lib with the same compile options
-lib: ${BIN_DIRS} ${LIB_DIR} ${LIBOBJECTS}
+# do this as a clean build unless sure that previous builds where release builds
+libs-r: CURRENT_FLAGS = ${RELEASE_FLAGS}
+libs-r: clean_object ${BIN_DIRS} ${LIB_DIR} ${LIBOBJECTS}
 	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}.a) ${LIBOBJECTS}
 	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}_no_graphics.a) ${LIBOBJECTS_NO_GRAPHICS}
-	@echo Libs created
+	@echo Release Libs created
+
+# do this as a clean build unless sure that previous builds where debug builds
+libs-d: CURRENT_FLAGS = ${DEBUG_FLAGS}
+libs-d: clean_object ${BIN_DIRS} ${LIB_DIR} ${LIBOBJECTS}
+	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}-d.a) ${LIBOBJECTS}
+	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}_no_graphics-d.a) ${LIBOBJECTS_NO_GRAPHICS}
+	@echo Debug Libs created
 
 # include the dependencies
 -include ${DEPFILES}
@@ -116,9 +129,16 @@ $(call FIXPATH,${PROJECT_DIR}/${OBJ_O_DIR})%:
 ${LIB_DIR}:
 	$(call makeDir,$(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}))
 
-clean:
-	$(shell ${RMDIR} ${OBJ_O_DIR} $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}))
+clean: clean_object clean_exe clean_libs	
+
+clean_object:
+	$(shell ${RMDIR} ${OBJ_O_DIR})
+
+clean_exe:
 	$(shell ${RM} ${PROJECT}${EXE})
+
+clean_libs:
+	$(shell ${RMDIR} $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}))
 
 # builds and runs the program
 run: ${BIN_DIRS} ${PROJECT}

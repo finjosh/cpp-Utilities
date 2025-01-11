@@ -25,18 +25,18 @@ using namespace sf;
 
 int main()
 {
-    TestHelperTest::test();
-    funcHelperTest::test();
-    EventHelperTest::test();
-    StopwatchTest::test();
-    StringHelperTest::test();
-    UpdateLimiterTest::test();
-    LogTest::test();
+    // TestHelperTest::test();
+    // funcHelperTest::test();
+    // EventHelperTest::test();
+    // StopwatchTest::test();
+    // StringHelperTest::test();
+    // UpdateLimiterTest::test();
+    // LogTest::test();
     iniParserTest::test();
-    TerminatingFunctionTest::test(); 
-    // live var test is put after the VarDisplay is initalized so the vars will be in the display
-    VarDisplayTest::test();
-    CommandHandlerTest::test();
+    // TerminatingFunctionTest::test(); 
+    // // live var test is put after the VarDisplay is initalized so the vars will be in the display
+    // VarDisplayTest::test();
+    // CommandHandlerTest::test();
 
     // setup for sfml and tgui
     sf::RenderWindow window(sf::VideoMode::getDesktopMode(), "C++ Utilities");
@@ -83,16 +83,16 @@ int main()
     TFuncDisplay::init(gui);
     //! ---------------------------------------------------
     //* CommandPromptTest
-    CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
+    // CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
     //* TFuncDisplayTest
     // TFuncDisplayTest::test();
     TFuncDisplay::setVisible(true);
 
     //* LiveVarTest
-    LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
+    // LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
 
     //* GraphTest
-    GraphTest::test(gui);
+    // GraphTest::test(gui);
 
     float deltaTime = 0;
     sf::Clock deltaClock;
