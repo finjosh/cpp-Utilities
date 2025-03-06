@@ -6,7 +6,8 @@
                 "${default}",
                 "${workspaceFolder}",
                 "${workspaceFolder}/include",
-                "/VSCodeFolder/Libraries/TGUI-1.7/include"
+                "/VSCodeFolder/Libraries/TGUI-1.7/include",
+                "/usr/include"
             ],
             "defines": [
                 "_DEBUG",

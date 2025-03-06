@@ -6,7 +6,7 @@ void ChildWindow::setMaximize(tgui::ChildWindow::Ptr window)
 {
     if (!window) return;
     window->setTitleButtons(tgui::ChildWindow::TitleButton::Maximize | window->getTitleButtons());
-    window->onMaximize(_maximizeWindow, this);
+    window->onMaximize(&tguiCommon::ChildWindow::_maximizeWindow, this);
 }
 
 bool ChildWindow::isMinimized(tgui::ChildWindow::Ptr window)
@@ -36,8 +36,8 @@ void ChildWindow::setMinimize_Maximize(tgui::ChildWindow::Ptr window)
 {
     if (!window) return;
     window->setTitleButtons(tgui::ChildWindow::TitleButton::Minimize | window->getTitleButtons() & ~tgui::ChildWindow::Maximize);
-    window->onMinimize(_minimizeWindow, this);
-    window->onMaximize(_minimizeMaximize, this);
+    window->onMinimize(&tguiCommon::ChildWindow::_minimizeWindow, this);
+    window->onMaximize(&tguiCommon::ChildWindow::_minimizeMaximize, this);
 }
 
 void ChildWindow::_minimizeWindow(tgui::ChildWindow::Ptr window)

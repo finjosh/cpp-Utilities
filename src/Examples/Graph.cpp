@@ -1,4 +1,5 @@
 #include "Examples/Graph.hpp"
+#include "Utils/CommandPrompt.hpp"
 
 tguiCommon::ChildWindow GraphTest::_windowData;
 Graph GraphTest::_graph;
@@ -45,9 +46,15 @@ void GraphTest::test(tgui::Gui& gui)
     LiveVar::initVar("(7) Y Axis Text Rotation", _graph.getYTextRotation().asDegrees(), 1, sf::Keyboard::Key::Num7,sf::Keyboard::Key::U);
     LiveVar::initVar("(8) CharSize", _graph.getCharSize(), 1, sf::Keyboard::Key::Num8, sf::Keyboard::Key::I, 1);
     LiveVar::getVarEvent("(0) Add Random Value")->connect([reloadPicture](){ 
-        auto temp = _graph.getDataSet(12);
+        auto temp = _graph.getDataSet(_graph.getDataSets().back().getID());
+        if (temp == nullptr)
+        {
+            Command::Prompt::print("Data set does not exist could not expand data set!!", Command::ERROR_COLOR);
+        }
         temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1f, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
-        temp = _graph.getDataSet(13);
+        auto graphIterator = _graph.getDataSets().end();
+        graphIterator--; graphIterator--;
+        temp = _graph.getDataSet(graphIterator->getID());
         temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1f, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
         reloadPicture();
     });

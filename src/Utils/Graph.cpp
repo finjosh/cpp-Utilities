@@ -770,3 +770,8 @@ sf::Color Graph::getAxesColor() const
 {
     return m_axesColor;
 }
+
+const std::list<GraphData>& Graph::getDataSets() const
+{
+    return m_dataSets;
+}

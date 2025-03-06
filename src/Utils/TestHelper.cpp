@@ -306,7 +306,7 @@ void TestHelper::graphData(const std::string& folder, const std::string& suffix)
         return;
 
     std::list<std::string> files;
-    for (const auto& entry: std::filesystem::directory_iterator(folder == "" ? std::filesystem::current_path() : folder))
+    for (const auto& entry: std::filesystem::directory_iterator(folder == "" ? std::filesystem::current_path().generic_string() : folder))
     {
         if (entry.path().filename().generic_string().ends_with(suffix + ".ini"))
             files.push_back(entry.path().filename().generic_string());

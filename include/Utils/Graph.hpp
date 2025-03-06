@@ -210,6 +210,7 @@ public:
     /// @note if you call this the next time update is called the graph will be redrawn
     /// @returns nullptr if there was not dataSet with that ID 
     GraphData* getDataSet(size_t ID);
+    const std::list<GraphData>& getDataSets() const;
 };
 
 #endif

@@ -8,12 +8,6 @@ MAKEFLAGS=-j16
 PROJECT:=utils
 # the directory in which all .o and .d files will be made
 OBJ_O_DIR:=bin
-# the include flags for compilation by default includes the project directory and include directory
-INCLUDE_DIRS=/VSCodeFolder/Libraries/SFML-3.0.0/include /VSCodeFolder/Libraries/TGUI-1.7/include
-# extra include flags
-INCLUDE_FLAGS=-D SFML_STATIC
-# the paths to libs for linking
-LIB_DIRS=/VSCodeFolder/Libraries/SFML-3.0.0/lib V:/VSCodeFolder/Libraries/TGUI-1.7/lib
 # source files directory (the project directory is automatically added)
 SRC:=src
 # the directory for lib files that are made with "make libs"
@@ -21,20 +15,48 @@ LIB_DIR:=lib
 # the directories where all the source files that you want in the lib are
 LIB_SOURCE:=src/Utils src/External
 # entirely hard coded sources
-LIB_NO_GRAPHICS_SOURCE:=V:\Git_projects\cpp-Utilities\src\Utils\CommandHandler.cpp V:\Git_projects\cpp-Utilities\src\Utils\EventHelper.cpp V:\Git_projects\cpp-Utilities\src\Utils\iniParser.cpp V:\Git_projects\cpp-Utilities\src\Utils\Log.cpp V:\Git_projects\cpp-Utilities\src\Utils\StringHelper.cpp V:\Git_projects\cpp-Utilities\src\Utils\TerminatingFunction.cpp
+LIB_NO_GRAPHICS_SOURCE:=src\Utils\CommandHandler.cpp src\Utils\EventHelper.cpp src\Utils\iniParser.cpp src\Utils\Log.cpp src\Utils\StringHelper.cpp src\Utils\TerminatingFunction.cpp
 
 # compiler command
 CC:=g++
+
+#************* windows/linux specific settings *************
+#***********************************************************
+# the include flags for compilation by default includes the project directory and include directory
+WINDOWS_INCLUDE_DIRS=/VSCodeFolder/Libraries/SFML-3.0.0/include /VSCodeFolder/Libraries/TGUI-1.7/include
+LINUX_INCLUDE_DIRS=/usr/include/SFML /usr/include/TGUI
+# extra include flags
+WINDOWS_INCLUDE_FLAGS=-D SFML_STATIC
+# the paths to libs for linking
+WINDOWS_LIB_DIRS=/VSCodeFolder/Libraries/SFML-3.0.0/lib V:/VSCodeFolder/Libraries/TGUI-1.7/lib
+LINXUX_LIB_DIRS=/usr/lib
+# extra include flags
+WINDOWS_INCLUDE_FLAGS:=-D SFML_STATIC
+LINUX_INCLUDE_FLAGS:=
 # linker flags for compilation
 # add "-mwindows" to disable the terminal
-LINKERFLAGS:=-ltgui-s \
-			-lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lopengl32 -lfreetype \
-			-lsfml-window-s -lsfml-system-s -lopengl32 -lwinmm -lgdi32 \
-			-lsfml-audio-s -lsfml-system-s -lFLAC -lvorbisenc -lvorbisfile -lvorbis -logg \
-			-lsfml-network-s -lsfml-system-s -lws2_32 \
-			-lsfml-system-s -lwinmm \
-			-lstdc++ 
-# only when making the ignore lib (ONLY INCLUDE THE GIVEN HERE)
+WINDOWS_LINKERFLAGS:=-ltgui-s \
+					 -lsfml-graphics-s -lsfml-window-s -lsfml-system-s -lopengl32 -lfreetype \
+					 -lsfml-window-s -lsfml-system-s -lopengl32 -lwinmm -lgdi32 \
+					 -lsfml-audio-s -lsfml-system-s -lFLAC -lvorbisenc -lvorbisfile -lvorbis -logg \
+					 -lsfml-network-s -lsfml-system-s -lws2_32 \
+					 -lsfml-system-s -lwinmm \
+					 -lstdc++ 
+LINUX_LINKERFLAGS:=-ltgui \
+					-lsfml-graphics -lsfml-window -lsfml-system \
+					-lsfml-window -lsfml-system \
+					-lsfml-audio -lsfml-system \
+					-lsfml-network \
+					-lsfml-system \
+					-lstdc++
+
+# flags speicfic to the os that is being compiled on
+WINDOWS_FLAGS:=-static
+LINUX_FLAGS:=
+#***********************************************************
+#***********************************************************
+
+# only when making the ignore lib (only include libs that are not for graphics)
 LINKERFLAGS_IGNORE:=
 # flags to generate dependencies for all .o files
 DEPFLAGS:=-MP -MD
@@ -42,7 +64,7 @@ DEBUG_FLAGS = -g -D _DEBUG
 RELEASE_FLAGS = -O3
 CURRENT_FLAGS = ${DEBUG_FLAGS}
 # any compiler options -Wextra -Wall
-COMPILE_OPTIONS=-std=c++20 -static ${CURRENT_FLAGS}
+OTHER_COMPILE_OPTIONS=-std=c++20 ${CURRENT_FLAGS}
 
 #! DONT EDIT ANYTHING FROM HERE DOWN
 
@@ -57,6 +79,12 @@ ifeq ($(OS),Windows_NT)
 	MD:=mkdir
 # if you are using wsl or something which requires a more exact path add it here (this path will be added in front of all lib_dirs and include_dirs)
 	DRIVEPATH:=
+
+	INCLUDES:=$(addprefix -I ${DRIVEPATH},$(call FIXPATH,${WINDOWS_INCLUDE_DIRS})) ${INCLUDE_FLAGS} -I ${PROJECT_DIR} -I ${PROJECT_DIR}/include
+	LIBS:=$(addprefix -L ${DRIVEPATH},$(call FIXPATH,${WINDOWS_LIB_DIRS}))
+	LINKERFLAGS:=$(WINDOWS_LINKERFLAGS)
+	INCLUDE_FLAGS:=$(WINDOWS_INCLUDE_FLAGS)
+	COMPILE_OPTIONS:=${OTHER_COMPILE_OPTIONS} ${WINDOWS_FLAGS}
 else #! this does not work
 	EXE:=
 	FIXPATH=$(subst \,/,$1)
@@ -66,11 +94,13 @@ else #! this does not work
 	RMDIR=rm -r --preserve-root
 	MD:=mkdir -p
 # if you are using wsl or something which requires a more exact path add it here (this path will be added in front of all lib_dirs and include_dirs)
-	DRIVEPATH:=/mnt/v
+	DRIVEPATH:=
+	INCLUDES:=$(addprefix -I ${DRIVEPATH},$(call FIXPATH,${LINUX_INCLUDE_DIRS})) ${INCLUDE_FLAGS} -I ${PROJECT_DIR} -I ${PROJECT_DIR}/include
+	LIBS:=$(addprefix -L ${DRIVEPATH},$(call FIXPATH,${LINUX_LIB_DIRS}))
+	LINKERFLAGS:=$(LINUX_LINKERFLAGS)
+	INCLUDE_FLAGS:=$(LINUX_INCLUDE_FLAGS)
+	COMPILE_OPTIONS:=${OTHER_COMPILE_OPTIONS} ${LINUX_FLAGS}
 endif
-
-INCLUDES:=$(addprefix -I ${DRIVEPATH},$(call FIXPATH,${INCLUDE_DIRS})) ${INCLUDE_FLAGS} -I ${PROJECT_DIR} -I ${PROJECT_DIR}/include
-LIBS:=$(addprefix -L ${DRIVEPATH},$(call FIXPATH,${LIB_DIRS}))
 
 # all .cpp file paths
 SRC:=$(foreach D,${SOURCEDIRS},$(wildcard ${D}/*.cpp))
