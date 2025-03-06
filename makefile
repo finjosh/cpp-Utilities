@@ -15,7 +15,7 @@ LIB_DIR:=lib
 # the directories where all the source files that you want in the lib are
 LIB_SOURCE:=src/Utils src/External
 # entirely hard coded sources
-LIB_NO_GRAPHICS_SOURCE:=src\Utils\CommandHandler.cpp src\Utils\EventHelper.cpp src\Utils\iniParser.cpp src\Utils\Log.cpp src\Utils\StringHelper.cpp src\Utils\TerminatingFunction.cpp
+LIB_NO_GRAPHICS_SOURCE:=$(PROJECT_DIR_TEMP)/src\Utils\CommandHandler.cpp $(PROJECT_DIR_TEMP)/src\Utils\EventHelper.cpp $(PROJECT_DIR_TEMP)/src\Utils\iniParser.cpp $(PROJECT_DIR_TEMP)/src\Utils\Log.cpp $(PROJECT_DIR_TEMP)/src\Utils\StringHelper.cpp $(PROJECT_DIR_TEMP)/src\Utils\TerminatingFunction.cpp
 
 # compiler command
 CC:=g++
@@ -53,6 +53,9 @@ LINUX_LINKERFLAGS:=-ltgui \
 # flags speicfic to the os that is being compiled on
 WINDOWS_FLAGS:=-static
 LINUX_FLAGS:=
+# flags for only used why compiling the libs
+WINDOWS_LIB_FLAGS:=
+LINUX_LIB_FLAGS:=-fPIC
 #***********************************************************
 #***********************************************************
 
@@ -70,6 +73,8 @@ OTHER_COMPILE_OPTIONS=-std=c++20 ${CURRENT_FLAGS}
 
 ifeq ($(OS),Windows_NT)
 	EXE:=.exe
+	LIB_EXTENSION:=.a
+	CREATE_LIB:=ar rcs 
 	FIXPATH=$(subst /,\,$1)
 	PROJECT_DIR:=$(call FIXPATH,${PROJECT_DIR_TEMP})
 	SOURCEDIRS:=$(call FIXPATH,$(shell dir ${SRC} /s /b /ad)) $(call FIXPATH,${PROJECT_DIR}/${SRC}) $(call FIXPATH,${PROJECT_DIR})
@@ -85,11 +90,15 @@ ifeq ($(OS),Windows_NT)
 	LINKERFLAGS:=$(WINDOWS_LINKERFLAGS)
 	INCLUDE_FLAGS:=$(WINDOWS_INCLUDE_FLAGS)
 	COMPILE_OPTIONS:=${OTHER_COMPILE_OPTIONS} ${WINDOWS_FLAGS}
+	LIB_FLAGS:=${WINDOWS_LIB_FLAGS}
 else #! this does not work
 	EXE:=
+	LIB_EXTENSION:=.so
+	CREATE_LIB:=${CC} -shared -o
 	FIXPATH=$(subst \,/,$1)
 	PROJECT_DIR:=$(call FIXPATH,${PROJECT_DIR_TEMP})
 	SOURCEDIRS:=$(shell find "$$PWD" -type d -path "*${PROJECT_DIR}/${SRC}*") ${PROJECT_DIR}
+	LIBSOURCEDIRS:=$(foreach dir,${LIB_SOURCE},$(call FIXPATH,$(shell dir "${dir}" /s /b /ad)) $(call FIXPATH,${PROJECT_DIR}/${dir}))
 	RM=rm -r --preserve-root
 	RMDIR=rm -r --preserve-root
 	MD:=mkdir -p
@@ -100,6 +109,7 @@ else #! this does not work
 	LINKERFLAGS:=$(LINUX_LINKERFLAGS)
 	INCLUDE_FLAGS:=$(LINUX_INCLUDE_FLAGS)
 	COMPILE_OPTIONS:=${OTHER_COMPILE_OPTIONS} ${LINUX_FLAGS}
+	LIB_FLAGS:=${LINUX_LIB_FLAGS}
 endif
 
 # all .cpp file paths
@@ -121,29 +131,27 @@ all: ${BIN_DIRS} ${PROJECT}
 
 # main build
 ${PROJECT}: ${OBJECTS}
-	${CC} ${COMPILE_OPTIONS} ${INCLUDES} -o ${@} ${^} ${LIBS} ${LINKERFLAGS}
+	${CC} ${CURRENT_FLAGS} ${INCLUDES} -o ${@} ${^} ${LIBS} ${LINKERFLAGS}
 
 # build objects for the main build
 ${PROJECT_DIR}/${OBJ_O_DIR}%.o:${PROJECT_DIR}%.cpp
-	${CC} ${COMPILE_OPTIONS} ${INCLUDES} ${DEPFLAGS} -c -o ${@} ${<}
+	${CC} ${CURRENT_FLAGS} ${INCLUDES} ${DEPFLAGS} -c -o ${@} ${<}
 
 libs: 
 	make libs-r 
 	make libs-d
 
 # build the lib with the same compile options
-# do this as a clean build unless sure that previous builds where release builds
-libs-r: CURRENT_FLAGS = ${RELEASE_FLAGS}
+libs-r: CURRENT_FLAGS = ${COMPILE_OPTIONS} ${RELEASE_FLAGS} ${LIB_FLAGS}
 libs-r: clean_object ${BIN_DIRS} ${LIB_DIR} ${LIBOBJECTS}
-	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}.a) ${LIBOBJECTS}
-	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}_no_graphics.a) ${LIBOBJECTS_NO_GRAPHICS}
+	${CREATE_LIB} $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}${LIB_EXTENSION}) ${LIBOBJECTS}
+	${CREATE_LIB} $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}_no_graphics${LIB_EXTENSION}) ${LIBOBJECTS_NO_GRAPHICS}
 	@echo Release Libs created
 
-# do this as a clean build unless sure that previous builds where debug builds
-libs-d: CURRENT_FLAGS = ${DEBUG_FLAGS}
+libs-d: CURRENT_FLAGS = ${COMPILE_OPTIONS} ${DEBUG_FLAGS} ${LIB_FLAGS}
 libs-d: clean_object ${BIN_DIRS} ${LIB_DIR} ${LIBOBJECTS}
-	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}-d.a) ${LIBOBJECTS}
-	ar rcs $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}_no_graphics-d.a) ${LIBOBJECTS_NO_GRAPHICS}
+	${CREATE_LIB} $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}-d${LIB_EXTENSION}) ${LIBOBJECTS}
+	${CREATE_LIB} $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}/lib${PROJECT}_no_graphics-d${LIB_EXTENSION}) ${LIBOBJECTS_NO_GRAPHICS}
 	@echo Debug Libs created
 
 # include the dependencies
@@ -169,6 +177,21 @@ clean_exe:
 
 clean_libs:
 	$(shell ${RMDIR} $(call FIXPATH,${PROJECT_DIR}/${LIB_DIR}))
+
+check_install_dirs:
+	$(shell find /usr/include -maxdepth 1 -type d -name "Utils")
+	@echo "if nothing prints from the finds then there are no conflicting files that will be overwritten"
+	@echo "note there could be conflicting lib names that are not checked"
+
+# this is only implemented for linux
+install_clean: libs
+	$(shell sudo cp -rf $(PROJECT_DIR)/include/Utils /usr/include)
+	$(shell sudo cp -f $(PROJECT_DIR)/lib/* /usr/lib)
+
+# this is only implemented for linux
+install:
+	$(shell sudo cp -rf $(PROJECT_DIR)/include/Utils /usr/include)
+	$(shell sudo cp -f $(PROJECT_DIR)/lib/* /usr/lib)
 
 # builds and runs the program
 run: ${BIN_DIRS} ${PROJECT}
