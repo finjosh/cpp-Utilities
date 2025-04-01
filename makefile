@@ -2,13 +2,13 @@
 #* ALL paths should start with a / and end without one
 
 ifeq ($(OS),Windows_NT)
-	PROJECT_DIRECTORY:=$(shell cd)
+	PROJECT_DIRECTORY:=$(shell echo %CD%)
 	NUM_THREADS:=$(shell echo %NUMBER_OF_PROCESSORS%)
 	FIX_PATH=$(patsubst %\,%,$(subst /,\,$1))
-	RM:=del /q /f
-	RMDIR:=rmdir /S /Q
-	MKDIR:=mkdir
-	GET_SUB_DIRECTORIES=$(shell dir $(call FIX_PATH,$1) /s /b /ad) $(call FIX_PATH,${PROJECT_DIRECTORY}/${SRC})
+	RM:=powershell -Command "Remove-Item -Force -ErrorAction SilentlyContinue"
+	RMDIR:=powershell -Command "Remove-Item -Force -Recurse -ErrorAction SilentlyContinue"
+	MKDIR:=powershell -Command "New-Item -ItemType Directory -Force -Path"
+	GET_SUB_DIRECTORIES=$(foreach path,$1,$(shell powershell -Command "Get-ChildItem -Path '$(PROJECT_DIRECTORY)$(call FIX_PATH,${path})' -Directory -Recurse | Select-Object -ExpandProperty FullName"))
 	PATH_SEPARATOR:=\\
 else
 	PROJECT_DIRECTORY:=$(shell pwd)
@@ -16,7 +16,7 @@ else
 	FIX_PATH=$(patsubst %/,%,$(subst \,/,$1))
 	RM:=rm --preserve-root
 	RMDIR:=rm -r --preserve-root
-	MKDIR:=mkdir -p "$1"
+	MKDIR:=mkdir -p
 	GET_SUB_DIRECTORIES=$(foreach path,$1,$(shell find "$(PROJECT_DIRECTORY)$(call FIX_PATH,${path})" -type d -path "*"))
 	PATH_SEPARATOR:=/
 endif
@@ -39,11 +39,6 @@ LIB_NAME:=utils
 SOURCE_DIRECTORIES=/src
 # Where you don't want underlying folder/files to be included
 NON_RECURSIVE_SOURCE_DIRECTORIES=/
-# Where the object files will be saved
-# Will be generated if non existent
-OBJECT_OUT_DIRECTORY=/bin
-# Will be generated if non existent
-LIB_OUT_DIRECTORY=/lib
 LIB_SOURCE_DIRECTORIES=/src/Utils /src/External
 #*****************************
 #*****************************
@@ -67,7 +62,12 @@ ifeq ($(OS),Windows_NT)
 	INCLUDE_FLAGS_NO_GRAPHICS:=
 	INCLUDE_FLAGS:=-D SFML_STATIC
 	COMPILE_OPTIONS:=${GENERAL_COMPILER_FLAGS} -static
-	
+
+# Where the object files will be saved
+# Will be generated if non existent
+	OBJECT_OUT_DIRECTORY=/bin/windows
+# Will be generated if non existent
+	LIB_OUT_DIRECTORY=/lib/windows
 	LIB_EXTENSION:=.a
 	CREATE_LIB:=ar rcs 
 	LIB_COMPILE_FLAGS:=
@@ -89,6 +89,11 @@ else
 	INCLUDE_FLAGS:=
 	COMPILE_OPTIONS:=${GENERAL_COMPILER_FLAGS} 
 
+# Where the object files will be saved
+# Will be generated if non existent
+	OBJECT_OUT_DIRECTORY=/bin/linux
+# Will be generated if non existent
+	LIB_OUT_DIRECTORY=/lib/linux
 	LIB_EXTENSION:=.so
 	CREATE_LIB:=g++ -shared -o
 	LIB_COMPILE_FLAGS:=-fPIC
@@ -96,6 +101,8 @@ endif
 #********************************
 #********************************
 
+OBJECT_OUT_DIRECTORY:=$(call FIX_PATH, ${OBJECT_OUT_DIRECTORY})
+LIB_OUT_DIRECTORY:=$(call FIX_PATH, ${LIB_OUT_DIRECTORY})
 SOURCE_DIRECTORIES:=$(call FIX_PATH, ${SOURCE_DIRECTORIES})
 NON_RECURSIVE_SOURCE_DIRECTORIES:=$(call FIX_PATH, ${NON_RECURSIVE_SOURCE_DIRECTORIES})
 OBJECT_OUT_DIRECTORY:=$(call FIX_PATH, ${OBJECT_OUT_DIRECTORY})
@@ -166,44 +173,42 @@ ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%${PATH_SEPARATOR}:
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}${PATH_SEPARATOR}:
 	$(shell ${MKDIR} ${@})
 
-clean: clean_object clean_exe clean_libs	
+clean: clean_object clean_exe clean_libs
+	@echo Cleaned
 
 clean_object:
 	$(shell ${RMDIR} ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY})
+	@echo Cleaned Objects
 
 clean_exe:
 	$(shell ${RM} ${PROJECT_DIRECTORY}${PATH_SEPARATOR}${EXE_NAME}${EXE})
+	@echo Cleaned Executable
 
 clean_libs:
 	$(shell ${RMDIR} ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY})
+	@echo Cleaned Libs
 
 install:
 	$(shell sudo cp -rf ${PROJECT_DIRECTORY}/include/Utils /usr/include)
 	$(shell sudo cp -f ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}/* /usr/lib)
 
 info:
-	@echo "Working Directory: $(PROJECT_DIRECTORY)"
-	@echo "Number of Threads: $(NUM_THREADS)"
-	@echo "Compiler: $(CPP_COMPILER)"
-	@echo "Debug Flags: $(DEBUG_FLAGS)"
-	@echo "Release Flags: $(RELEASE_FLAGS)"
-	@echo "Compiler Options (Platform Specific): $(COMPILE_OPTIONS)"
-	@echo "Linker Flags (Platform Specific): $(LINKER_FLAGS)"
-	@echo "Include Directories: $(INCLUDE_DIRECTORIES)"
-	@echo "Library Directories: $(LIB_DIRECTORIES)"
-	@echo ""
-	@echo "__EXECUTABLE SPECIFIC FILES__"
-	$(eval EXPANDED_SOURCE_DIRECTORIES=$(PROJECT_DIRECTORY)$(NON_RECURSIVE_SOURCE_DIRECTORIES) $(call GET_SUB_DIRECTORIES,${SOURCE_DIRECTORIES}))
-	@echo "Source Directories: ${EXPANDED_SOURCE_DIRECTORIES}"
-	$(eval SOURCE_FILES=$(foreach Directory,${EXPANDED_SOURCE_DIRECTORIES},$(wildcard ${Directory}/*.cpp)))
-	@echo "Sources: ${SOURCE_FILES}"
-	$(eval OBJECT_FILES=$(patsubst ${PROJECT_DIRECTORY}%,${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%,$(patsubst %.cpp,%.o,${SOURCE_FILES})))
-	@echo "Objects: ${OBJECT_FILES}"
-	@echo ""
-	@echo "__LIB SPECIFIC FILES__"
-	$(eval EXPANDED_SOURCE_DIRECTORIES=$(call GET_SUB_DIRECTORIES,${LIB_SOURCE_DIRECTORIES}))
-	@echo "Source Directories: ${EXPANDED_SOURCE_DIRECTORIES}"
-	$(eval SOURCE_FILES=$(foreach Directory,${EXPANDED_SOURCE_DIRECTORIES},$(wildcard ${Directory}/*.cpp)))
-	@echo "Sources: ${SOURCE_FILES}"
-	$(eval OBJECT_FILES=$(patsubst ${PROJECT_DIRECTORY}%,${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%,$(patsubst %.cpp,%.o,${SOURCE_FILES})))
-	@echo "Objects: ${OBJECT_FILES}"
+	@echo Working Directory: $(PROJECT_DIRECTORY)
+	@echo Number of Threads: $(NUM_THREADS)
+	@echo Compiler: $(CPP_COMPILER)
+	@echo Debug Flags: $(DEBUG_FLAGS)
+	@echo Release Flags: $(RELEASE_FLAGS)
+	@echo Compiler Options (Platform Specific): $(COMPILE_OPTIONS)
+	@echo Linker Flags (Platform Specific): $(LINKER_FLAGS)
+	@echo Include Directories: $(INCLUDE_DIRECTORIES)
+	@echo Library Directories: $(LIB_DIRECTORIES)
+	@echo -----------------------------------------
+	@echo __EXECUTABLE SPECIFIC FILES__
+	@echo Source Directories: ${EXPANDED_SOURCE_DIRECTORIES}
+	@echo Sources: ${SOURCE_FILES}
+	@echo Objects: ${OBJECT_FILES}
+	@echo -----------------------------------------
+	@echo __LIB SPECIFIC FILES__
+	@echo Source Directories: ${EXPANDED_SOURCE_DIRECTORIES}
+	@echo Sources: ${SOURCE_FILES}
+	@echo Objects: ${OBJECT_FILES}
