@@ -198,8 +198,8 @@ info:
 	@echo Compiler: $(CPP_COMPILER)
 	@echo Debug Flags: $(DEBUG_FLAGS)
 	@echo Release Flags: $(RELEASE_FLAGS)
-	@echo Compiler Options (Platform Specific): $(COMPILE_OPTIONS)
-	@echo Linker Flags (Platform Specific): $(LINKER_FLAGS)
+	@echo Compiler Options \(Platform Specific\): $(COMPILE_OPTIONS)
+	@echo Linker Flags \(Platform Specific\): $(LINKER_FLAGS)
 	@echo Include Directories: $(INCLUDE_DIRECTORIES)
 	@echo Library Directories: $(LIB_DIRECTORIES)
 	@echo -----------------------------------------
