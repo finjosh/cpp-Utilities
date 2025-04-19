@@ -2,26 +2,32 @@
 #* ALL paths should start with a / and end without one
 
 ifeq ($(OS),Windows_NT)
-	PROJECT_DIRECTORY:=$(shell echo %CD%)
+	SHELL=cmd.exe
+	PROJECT_DIRECTORY:=$(shell cd)
+# Drive mount point directory (The drive letter)
+	MOUNT_POINT:=$(firstword $(subst :,: ,${PROJECT_DIRECTORY}))
 	NUM_THREADS:=$(shell echo %NUMBER_OF_PROCESSORS%)
 	FIX_PATH=$(patsubst %\,%,$(subst /,\,$1))
-	RM:=powershell -Command "Remove-Item -Force -ErrorAction SilentlyContinue"
-	RMDIR:=powershell -Command "Remove-Item -Force -Recurse -ErrorAction SilentlyContinue"
-	MKDIR:=powershell -Command "New-Item -ItemType Directory -Force -Path"
-	GET_SUB_DIRECTORIES=$(foreach path,$1,$(shell powershell -Command "Get-ChildItem -Path '$(PROJECT_DIRECTORY)$(call FIX_PATH,${path})' -Directory -Recurse | Select-Object -ExpandProperty FullName"))
+	RM=del /q /f 
+	RMDIR=rmdir /q /s 
+	MKDIR=mkdir
+	GET_SUB_DIRECTORIES=$(foreach path,$1,$(shell dir /b /s /ad "$(call FIX_PATH,$(PROJECT_DIRECTORY)${path})") $(PROJECT_DIRECTORY)${path})
 	PATH_SEPARATOR:=\\
 else
 	PROJECT_DIRECTORY:=$(shell pwd)
+# Drive mount point directory
+	MOUNT_POINT:=$(shell df -P . | tail -1 | awk '{print $$6}')
 	NUM_THREADS:=$(shell nproc)
 	FIX_PATH=$(patsubst %/,%,$(subst \,/,$1))
-	RM:=rm --preserve-root
-	RMDIR:=rm -r --preserve-root
-	MKDIR:=mkdir -p
+	RM=rm --preserve-root
+	RMDIR=rm -r --preserve-root
+	MKDIR=mkdir -p
 	GET_SUB_DIRECTORIES=$(foreach path,$1,$(shell find "$(PROJECT_DIRECTORY)$(call FIX_PATH,${path})" -type d -path "*"))
 	PATH_SEPARATOR:=/
 endif
 # flags to generate dependencies for all .o files
 DEP_FLAGS:=-MP -MD
+#* Everything above here should not require any changes
 
 #! "make" by default will compile in debug to compile with release flags use "make release"
 
@@ -47,8 +53,9 @@ LIB_SOURCE_DIRECTORIES=/src/Utils /src/External
 #********************************
 ifeq ($(OS),Windows_NT)
 	EXE:=.exe
-	INCLUDE_DIRECTORIES=\VSCodeFolder\Libraries\SFML-3.0.0\include \VSCodeFolder\Libraries\TGUI-1.7\include ${PROJECT_DIRECTORY} ${PROJECT_DIRECTORY}\include
-	LIB_DIRECTORIES=\VSCodeFolder\Libraries\SFML-3.0.0\lib \VSCodeFolder\Libraries\TGUI-1.7\lib
+	LIBRARY_PREFIX:=${MOUNT_POINT}\dev-env\libraries\windows
+	INCLUDE_DIRECTORIES=${LIBRARY_PREFIX}\SFML-3.0.0\include ${LIBRARY_PREFIX}\TGUI-1.7\include ${PROJECT_DIRECTORY} ${PROJECT_DIRECTORY}\include
+	LIB_DIRECTORIES=${LIBRARY_PREFIX}\SFML-3.0.0\lib ${LIBRARY_PREFIX}\TGUI-1.7\lib
 	LIB_SOURCE_FILES_NO_GRAPHICS=$(PROJECT_DIRECTORY)\src\Utils\CommandHandler.cpp $(PROJECT_DIRECTORY)\src\Utils\EventHelper.cpp $(PROJECT_DIRECTORY)\src\Utils\iniParser.cpp $(PROJECT_DIRECTORY)\src\Utils\Log.cpp $(PROJECT_DIRECTORY)\src\Utils\StringHelper.cpp $(PROJECT_DIRECTORY)\src\Utils\TerminatingFunction.cpp
 	LIB_DIRECTORIES_NO_GRAPHICS=
 	LINKER_FLAGS:=-ltgui-s \
@@ -73,17 +80,21 @@ ifeq ($(OS),Windows_NT)
 	LIB_COMPILE_FLAGS:=
 else
 	EXE:=
-	INCLUDE_DIRECTORIES=/usr/include ${PROJECT_DIRECTORY} ${PROJECT_DIRECTORY}/include
-	LIB_DIRECTORIES=/usr/lib
+# this is hardcoded for now
+	LIBRARY_PREFIX:=$(MOUNT_POINT)/dev-env/libraries/linux
+	INCLUDE_DIRECTORIES=/usr/include ${PROJECT_DIRECTORY} ${PROJECT_DIRECTORY}/include ${LIBRARY_PREFIX}/TGUI-1.8.0/include
+	LIB_DIRECTORIES=/usr/lib ${LIBRARY_PREFIX}/TGUI-1.8.0/lib
 	LIB_SOURCE_FILES_NO_GRAPHICS=$(PROJECT_DIRECTORY)/src/Utils/CommandHandler.cpp $(PROJECT_DIRECTORY)/src/Utils/EventHelper.cpp $(PROJECT_DIRECTORY)/src/Utils/iniParser.cpp $(PROJECT_DIRECTORY)/src/Utils/Log.cpp $(PROJECT_DIRECTORY)/src/Utils/StringHelper.cpp $(PROJECT_DIRECTORY)/src/Utils/TerminatingFunction.cpp
 	LIB_DIRECTORIES_NO_GRAPHICS=
+	CURRENT_PATH_SHARED_LIBS:=-Wl,-rpath,./
+	LIB_PATH_SHAPED_LIBS:=-Wl,-rpath,./lib
 	LINKER_FLAGS:=-ltgui \
 					-lsfml-graphics -lsfml-window -lsfml-system \
 					-lsfml-window -lsfml-system \
 					-lsfml-audio -lsfml-system \
 					-lsfml-network \
 					-lsfml-system \
-					-lstdc++
+					-lstdc++ ${LIB_PATH_SHAPED_LIBS}
 	LINKER_FLAGS_NO_GRAPHICS:=
 	INCLUDE_FLAGS_NO_GRAPHICS:=
 	INCLUDE_FLAGS:=
@@ -115,7 +126,7 @@ EVERY_SOURCE:=$(foreach Directory,${EXPANDED_SOURCE_DIRECTORIES},$(wildcard ${Di
 # # include the dependencies
 -include $(patsubst %.cpp,%.d,${EVERY_SOURCE})
 
-.PHONY = all info clean libs libs-r libs-d run clean_object clean_exe clean_libs debug release check_install_dirs install_clean install
+.PHONY = all info clean libs libs-r libs-d run clean_objects clean_exe clean_libs debug release
 
 all: debug
 run: debug
@@ -127,13 +138,13 @@ run-r: release
 # these have a ${PATH_SEPARATOR} at the end so that they follow the target rules
 BIN_DIRECTORIES=$(addsuffix ${PATH_SEPARATOR},$(foreach dir,${EXPANDED_SOURCE_DIRECTORIES},$(patsubst $(PROJECT_DIRECTORY)%,$(PROJECT_DIRECTORY)$(OBJECT_OUT_DIRECTORY)%,$(dir))))
 EXPANDED_SOURCE_DIRECTORIES=$(PROJECT_DIRECTORY)$(NON_RECURSIVE_SOURCE_DIRECTORIES) $(call GET_SUB_DIRECTORIES,${SOURCE_DIRECTORIES})
-SOURCE_FILES=$(foreach Directory,${EXPANDED_SOURCE_DIRECTORIES},$(wildcard ${Directory}/*.cpp))
+SOURCE_FILES=$(foreach Directory,${EXPANDED_SOURCE_DIRECTORIES},$(call FIX_PATH,$(wildcard ${Directory}/*.cpp)))
 OBJECT_FILES=$(patsubst ${PROJECT_DIRECTORY}%,${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%,$(patsubst %.cpp,%.o,${SOURCE_FILES}))
 
 # these have a ${PATH_SEPARATOR} at the end so that they follow the target rules
 LIB_BIN_DIRECTORIES=$(addsuffix ${PATH_SEPARATOR},$(foreach dir,${LIB_EXPANDED_SOURCE_DIRECTORIES},$(patsubst $(PROJECT_DIRECTORY)%,$(PROJECT_DIRECTORY)$(OBJECT_OUT_DIRECTORY)%,$(dir))))
 LIB_EXPANDED_SOURCE_DIRECTORIES=$(call GET_SUB_DIRECTORIES,${LIB_SOURCE_DIRECTORIES})
-LIB_SOURCE_FILES=$(foreach Directory,${LIB_EXPANDED_SOURCE_DIRECTORIES},$(wildcard ${Directory}/*.cpp))
+LIB_SOURCE_FILES=$(foreach Directory,${LIB_EXPANDED_SOURCE_DIRECTORIES},$(call FIX_PATH,$(wildcard ${Directory}/*.cpp)))
 LIB_OBJECT_FILES=$(patsubst ${PROJECT_DIRECTORY}%,${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%,$(patsubst %.cpp,%.o,${LIB_SOURCE_FILES}))
 LIB_OBJECT_FILES_NO_GRAPHICS=$(patsubst ${PROJECT_DIRECTORY}%,${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%,$(patsubst %.cpp,%.o,${LIB_SOURCE_FILES_NO_GRAPHICS}))
 
@@ -148,67 +159,74 @@ release: ${BIN_DIRECTORIES} ${OBJECT_FILES}
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%.o:${PROJECT_DIRECTORY}%.cpp
 	${CPP_COMPILER} ${CURRENT_FLAGS} ${INCLUDE_DIRECTORIES} ${INCLUDE_FLAGS} ${DEP_FLAGS} -c -o ${@} ${<}
 
-libs: 
-	make libs-r 
-	make libs-d
+libs:
+	make clean_objects && make libs-r && make clean_objects && make libs-d
 
 # build the lib with the same compile options
 libs-r: CURRENT_FLAGS = ${COMPILE_OPTIONS} ${RELEASE_FLAGS} ${LIB_COMPILE_FLAGS}
-libs-r: clean_object ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
-	$(shell ${MKDIR} ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY})
+libs-r: clean_objects ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}${PATH_SEPARATOR} ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}/lib${LIB_NAME}${LIB_EXTENSION}) ${LIB_OBJECT_FILES}
 	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}/${LIB_OUT_DIRECTORY}/lib${LIB_NAME}_no_graphics${LIB_EXTENSION}) ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	@echo Release Libs created
 
 libs-d: CURRENT_FLAGS = ${COMPILE_OPTIONS} ${DEBUG_FLAGS} ${LIB_COMPILE_FLAGS}
-libs-d: clean_object ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
-	$(shell ${MKDIR} ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY})
+libs-d: clean_objects ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}${PATH_SEPARATOR} ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}/lib${LIB_NAME}-d${LIB_EXTENSION}) ${LIB_OBJECT_FILES}
 	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}/${LIB_OUT_DIRECTORY}/lib${LIB_NAME}_no_graphics-d${LIB_EXTENSION}) ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	@echo Debug Libs created
 
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%${PATH_SEPARATOR}:
-	$(shell ${MKDIR} ${@})
+	-@${MKDIR} ${@}
+	@echo Created Object Directory: ${@}
 
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}${PATH_SEPARATOR}:
-	$(shell ${MKDIR} ${@})
+	-@${MKDIR} ${@}
+	@echo Created Object Directory: ${@}
 
-clean: clean_object clean_exe clean_libs
-	@echo Cleaned
+${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}${PATH_SEPARATOR}:
+	-@${MKDIR} ${@}
+	@echo Created Lib Directory: ${@}
 
-clean_object:
-	$(shell ${RMDIR} ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY})
+clean: clean_objects clean_exe clean_libs
+	@echo Finished Cleaning
+
+clean_objects:
+	-@${RMDIR} ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY} >nul 2>nul
 	@echo Cleaned Objects
 
 clean_exe:
-	$(shell ${RM} ${PROJECT_DIRECTORY}${PATH_SEPARATOR}${EXE_NAME}${EXE})
+	-@${RM} ${PROJECT_DIRECTORY}${PATH_SEPARATOR}${EXE_NAME}${EXE} >nul 2>nul
 	@echo Cleaned Executable
 
 clean_libs:
-	$(shell ${RMDIR} ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY})
+	-@${RMDIR} ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY} >nul 2>nul
 	@echo Cleaned Libs
 
-install:
-	$(shell sudo cp -rf ${PROJECT_DIRECTORY}/include/Utils /usr/include)
-	$(shell sudo cp -f ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}/* /usr/lib)
-
 info:
-	@echo Working Directory: $(PROJECT_DIRECTORY)
-	@echo Number of Threads: $(NUM_THREADS)
-	@echo Compiler: $(CPP_COMPILER)
-	@echo Debug Flags: $(DEBUG_FLAGS)
-	@echo Release Flags: $(RELEASE_FLAGS)
-	@echo Compiler Options \(Platform Specific\): $(COMPILE_OPTIONS)
-	@echo Linker Flags \(Platform Specific\): $(LINKER_FLAGS)
-	@echo Include Directories: $(INCLUDE_DIRECTORIES)
-	@echo Library Directories: $(LIB_DIRECTORIES)
+	@echo -----------------------------------------
+	@echo __LIB SPECIFIC FILES__
+	@echo Source Directories: ${LIB_EXPANDED_SOURCE_DIRECTORIES}
+	@echo Sources: ${LIB_SOURCE_FILES}
+	@echo Objects: ${LIB_OBJECT_FILES}
+	@echo -----------------------------------------
 	@echo -----------------------------------------
 	@echo __EXECUTABLE SPECIFIC FILES__
 	@echo Source Directories: ${EXPANDED_SOURCE_DIRECTORIES}
 	@echo Sources: ${SOURCE_FILES}
 	@echo Objects: ${OBJECT_FILES}
 	@echo -----------------------------------------
-	@echo __LIB SPECIFIC FILES__
-	@echo Source Directories: ${EXPANDED_SOURCE_DIRECTORIES}
-	@echo Sources: ${SOURCE_FILES}
-	@echo Objects: ${OBJECT_FILES}
+	@echo Debug Flags: $(DEBUG_FLAGS)
+	@echo Release Flags: $(RELEASE_FLAGS)
+	@echo Compiler Options \(Platform Specific\): $(COMPILE_OPTIONS)
+	@echo Linker Flags \(Platform Specific\): $(LINKER_FLAGS)
+	@echo Include Directories: $(INCLUDE_DIRECTORIES)
+	@echo Library Directories: $(LIB_DIRECTORIES)
+	@echo Bin Directory: $(OBJECT_OUT_DIRECTORY)
+	@echo Lib Directory: $(LIB_OUT_DIRECTORY)
+	@echo -----------------------------------------
+	@echo -----------------------------------------
+	@echo Working Directory: $(PROJECT_DIRECTORY)
+	@echo Number of Threads: $(NUM_THREADS)
+	@echo Compiler: $(CPP_COMPILER)
+	@echo Mount Point: $(MOUNT_POINT)
+	@echo -----------------------------------------
