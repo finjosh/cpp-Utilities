@@ -6,7 +6,24 @@
                 "${default}",
                 "${workspaceFolder}",
                 "${workspaceFolder}/include",
-                "/VSCodeFolder/Libraries/TGUI-1.7/include",
+                "${workspaceFolder}/../../libraries/windows/TGUI-1.7/include",
+                "${workspaceFolder}/../../libraries/windows/SFML-3.0.0/include"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "cStandard": "c17",
+            "cppStandard": "gnu++20"
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${default}",
+                "${workspaceFolder}",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/../../libraries/linux/TGUI-1.8.0/include",
                 "/usr/include"
             ],
             "defines": [

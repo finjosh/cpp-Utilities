@@ -1,6 +1,7 @@
 #* This makefile is made to work with my environment and may not work with others
 #* ALL paths should start with a / and end without one
 
+COMMA:=,
 ifeq ($(OS),Windows_NT)
 	SHELL=cmd.exe
 	PROJECT_DIRECTORY:=$(shell cd)
@@ -13,6 +14,8 @@ ifeq ($(OS),Windows_NT)
 	MKDIR=mkdir
 	GET_SUB_DIRECTORIES=$(foreach path,$1,$(shell dir /b /s /ad "$(call FIX_PATH,$(PROJECT_DIRECTORY)${path})") $(PROJECT_DIRECTORY)${path})
 	PATH_SEPARATOR:=\\
+	IGNORE_STDERR=2>nul
+	IGNORE_STDOUT:=>nul
 else
 	PROJECT_DIRECTORY:=$(shell pwd)
 # Drive mount point directory
@@ -24,6 +27,8 @@ else
 	MKDIR=mkdir -p
 	GET_SUB_DIRECTORIES=$(foreach path,$1,$(shell find "$(PROJECT_DIRECTORY)$(call FIX_PATH,${path})" -type d -path "*"))
 	PATH_SEPARATOR:=/
+	IGNORE_STDERR:=2>/dev/null
+	IGNORE_STDOUT:=>/dev/null
 endif
 # flags to generate dependencies for all .o files
 DEP_FLAGS:=-MP -MD
@@ -54,8 +59,8 @@ LIB_SOURCE_DIRECTORIES=/src/Utils /src/External
 ifeq ($(OS),Windows_NT)
 	EXE:=.exe
 	LIBRARY_PREFIX:=${MOUNT_POINT}\dev-env\libraries\windows
-	INCLUDE_DIRECTORIES=${LIBRARY_PREFIX}\SFML-3.0.0\include ${LIBRARY_PREFIX}\TGUI-1.7\include ${PROJECT_DIRECTORY} ${PROJECT_DIRECTORY}\include
-	LIB_DIRECTORIES=${LIBRARY_PREFIX}\SFML-3.0.0\lib ${LIBRARY_PREFIX}\TGUI-1.7\lib
+	INCLUDE_DIRECTORIES=${LIBRARY_PREFIX}\SFML-3.0.0\include ${LIBRARY_PREFIX}\TGUI-1.8.0\include ${PROJECT_DIRECTORY} ${PROJECT_DIRECTORY}\include
+	LIB_DIRECTORIES=${LIBRARY_PREFIX}\SFML-3.0.0\lib ${LIBRARY_PREFIX}\TGUI-1.8.0\lib
 	LIB_SOURCE_FILES_NO_GRAPHICS=$(PROJECT_DIRECTORY)\src\Utils\CommandHandler.cpp $(PROJECT_DIRECTORY)\src\Utils\EventHelper.cpp $(PROJECT_DIRECTORY)\src\Utils\iniParser.cpp $(PROJECT_DIRECTORY)\src\Utils\Log.cpp $(PROJECT_DIRECTORY)\src\Utils\StringHelper.cpp $(PROJECT_DIRECTORY)\src\Utils\TerminatingFunction.cpp
 	LIB_DIRECTORIES_NO_GRAPHICS=
 	LINKER_FLAGS:=-ltgui-s \
@@ -86,15 +91,17 @@ else
 	LIB_DIRECTORIES=/usr/lib ${LIBRARY_PREFIX}/TGUI-1.8.0/lib
 	LIB_SOURCE_FILES_NO_GRAPHICS=$(PROJECT_DIRECTORY)/src/Utils/CommandHandler.cpp $(PROJECT_DIRECTORY)/src/Utils/EventHelper.cpp $(PROJECT_DIRECTORY)/src/Utils/iniParser.cpp $(PROJECT_DIRECTORY)/src/Utils/Log.cpp $(PROJECT_DIRECTORY)/src/Utils/StringHelper.cpp $(PROJECT_DIRECTORY)/src/Utils/TerminatingFunction.cpp
 	LIB_DIRECTORIES_NO_GRAPHICS=
-	CURRENT_PATH_SHARED_LIBS:=-Wl,-rpath,./
-	LIB_PATH_SHAPED_LIBS:=-Wl,-rpath,./lib
+# where to search for sharded libs other than the default locations
+# ${LIB_DIRECTORIES} is used for simple testing during compiling
+	LIBS_SEARCH_PATH:=./ ./lib \
+					  ${LIB_DIRECTORIES}
 	LINKER_FLAGS:=-ltgui \
 					-lsfml-graphics -lsfml-window -lsfml-system \
 					-lsfml-window -lsfml-system \
 					-lsfml-audio -lsfml-system \
 					-lsfml-network \
 					-lsfml-system \
-					-lstdc++ ${LIB_PATH_SHAPED_LIBS}
+					-lstdc++ $(patsubst %,-Wl${COMMA}-rpath${COMMA}%,${LIBS_SEARCH_PATH})
 	LINKER_FLAGS_NO_GRAPHICS:=
 	INCLUDE_FLAGS_NO_GRAPHICS:=
 	INCLUDE_FLAGS:=
@@ -164,15 +171,15 @@ libs:
 
 # build the lib with the same compile options
 libs-r: CURRENT_FLAGS = ${COMPILE_OPTIONS} ${RELEASE_FLAGS} ${LIB_COMPILE_FLAGS}
-libs-r: clean_objects ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}${PATH_SEPARATOR} ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
+libs-r: ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}${PATH_SEPARATOR} ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}/lib${LIB_NAME}${LIB_EXTENSION}) ${LIB_OBJECT_FILES}
-	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}/${LIB_OUT_DIRECTORY}/lib${LIB_NAME}_no_graphics${LIB_EXTENSION}) ${LIB_OBJECT_FILES_NO_GRAPHICS}
+	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}/${LIB_OUT_DIRECTORY}/lib${LIB_NAME}-no-graphics${LIB_EXTENSION}) ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	@echo Release Libs created
 
 libs-d: CURRENT_FLAGS = ${COMPILE_OPTIONS} ${DEBUG_FLAGS} ${LIB_COMPILE_FLAGS}
-libs-d: clean_objects ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}${PATH_SEPARATOR} ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
+libs-d: ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}${PATH_SEPARATOR} ${LIB_BIN_DIRECTORIES} ${LIB_OBJECT_FILES} ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY}/lib${LIB_NAME}-d${LIB_EXTENSION}) ${LIB_OBJECT_FILES}
-	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}/${LIB_OUT_DIRECTORY}/lib${LIB_NAME}_no_graphics-d${LIB_EXTENSION}) ${LIB_OBJECT_FILES_NO_GRAPHICS}
+	${CREATE_LIB} $(call FIX_PATH,${PROJECT_DIRECTORY}/${LIB_OUT_DIRECTORY}/lib${LIB_NAME}-no-graphics-d${LIB_EXTENSION}) ${LIB_OBJECT_FILES_NO_GRAPHICS}
 	@echo Debug Libs created
 
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%${PATH_SEPARATOR}:
@@ -191,15 +198,15 @@ clean: clean_objects clean_exe clean_libs
 	@echo Finished Cleaning
 
 clean_objects:
-	-@${RMDIR} ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY} >nul 2>nul
+	-@${RMDIR} ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY} ${IGNORE_STDOUT} ${IGNORE_STDERR}
 	@echo Cleaned Objects
 
 clean_exe:
-	-@${RM} ${PROJECT_DIRECTORY}${PATH_SEPARATOR}${EXE_NAME}${EXE} >nul 2>nul
+	-@${RM} ${PROJECT_DIRECTORY}${PATH_SEPARATOR}${EXE_NAME}${EXE} ${IGNORE_STDOUT} ${IGNORE_STDERR}
 	@echo Cleaned Executable
 
 clean_libs:
-	-@${RMDIR} ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY} >nul 2>nul
+	-@${RMDIR} ${PROJECT_DIRECTORY}${LIB_OUT_DIRECTORY} ${IGNORE_STDOUT} ${IGNORE_STDERR}
 	@echo Cleaned Libs
 
 info:
@@ -225,6 +232,8 @@ info:
 	@echo Lib Directory: $(LIB_OUT_DIRECTORY)
 	@echo -----------------------------------------
 	@echo -----------------------------------------
+# Nothing means not windows
+	@echo OS: $(OS)
 	@echo Working Directory: $(PROJECT_DIRECTORY)
 	@echo Number of Threads: $(NUM_THREADS)
 	@echo Compiler: $(CPP_COMPILER)
