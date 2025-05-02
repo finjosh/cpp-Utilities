@@ -5,6 +5,10 @@ Some of the classes are built for the "Simple and Fast Multimedia Library" ([SFM
 
 This library is also used in my [Networking library](https://github.com/finjosh/cpp-Networking-Library) and [Game Framework](https://github.com/finjosh/cpp-Game-Framework)
 
+### Libs:
+    - Static libs on Windows
+    - Shared libs on Linux
+
 ### Tested with: 
     - Compiler: g++
     - Version: g++.exe (Rev2, Built by MSYS2 project) 14.2.0

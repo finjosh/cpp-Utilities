@@ -83,21 +83,6 @@ LIB_SOURCE_FILES_NO_GRAPHICS=$(call FIX_PATH,$(PROJECT_DIRECTORY)/src/Utils/Comm
 GENERAL_INCLUDE_DIRECTORIES:=$(call FIX_PATH,${GENERAL_INCLUDE_DIRECTORIES})
 GENERAL_LIB_DIRECTORIES:=$(call FIX_PATH,${GENERAL_LIB_DIRECTORIES})
 
-# making sure that the values are already defined
-EXE=
-INCLUDE_DIRECTORIES=
-LIB_DIRECTORIES=
-LIBS_SEARCH_PATHS=
-LINKER_FLAGS=
-INCLUDE_FLAGS=
-CPP_COMPILE_OPTIONS=
-C_COMPILE_OPTIONS=
-OBJECT_OUT_DIRECTORY=
-LIB_OUT_DIRECTORY=
-LIB_EXTENSION=
-CREATE_LIB=
-LIB_COMPILE_FLAGS=
-
 define windows_config
 	EXE:=.exe
 	INCLUDE_DIRECTORIES=$${GENERAL_INCLUDE_DIRECTORIES}
@@ -126,14 +111,12 @@ define windows_via_linux_config
 	CREATE_LIB:=x86_64-w64-mingw32-ar rcs
 endef
 
-SHART=something random
-
-# LIBS_SEARCH_PATHS is where the program will look for the shared libraries at runtime
-# LIB_DIRECTORIES is added here for simple testing
 define linux_config
 	EXE:=
 	INCLUDE_DIRECTORIES=${GENERAL_INCLUDE_DIRECTORIES} /usr/include
 	LIB_DIRECTORIES=$${GENERAL_LIB_DIRECTORIES} /lib
+	# LIBS_SEARCH_PATHS is where the program will look for the shared libraries at runtime
+	# LIB_DIRECTORIES is added here for simple testing
 	LIBS_SEARCH_PATHS:=./ ./lib \
 						$${LIB_DIRECTORIES}
 	LINKER_FLAGS:=-ltgui \
@@ -148,7 +131,6 @@ define linux_config
 	C_COMPILE_OPTIONS=-std=c11 $${GENERAL_COMPILER_FLAGS}
 	OBJECT_OUT_DIRECTORY=/bin/linux
 	LIB_OUT_DIRECTORY=/lib/linux
-	SHART=something else random
 	LIB_EXTENSION:=.so
 	CREATE_LIB:=g++ -shared -o
 	LIB_COMPILE_FLAGS:=-fPIC
@@ -163,7 +145,7 @@ ifeq (${HOST_OS},windows)
 ifeq (${COMPILE_OS},windows)
 $(eval ${windows_config})
 else
-$(error "Compiling for linux on windows is not supported")
+$(error "Compiling for linux on windows is not supported, try using WSL")
 endif
 else
 ifeq (${COMPILE_OS},windows)
@@ -248,11 +230,11 @@ endif
 
 debug: CURRENT_FLAGS=${DEBUG_FLAGS}
 debug: ${BIN_DIRECTORIES} ${OBJECT_FILES}
-	${CPP_COMPILER} ${CURRENT_FLAGS} ${INCLUDE_DIRECTORIES} ${INCLUDE_FLAGS} -o ${EXE_NAME} ${OBJECT_FILES} ${LIB_DIRECTORIES} ${LINKER_FLAGS}
+	${CPP_COMPILER} ${CPP_COMPILE_OPTIONS} ${C_COMPILE_OPTIONS} ${CURRENT_FLAGS} ${INCLUDE_DIRECTORIES} ${INCLUDE_FLAGS} -o ${EXE_NAME} ${OBJECT_FILES} ${LIB_DIRECTORIES} ${LINKER_FLAGS}
 
 release: CURRENT_FLAGS=${RELEASE_FLAGS}
 release: ${BIN_DIRECTORIES} ${OBJECT_FILES}
-	${CPP_COMPILER} ${CURRENT_FLAGS} ${INCLUDE_DIRECTORIES} ${INCLUDE_FLAGS} -o ${EXE_NAME} ${OBJECT_FILES} ${LIB_DIRECTORIES} ${LINKER_FLAGS}
+	${CPP_COMPILER} ${CPP_COMPILE_OPTIONS} ${C_COMPILE_OPTIONS} ${CURRENT_FLAGS} ${INCLUDE_DIRECTORIES} ${INCLUDE_FLAGS} -o ${EXE_NAME} ${OBJECT_FILES} ${LIB_DIRECTORIES} ${LINKER_FLAGS}
 
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%.o:${PROJECT_DIRECTORY}%.cpp
 	${CPP_COMPILER} ${CPP_COMPILE_OPTIONS} ${CURRENT_FLAGS} ${INCLUDE_DIRECTORIES} ${INCLUDE_FLAGS} ${DEP_FLAGS} -c -o ${@} ${<}
@@ -368,6 +350,7 @@ help:
 	@echo make libs-r: Build the project with release flags and create the libs \(Does not clean first\)
 	@echo make libs-d: Build the project with debug flags and create the libs \(Does not clean first\)
 	@echo make info: Print the current configuration and all the source files
+ifeq (${HOST_OS},linux)
 	@echo -----------------------------------------
 	@echo -------- Windows Build Via Linux --------
 	@echo -----------------------------------------
@@ -384,4 +367,5 @@ help:
 	@echo make windows-clean-libs: Clean the project \(remove the libs\)
 	@echo make windows-clean-objects: Clean the project \(remove all object files\)
 	@echo make windows-info: Print the current configuration and all the source files
+endif
 	@echo -----------------------------------------
