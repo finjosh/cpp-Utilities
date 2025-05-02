@@ -1,4 +1,5 @@
 #include "include/Examples/CommandHandler.hpp"
+#include <math.h>
 
 // TODO test addSubCommand, removeAllCommands, removeCommand
 void CommandHandlerTest::test()

@@ -1,4 +1,6 @@
 #include "Utils/CommandHandler.hpp"
+#include <algorithm>
+#include <sstream>
 
 using namespace Command;
 
@@ -234,9 +236,23 @@ std::string command::getDescription() const
     return this->m_description;
 }
 
-std::string command::getNameDescription(size_t maxLength) const
+std::string command::getNameDescription(size_t maxLength, int tabs) const
 {
-    return this->m_name + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
+    //! this is not going to work too good unless the font is monospaced
+    std::string tabsStr = TAB_STR;
+    for (size_t i = 0; i < 2 + this->m_name.length(); i++)
+        tabsStr += " ";
+    for (int i = 0; i < tabs; i++) 
+        tabsStr += TAB_STR;
+
+    std::string rtn = this->m_name + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
+
+    size_t pos = 0;
+    while ((pos = rtn.find('\n', pos)) != std::string::npos) {
+        rtn.replace(pos, 1, "\n" + tabsStr);
+        pos += tabsStr.length();
+    }
+    return rtn;
 }
 
 std::string command::getSubCommandsNameDescription(size_t maxLength, size_t subCommandIndex) const

@@ -74,6 +74,14 @@ int main()
     });
     //! -----------------------------------------------------
 
+    Command::Handler::addCommand(Command::command{"testss", "Function used to test the different features of the library\nMultiple line description\nDoes this work?\nWhat about a line that is way to long to find on one line so that it wraps aroundaooidshfiogushdofiguhsdoifughisdufhgisdhfiguhsdifhgsiudhfgilsuhdfiguhsidfughsiudfhisuhdfiugsdfhiuiusdhfgoiudshfogiusdhfoiguhsdoifughsdiufhg", {Command::print, "Trying calling one of the sub commands"}, {},
+        std::list<Command::command>{
+            Command::command{"liveVar", "Tests the live var feature", {[](){ LiveVarTest::test(); }}},
+            Command::command{"varDisplay", "Tests the var display feature", {[](){ VarDisplayTest::test(); }}},
+            Command::command{"tFuncDisplay", "Tests the tFuncDisplay feature", {[](){ TFuncDisplayTest::test(); }}}
+        }
+    });
+
     //! Required to initialize VarDisplay and CommandPrompt
     // creates the UI for the VarDisplay
     VarDisplay::init(gui); 

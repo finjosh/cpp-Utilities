@@ -10,7 +10,6 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <bits/stdc++.h>
 
 namespace Command
 {
@@ -194,8 +193,10 @@ public:
 
     std::string getName() const;
     std::string getDescription() const;
+    /// @param maxLength the max length of the string to be returned
+    /// @param tabs the number of tabs to be added in place of any "\n"
     /// @returns the name separated by " - " and the description
-    std::string getNameDescription(size_t maxLength = SIZE_MAX) const;
+    std::string getNameDescription(size_t maxLength = SIZE_MAX, int tabs = 0) const;
     /// @param subCommandIndex is only for the recursive usage of this function
     /// @note does not add the current commands name and description
     /// @returns the name separated by " - " and the description of each sub command (with the max length given)
