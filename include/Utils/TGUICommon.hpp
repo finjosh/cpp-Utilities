@@ -38,16 +38,16 @@ public:
     /// @note the window is minimized if the maximize button is showing
     /// @param window the window to check
     static bool isMinimized(tgui::ChildWindow::Ptr window);
-    #ifdef COMMANDHANDLER_H
+    #ifdef COMMAND_HANDLER_H
     /// @brief creates the command for opening and closing this window
     /// @note uses the set visible command (requires the window to always be in the GUI)
     /// @param windowName the name of the window in the command prompt
     static inline void createOpenCloseCommand(const std::string& windowName, tgui::ChildWindow::Ptr window)
     {
-        Command::Handler::addCommand(Command::command(windowName, "Commands for the " + windowName + " window", 
-                                    [windowName](Command::Data* data){ data->setReturnStr("Try using 'help " + windowName + "'"); }, {},
-                                    {Command::command("open", "Opens the window", [window](){ ChildWindow::setVisible(window, true); }),
-                                     Command::command("close", "Opens the window", [window](){ ChildWindow::setVisible(window, false); })}));
+        Command::Handler::get().addCommand(windowName, "Commands for the " + windowName + " window", 
+            [windowName](Command::Data* data){ data->setReturnStr("Try using 'help " + windowName + "'"); }, {},
+            {{"open", Command::Definition("Opens the window", [window](){ ChildWindow::setVisible(window, true); })},
+             {"close", Command::Definition("Opens the window", [window](){ ChildWindow::setVisible(window, false); })}});
     }
     #endif
 

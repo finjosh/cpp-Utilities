@@ -15,7 +15,7 @@ void CommandPromptTest::test()
     TFunc::Add([](TData* data){ if (data->getTotalTime() >= 5) Command::Prompt::setVisible(false); else data->setRunning(); });
 
     // print which prints to the command prompt
-    Command::Prompt::print("Something was printed", Command::color(0,255,0));
+    Command::Prompt::print("Something was printed");
 
     // isPrintAllowed which checks if print is functional at the moment
     Command::Prompt::print("Is printing allowed:");

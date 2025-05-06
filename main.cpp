@@ -25,15 +25,15 @@ using namespace sf;
 
 int main()
 {
-    TestHelperTest::test();
-    funcHelperTest::test();
-    EventHelperTest::test();
-    StopwatchTest::test();
-    StringHelperTest::test();
-    UpdateLimiterTest::test();
-    LogTest::test();
-    iniParserTest::test();
-    TerminatingFunctionTest::test(); 
+    // TestHelperTest::test();
+    // funcHelperTest::test();
+    // EventHelperTest::test();
+    // StopwatchTest::test();
+    // StringHelperTest::test();
+    // UpdateLimiterTest::test();
+    // LogTest::test();
+    // iniParserTest::test();
+    // TerminatingFunctionTest::test(); 
     // // live var test is put after the VarDisplay is initalized so the vars will be in the display
     VarDisplayTest::test();
     CommandHandlerTest::test();
@@ -46,41 +46,31 @@ int main()
     tgui::Gui gui{window};
     gui.setRelativeView({0, 0, 1920/(float)window.getSize().x, 1080/(float)window.getSize().y});
     tgui::Theme::getDefault()->load("themes/Dark.txt");
-    Command::Prompt::UpdateDefaultColor();
     // -----------------------
 
     //! Adding a command for showing off the different themes
-    Command::Handler::addCommand(Command::command{"setTheme", "Function used to set the theme of the UI (The previous outputs in the command prompt will not get updated color)", 
-        {Command::print, "Trying calling one of the sub commands"}, {},
-        std::list<Command::command>{
-            // Dark theme is a custom theme made by me 
-            // It can be found here: https://github.com/finjosh/TGUI-DarkTheme
-            Command::command{"dark", "Sets the them to the dark theme", {[](){ 
-                tgui::Theme::getDefault()->load("themes/Dark.txt"); 
-                // Note that command color does not update with theme so you have to set the default color
-                Command::Prompt::UpdateDefaultColor();
-            }}}, 
-            Command::command{"black", "Sets the them to the black theme", {[](){ 
-                tgui::Theme::getDefault()->load("themes/Black.txt"); 
-                // Note that command color does not update with theme so you have to set the default color
-                Command::Prompt::UpdateDefaultColor();
-            }}},
-            Command::command{"grey", "Sets the them to the transparent grey theme", {[](){ 
-                tgui::Theme::getDefault()->load("themes/TransparentGrey.txt"); 
-                // Note that command color does not update with theme so you have to set the default color
-                Command::Prompt::UpdateDefaultColor();
-            }}}
-        }
-    });
+    Command::Handler::get().addCommand("setTheme", "Function used to set the theme of the UI (The previous outputs in the command prompt will not get updated color)", 
+        {Command::print, "Trying calling one of the sub commands"});
+    Command::Handler::get().findCommand("setTheme") // no need to check if nullptr since we just added it
+    ->addCommand("dark", "Sets the them to the dark theme", 
+        [](){ 
+            tgui::Theme::getDefault()->load("themes/Dark.txt");
+        })
+    .addCommand("black", "Sets the them to the black theme", 
+        [](){ 
+            tgui::Theme::getDefault()->load("themes/Black.txt");
+        })
+    .addCommand("grey", "Sets the them to the transparent grey theme", 
+        [](){ 
+            tgui::Theme::getDefault()->load("themes/TransparentGrey.txt");
+        });
     //! -----------------------------------------------------
 
-    Command::Handler::addCommand(Command::command{"testss", "Function used to test the different features of the library\nMultiple line description\nDoes this work?\nWhat about a line that is way to long to find on one line so that it wraps aroundaooidshfiogushdofiguhsdoifughisdufhgisdhfiguhsdifhgsiudhfgilsuhdfiguhsidfughsiudfhisuhdfiugsdfhiuiusdhfgoiudshfogiusdhfoiguhsdoifughsdiufhg", {Command::print, "Trying calling one of the sub commands"}, {},
-        std::list<Command::command>{
-            Command::command{"liveVar", "Tests the live var feature", {[](){ LiveVarTest::test(); }}},
-            Command::command{"varDisplay", "Tests the var display feature", {[](){ VarDisplayTest::test(); }}},
-            Command::command{"tFuncDisplay", "Tests the tFuncDisplay feature", {[](){ TFuncDisplayTest::test(); }}}
-        }
-    });
+    Command::Handler::get().addCommand("tests", "Function used to test the different features of the library\nMultiple line description\nWhat about a line that is way to long to find on one line so that it wraps aroundaooidshfiogushdofiguhsdoifughisdufhgisdhfiguhsdifhgsiudhfgilsuhdfiguhsidfughsiudfhisuhdfiugsdfhiuiusdhfgoiudshfogiusdhfoiguhsdoifughsdiufhg", {Command::print, "Trying calling one of the sub commands"});
+    Command::Handler::get().findCommand("tests") // no need to check if nullptr since we just added it
+    ->addCommand("liveVar", "Tests the live var feature", [](){ LiveVarTest::test(); })
+    .addCommand("varDisplay", "Tests the var display feature", [](){ VarDisplayTest::test(); })
+    .addCommand("tFuncDisplay", "Tests the tFuncDisplay feature", [](){ TFuncDisplayTest::test(); });
 
     //! Required to initialize VarDisplay and CommandPrompt
     // creates the UI for the VarDisplay
@@ -91,16 +81,16 @@ int main()
     TFuncDisplay::init(gui);
     //! ---------------------------------------------------
     //* CommandPromptTest
-    CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
+    // CommandPromptTest::test(); // Needs to be called after CommandPrompt is initalized
     //* TFuncDisplayTest
-    TFuncDisplayTest::test();
-    TFuncDisplay::setVisible(true);
+    // TFuncDisplayTest::test();
+    // TFuncDisplay::setVisible(true);
 
     //* LiveVarTest
-    LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
+    // LiveVarTest::test(); //! NOTE - live vars will not show in the VarDisplay unless added after VarDisplay is initalized
 
     //* GraphTest
-    GraphTest::test(gui);
+    // GraphTest::test(gui);
 
     float deltaTime = 0;
     sf::Clock deltaClock;

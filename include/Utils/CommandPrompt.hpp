@@ -33,9 +33,6 @@ public:
     /// @returns true if the event was used by the command prompt
     static bool UpdateEvent(const sf::Event& event);
 
-    /// @brief sets the Command::color default to the current tgui theme default
-    static void UpdateDefaultColor();
-
     /// @brief sets the command prompt as visible or not
     /// @param visible the state to set the command prompt to
     static void setVisible(bool visible = true);
@@ -45,32 +42,19 @@ public:
     /// @brief only prints to the command prompt IF the command prompt is set to true
     /// @note setting command prompt to allow prints is only done through the command prompt its self during runtime
     /// @param forcePrint if this should print no matter if printing is allowed
-    static void print(const tgui::String& str, Command::color color = Command::color(), bool forcePrint = false);
+    static void print(const tgui::String& str, bool forcePrint = false);
 
     static bool isPrintAllowed();
 
     /// @param print true if printing is allowed
     static void allowPrint(bool print = true);
-    static void setMaxHistory(size_t size = 64);
-    static size_t getMaxHistory();
-    static void clearHistory();
 
 protected:
-    // static void MaximizePrompt();
-    // /// @brief handles the resizing of the prompt
-    // static void ResizePrompt();
-
     static void UpdateAutoFill();
 
     /// @brief commits the currently selected auto fill
     /// @param updateAutoFill if true updates the auto fill list
     static void AutoFill(bool updateAutoFill = true);
-
-    static void addHistory(const std::string& command);
-
-    // /// @brief closes the command prompts window without removing it from tgui
-    // /// @param abortTguiClose set to nullptr if not used with tgui
-    // static void _close(bool* abortTguiClose);
 
 private:
     inline Prompt() = default;
@@ -80,10 +64,7 @@ private:
     static tgui::ChildWindow::Ptr m_parent;
     static tgui::EditBox::Ptr m_textBox;
     static tgui::ListBox::Ptr m_autoFillList;
-    static tgui::ChatBox::Ptr m_chatBox;
-
-    static std::list<std::string> m_commandHistory;
-    static size_t m_maxHistory;
+    static tgui::ChatBox::Ptr m_chatBox; // TODO dont use a chatbox use a list of richtext labels
 
     static bool m_allowPrint;
 

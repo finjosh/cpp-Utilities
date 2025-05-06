@@ -10,7 +10,6 @@
                 "${workspaceFolder}/../../libraries/windows/SFML-3.0.0/include"
             ],
             "defines": [
-                "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
@@ -27,7 +26,6 @@
                 "/usr/include"
             ],
             "defines": [
-                "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],

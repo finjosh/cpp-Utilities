@@ -7,9 +7,6 @@ tgui::EditBox::Ptr Command::Prompt::m_textBox{nullptr};
 tgui::ListBox::Ptr Command::Prompt::m_autoFillList{nullptr};
 tgui::ChatBox::Ptr Command::Prompt::m_chatBox{nullptr};
 
-std::list<std::string> Command::Prompt::m_commandHistory;
-size_t Command::Prompt::m_maxHistory = 64;
-
 bool Command::Prompt::m_allowPrint = true;
 bool Command::Prompt::m_ignoreInputText = false;
 
@@ -59,69 +56,90 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
         // * setup for the command prompt custom commands
         {
             auto temp = m_chatBox.get();
-            Command::Handler::addCommand(command{"cp", "Prefix for any Command Prompt specific commands", {Command::helpPrint, "Not a valid cp command. Try using 'help cp' for more info"}, {},
-            // list of sub commands
-            {
-                Command::command("clear", "clears the command prompt", {[temp](){ temp->removeAllLines(); }}),
-                Command::command("setMaxLines", "sets the max number of lines the command prompt will hold (min value of 50)", {[temp](Command::Data* input)
+            Command::Handler::get().addCommand("cp", Command::Definition{"Prefix for any Command Prompt specific commands", {Command::helpPrint, "Not a valid cp command. Try using 'help cp' for more info"}, {}});
+            Command::Handler::get().findCommand("cp")
+            ->addCommand("clear", "clears the command prompt", {[temp](){ temp->removeAllLines(); }})
+            // Note that the following command only affects the command prompts max lines not the command handlers max lines
+            .addCommand("setMaxLines", "sets the max number of lines the command prompt will hold (min value of 50)", 
+                [temp](Command::Data* data)
                 { 
                     unsigned long t;
-                    if (Command::isValidInput<unsigned long>("Please enter a valid number (min - 50)", *input, input->getToken(0), t, 0, 
-                            [](const unsigned long& i){ return i >= 50; }))
+                    if (!Command::isValidInput<unsigned long>(data->getToken(0), t, 0) || t < 50)
+                    {
+                        data->addError(ERROR_COLOR + "Please enter a valid number (min = 50)");
+                    }
+                    else
                     {
                         temp->setLineLimit(t);
-                        input->setReturnStr("Max lines was successfully set to: " + input->getToken(0));
-                        input->setReturnColor({0,255,0,255});
-                    } 
-                }}),
-                Command::command("getMaxLines", "retuns the current max lines", {[temp](Command::Data* input){
-                    input->setReturnStr(std::to_string(temp->getLineLimit()));
-                }}),
-                Command::command("allowPrinting", "controls if printing to the command prompt is allowed (true/false or 1/0)", {[](Command::Data* input)
-                {
-                    m_allowPrint = StringHelper::toBool(input->getToken(0), m_allowPrint);
-                    input->setReturnStr("Printing is now: ");
-                    input->addToReturnStr(m_allowPrint ? "allowed" : "not allowed");
-                }}, {"True", "False"}),
-                Command::command("getPrintingAllowed", "prints if printing is allowed", {[](Command::Data* input)
-                {
-                    input->setReturnStr(m_allowPrint ? "True" : "False");
-                }}),
-                Command::command("clearHistory", "clears the command history", {[](Command::Data* data){ Command::Prompt::clearHistory(); data->setReturnStr("History Cleared"); data->setReturnColor({0,255,0}); }}),
-                Command::command("getMaxHistory", "prints the max number of commands in history", {[](Command::Data* data){ Command::print(std::to_string(Command::Prompt::getMaxHistory()), data); }}),
-                Command::command("setMaxHistory", "sets the max number of commands in history", {[](Command::Data* data){
-                    unsigned long temp = 0;
-                    if (!Command::isValidInput<unsigned long>("Invalid max entered", *data, data->getToken(), temp, 64))
-                        return;
-                    Command::Prompt::setMaxHistory(temp);
-                    data->setReturnStr("Max history set successfully");
-                    data->setReturnColor({0,255,0});
-                }}),
-                { "getRandom", "[min = 0] [max = " + std::to_string(RAND_MAX) + " ] [amount = 1]" +
-                            " | prints n random numbers in the following syntax: \"a(1) a(2) a(3) a(4) ... a(n)\" (hard max of " + std::to_string(RAND_MAX) + " and hard min of 0)",
-                    {[](Command::Data* input)
-                    {
-                        int min = 0;
-                        int max = RAND_MAX;
-
-                        if (input->getNumTokens() > 0 && !Command::isValidInput<int>("Invalid min entered", *input, input->getToken(0), min, 0, [](int& v){ return v >= 0;}) 
-                            || 
-                            input->getNumTokens() > 1 && !Command::isValidInput<int>("Invalid max entered", *input, input->getToken(1), max, RAND_MAX, [&max, &min](int& v){ return !(v < 0 || v > max || min > max);}))
-                            return;
-
-                        unsigned long amount = 1;
-                        if (input->getNumTokens() == 3)
-                            Command::isValidInput<unsigned long>("Invalid amount entered - Defaulted to 1", *input, input->getToken(2), amount, 1, [](unsigned long& v){ return v > 0; });
-
-                        while (amount != 0)
-                        {
-                            input->addToReturnStr(std::to_string((min + (rand())%(max+1 - min))) + " ");
-                            amount--;
-                        } 
-                    }}
+                        data->setReturnStr("Max lines was successfully set to: " + data->getToken(0)); // TODO make this green text
+                    }
                 }
-                // ,Command::command("print", "", {[](Command::Data* data){ for (auto s: data->getTokens()) { data->addToReturnStr(s); } }})
-            }});
+            )
+            .addCommand("getMaxLines", "retuns the current max lines", 
+                [temp](Command::Data* data){
+                    data->setReturnStr(std::to_string(temp->getLineLimit()));
+                }
+            )
+            .addCommand("allowPrinting", "controls if printing to the command prompt is allowed (true/false or 1/0)", 
+                [](Command::Data* data)
+                {
+                    m_allowPrint = StringHelper::toBool(data->getToken(0), m_allowPrint);
+                    data->setReturnStr("Printing is now: ");
+                    data->addToReturnStr(m_allowPrint ? "allowed" : "not allowed");
+                }, {"True", "False"}
+            )
+            .addCommand("getPrintingAllowed", "prints if printing is allowed", 
+                [](Command::Data* data)
+                {
+                    data->setReturnStr(m_allowPrint ? "True" : "False");
+                }
+            )
+            .addCommand("getMaxHistory", "prints the max number of commands in history", 
+                [](Command::Data* data){ 
+                    Command::print(std::to_string(Command::Handler::get().getMaxCommandHistory()), data); 
+                })
+            .addCommand("setMaxHistory", "sets the max number of commands in history", 
+                [](Command::Data* data){
+                    unsigned long temp = 0;
+                    if (!Command::isValidInput<unsigned long>(data->getToken(), temp, 64))
+                    {
+                        data->addError(ERROR_COLOR + "Invalid max entered");
+                        return;
+                    }
+                    Command::Handler::get().setMaxCommandHistory(temp);
+                    data->setReturnStr("Max history set successfully"); // TODO make this green text
+                }
+            )
+            .addCommand("getRandom", "[min = 0] [max = " + std::to_string(RAND_MAX) + " ] [amount = 1]" +
+                        " | prints n random numbers with a total max of " + std::to_string(RAND_MAX) + " and total min of 0",
+                [](Command::Data* data)
+                {
+                    int min = 0;
+                    int max = RAND_MAX;
+
+                    if (data->getNumTokens() > 0 && (!Command::isValidInput<int>(data->getToken(0), min, 0) || min < 0))
+                    {
+                        data->addError(ERROR_COLOR + "Invalid min entered");
+                        return;
+                    }
+                    if (data->getNumTokens() > 1 && (!Command::isValidInput<int>(data->getToken(1), max, RAND_MAX) || max < min || max > RAND_MAX))
+                    {
+                        data->addError(ERROR_COLOR + "Invalid max entered");
+                        return;
+                    }
+
+                    unsigned long amount = 1;
+                    if (data->getNumTokens() == 3 && (!Command::isValidInput<unsigned long>(data->getToken(2), amount, 1) || amount < 1))
+                    {
+                        data->addError(ERROR_COLOR + "Invalid amount entered - Defaulted to 1");
+                    }
+
+                    while (amount != 0)
+                    {
+                        data->addToReturnStr(std::to_string((min + (rand())%(max+1 - min))) + " ");
+                        amount--;
+                    }
+                });
         }
         // * ---------------------------
 
@@ -151,16 +169,13 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
             if (m_autoFillList->isVisible())
                 AutoFill(false);
 
-            Command::color tColor;
-            m_chatBox->addLine("> " + m_textBox->getText(), tgui::Color(tColor.r, tColor.g, tColor.b, tColor.a), tgui::TextStyle::Bold);
+            m_chatBox->addLine("> " + m_textBox->getText());
 
-            auto commandData = Command::Handler::callCommand(m_textBox->getText().toStdString());
-            Command::Prompt::addHistory(m_textBox->getText().toStdString());
+            auto commandData = Command::Handler::get().invokeCommand(m_textBox->getText().toStdString());
             
             if (commandData.getReturnStr() != "")
             {
-                tColor = commandData.getReturnColor();
-                m_chatBox->addLine(commandData.getReturnStr(), {tColor.r, tColor.g, tColor.b, tColor.a});
+                m_chatBox->addLine(commandData.getReturnStr());
             }
 
             m_textBox->setText("");
@@ -231,10 +246,10 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
 
         if (keyPressed->code == sf::Keyboard::Key::Up && (m_textBox->isFocused() || m_autoFillList->isFocused()))
         {
-            if (!m_autoFillList->isVisible() && m_commandHistory.size() != 0)
+            if (!m_autoFillList->isVisible() && Command::Handler::get().getCommandHistory().size() != 0)
             {
                 m_autoFillList->removeAllItems();
-                for (auto i = m_commandHistory.begin(); i != m_commandHistory.end(); i++)
+                for (auto i = --Command::Handler::get().getCommandHistory().end(); i != --Command::Handler::get().getCommandHistory().begin(); i--)
                     m_autoFillList->addItem(*i);
                 m_autoFillList->setVisible(true);
                 m_autoFillList->setSize({"100%", std::min(float(m_autoFillList->getItemHeight() * m_autoFillList->getItemCount() + 5), m_parent->getSize().y / 3)});
@@ -267,12 +282,6 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
     return false;
 }
 
-void Command::Prompt::UpdateDefaultColor()
-{
-    tgui::Color temp = tgui::Theme::getDefault()->getGlobalProperty("TextColor").getColor();
-    Command::color::setDefaultColor({temp.getRed(), temp.getGreen(), temp.getBlue(), temp.getAlpha()});
-}
-
 void Command::Prompt::setVisible(bool visible)
 {
     if (!m_parent)
@@ -297,10 +306,10 @@ void Command::Prompt::setInputBoxFocused(bool focused)
     m_textBox->setFocused(focused);
 }
 
-void Command::Prompt::print(const tgui::String& str, Command::color color, bool forcePrint)
+void Command::Prompt::print(const tgui::String& str, bool forcePrint)
 {
     if (m_chatBox && (m_allowPrint || forcePrint))
-        m_chatBox->addLine(str, tgui::Color(color.r, color.g, color.b, color.a));
+        m_chatBox->addLine(str);
 }
 
 bool Command::Prompt::isPrintAllowed()
@@ -315,20 +324,22 @@ void Command::Prompt::allowPrint(bool print)
 
 void Command::Prompt::UpdateAutoFill()
 {
-    std::list<std::string> commands = Command::Handler::autoFillSearch(m_textBox->getText().toStdString());;
+    std::list<std::string> commands = Command::Handler::get().autoFillSearch(m_textBox->getText().toStdString());
+    commands.sort();
     m_autoFillList->removeAllItems();
-
+    
     if (commands.size() == 0)
     {
         m_autoFillList->setVisible(false);
         return;
     }
     else 
-        m_autoFillList->setVisible(true);
-
-    for (auto cmd: commands)
     {
-        m_autoFillList->addItem(cmd);
+        m_autoFillList->setVisible(true);
+        for (auto str: commands)
+        {
+            m_autoFillList->addItem(str);
+        }
     }
 
     m_autoFillList->setSize({"100%", std::min(float(m_autoFillList->getItemHeight() * m_autoFillList->getItemCount() + 5), m_parent->getSize().y / 3)});
@@ -360,34 +371,4 @@ void Command::Prompt::AutoFill(bool updateAutoFill)
     m_textBox->setText(temp.getTokensStr());
     if (updateAutoFill)
         UpdateAutoFill();
-}
-
-void Command::Prompt::addHistory(const std::string& command)
-{
-    if (StringHelper::trim_copy(command).size() == 0) return;
-    if (m_maxHistory > m_commandHistory.size())
-    {
-        if (command != "" && m_commandHistory.back() != command)
-            m_commandHistory.push_back(command);
-    }
-    else
-    {
-        m_commandHistory.erase(m_commandHistory.begin());
-        m_commandHistory.push_back(command);
-    }
-}
-
-void Command::Prompt::setMaxHistory(size_t size)
-{
-    m_maxHistory = size;
-}
-
-size_t Command::Prompt::getMaxHistory()
-{
-    return m_maxHistory;
-}
-
-void Command::Prompt::clearHistory()
-{
-    m_commandHistory.clear();
 }

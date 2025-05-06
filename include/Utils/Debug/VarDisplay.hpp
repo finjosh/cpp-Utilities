@@ -57,7 +57,7 @@ private:
     static inline void initCommands()
     {
         // if command handler is also in use then we add some commands for using the var display
-        #ifdef COMMANDHANDLER_H
+        #ifdef COMMAND_HANDLER_H
         tguiCommon::ChildWindow::createOpenCloseCommand("lVars", m_parent);
         LiveVar::initCommand();
         #endif

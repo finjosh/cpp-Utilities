@@ -21,6 +21,8 @@ public:
     static std::string trim_copy(std::string string);
     static void toLower(std::string& string);
     static std::string toLower_copy(std::string string);
+    static void toUpper(std::string& string);
+    static std::string toUpper_copy(std::string string);
     /** @brief Converts the string to an integer
      *  @param result Integer value if the string contains a base 10 integer. Unmodified if string is invalid.
      *  @return Returns whether the string was valid and a value has been placed into the reference parameter.

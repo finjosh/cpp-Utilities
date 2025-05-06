@@ -1,24 +1,24 @@
 #include "Utils/CommandHandler.hpp"
-#include <algorithm>
 #include <sstream>
+#include <iostream>
 
 using namespace Command;
 
-color Command::color::_default_text_color = color(0,0,0,255);
+// color Command::color::_default_text_color = color(0,0,0,255);
 
-Command::color::color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) :
-    r(r), b(b), g(g), a(a)
-{}
+// Command::color::color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) :
+//     r(r), b(b), g(g), a(a)
+// {}
 
-void Command::color::setDefaultColor(color color)
-{
-    _default_text_color = color;
-}
+// void Command::color::setDefaultColor(color color)
+// {
+//     _default_text_color = color;
+// }
 
-color Command::color::getDefaultColor()
-{
-    return _default_text_color;
-}
+// color Command::color::getDefaultColor()
+// {
+//     return _default_text_color;
+// }
 
 void Command::print(const std::string& str, Data* input)
 {
@@ -30,24 +30,57 @@ void Command::helpCommand(const std::string& name, Data* data)
     data->setReturnStr("Use \"help " + name + "\" for more infomation");
 }
 
+std::vector<std::string> Command::parseTokens(const std::string& command)
+{
+    std::vector<std::string> tokens;
+    std::stringstream sstr(command);
+    std::string str;
+
+    while (sstr >> str)
+    {
+        tokens.push_back(str);
+    }
+
+    return tokens;
+}
+
 // * Command Data
 
-Data::Data(const std::string& command)
+// * Command::Data::Info
+
+void Command::Data::Info::addInfo(const std::string& info)
 {
-    this->m_tokens = parseCommand(command);
+    this->m_info.emplace_back(info);
 }
 
-void Data::setCommand(const std::string& command)
+void Command::Data::Info::addInfo(const std::list<std::string>& info)
 {
-    this->m_tokens = parseCommand(command);
+    this->m_info.insert(this->m_info.end(), info.begin(), info.end());
 }
 
-void Data::setTokens(const std::string& command)
+const std::list<std::string>& Command::Data::Info::getInfo() const
 {
-    this->m_tokens = parseCommand(command);
+    return this->m_info;
 }
 
-void Data::setTokens(const Tokens& tokens)
+bool Command::Data::Info::hasInfo() const
+{
+    return !m_info.empty();
+}
+
+// * -------------------
+
+Data::Data(const std::string& str)
+{
+    this->m_tokens = parseTokens(str);
+}
+
+void Data::setTokens(const std::string& str)
+{
+    this->m_tokens = parseTokens(str);
+}
+
+void Data::setTokens(const std::vector<std::string>& tokens)
 {
     this->m_tokens = tokens;    
 }
@@ -67,7 +100,7 @@ void Data::removeToken(size_t index)
     this->m_tokens.erase(this->m_tokens.begin() + index);
 }
 
-const Tokens& Data::getTokens() const
+const std::vector<std::string>& Data::getTokens() const
 {
     return this->m_tokens;
 }
@@ -91,19 +124,23 @@ std::string Data::getToken(size_t index) const
     return "";
 }
 
+std::string Data::getFirstToken() const
+{
+    if (this->m_tokens.size() > 0)
+        return this->m_tokens[0];
+    return "";
+}
+
+std::string Data::getLastToken() const
+{
+    if (this->m_tokens.size() > 0)
+        return this->m_tokens[this->m_tokens.size()-1];
+    return "";
+}
+
 size_t Data::getNumTokens() const
 {
     return this->m_tokens.size();
-}
-
-color Data::getReturnColor() const
-{
-    return this->m_color;
-}
-
-void Data::setReturnColor(color color)
-{
-    this->m_color = color;
 }
 
 const std::string& Data::getReturnStr() const
@@ -126,126 +163,184 @@ void Data::addToReturnStr(const std::string& str)
     this->m_return += str;
 }
 
-Tokens Data::parseCommand(const std::string& command)
+void Data::parseCommandInput(Command::Handler& context)
 {
-    Tokens tokens;
-    std::stringstream sstr(command);
-    std::string str;
-
-    while (sstr >> str)
+    size_t tIndex = 0;
+    while (tIndex < this->getNumTokens() && !this->hasErrors())
     {
-        tokens.push_back(str);
-    }
-
-    return tokens;
-}
-
-void Data::deepParseCommand()
-{
-    size_t i = 0;
-    while (i < this->getNumTokens())
-    {
-        std::string token = this->getToken(i);
+        std::string token = this->getToken(tIndex);
         // checking if we are calling commands for the token data
-        if (token.starts_with('('))
+        if (token.starts_with("$("))
         {
-            size_t startOfSub = i;
-            std::string command = token.substr(1);
-            i++;
-            token = this->getToken(i);
+            size_t startOfCommand = tIndex;
+            std::string command = token.substr(2);
+            token = this->getToken(++tIndex); // getting the next token since tokens are space separated
             while (!token.ends_with(')') && token != "")
             {
                 command += " " + token;
-                i++;
-                token = this->getToken(i);
+                token = this->getToken(++tIndex);
             }
-            i--; // removing the extra index added
             // once token ends with ')' add it to the end of the command
             if (token != "")
             {
-                i++;
-                token.erase(token.size()-1);
-                command += " " + token;
-            }
-            if (Command::Handler::isCommand(command))
-            {
-                Tokens temp = Command::Data::parseCommand(Command::Handler::callCommand(command).getReturnStr());
-                this->m_tokens.erase(this->m_tokens.begin()+startOfSub,this->m_tokens.begin()+i); // removing all the tokens we have used
-                this->m_tokens.insert(this->m_tokens.begin()+startOfSub, temp.begin(), temp.end()); // adding the data from the sub command
-                i = startOfSub + temp.size()-1; // setting i to the end of the sub commands return tokens
+                // remove the bracket and add to the command
+                command += " " + token.substr(0, token.size()-1);
             }
             else
             {
-                i = startOfSub + Command::Data::parseCommand(command).size();
+                // this is not an error as we can still call the comands as expected
+                this->addWarning(WARNING_COLOR + "Missing closing bracket for final command: " + command);
+            }
+
+            Data returnData = context.invokeCommand(command);
+            // adding the errors and warnings from the return data
+            this->addErrors(returnData.getErrors());
+            this->addWarnings(returnData.getWarnings());
+
+            // adding the return string to the tokens if there where no errors
+            if (!returnData.hasErrors())
+            {
+                std::vector<std::string> returnTokenized = Command::parseTokens(returnData.getReturnStr());
+                this->m_tokens.erase(this->m_tokens.begin()+startOfCommand,this->m_tokens.begin()+tIndex); // removing all the tokens we have used
+                this->m_tokens.insert(this->m_tokens.begin()+startOfCommand, returnTokenized.begin(), returnTokenized.end()); // adding the data from the input command
+                tIndex = startOfCommand + returnTokenized.size()-1; // setting tIndex to the end of the input commands return tokens
             }
         }
-        i++;
+        tIndex++;
     }
 }
 
-// * Command
-
-command::command(const std::string& name, const std::string& description, const funcHelper::funcDynamic<Data*>& func, const std::list<std::string>& possibleInputs, const std::list<command>& subCommands) :
-    m_name(name), m_description(description), m_function(func), m_subCommands(subCommands), m_possibleInputs(possibleInputs)
+bool Command::Data::hasErrors() const
 {
-    m_subCommands.sort();
-    m_possibleInputs.sort();
+    return m_errors.hasInfo();
 }
 
-command::command(const command& command) :
-    m_name(command.getName()), m_description(command.getDescription()), m_function(command.m_function), m_subCommands(command.m_subCommands), m_possibleInputs(command.m_possibleInputs)
+bool Command::Data::hasWarnings() const
+{
+    return m_warnings.hasInfo();
+}
+
+const std::list<std::string>& Command::Data::getWarnings() const
+{
+    return m_warnings.getInfo();
+}
+
+const std::list<std::string>& Command::Data::getErrors() const
+{
+    return m_errors.getInfo();
+}
+
+void Command::Data::addWarning(const std::string& warning)
+{
+    m_warnings.addInfo(warning);
+}
+
+void Command::Data::addWarnings(const std::list<std::string>& warnings)
+{
+    m_warnings.addInfo(warnings);
+}
+
+void Command::Data::addError(const std::string& error)
+{
+    m_errors.addInfo(error);
+}
+
+void Command::Data::addErrors(const std::list<std::string>& errors)
+{
+    m_errors.addInfo(errors);
+}
+
+// * Definition
+
+Command::Definition::Definition(const std::string& description, 
+                                const funcHelper::funcDynamic<Data*>& func, 
+                                const std::set<std::string>& possibleInputs,
+                                const std::map<std::string, Command::Definition, Command::Command_Compare>& scopedCommands) :
+    m_description(description), m_function(func), m_commands(scopedCommands), m_possibleInputs(possibleInputs) {}
+
+Command::Definition::Definition(const Command::Definition& command) :
+    m_description(command.m_description), m_function(command.m_function), m_commands(command.m_commands), m_possibleInputs(command.m_possibleInputs)
 {}
 
-bool command::operator< (const command& command) const
+Command::Definition& Command::Definition::setDescription(const std::string& description)
 {
-    return this->operator<(command.getName());
+    this->m_description = description;
+    return *this;
 }
 
-bool command::operator< (const std::string& str) const
+Command::Definition& Command::Definition::setFunction(const funcHelper::funcDynamic<Data*>& func)
 {
-    return this->getName() < str;
+    this->m_function = func;
+    return *this;
 }
 
-bool command::operator> (const command& command) const
+Command::Definition& Command::Definition::setCommands(const std::map<std::string, Command::Definition, Command::Command_Compare>& subCommands)
 {
-    return this->operator>(command.getName());
+    this->m_commands = subCommands;
+    return *this;
 }
 
-bool command::operator> (const std::string& str) const
+Command::Definition& Command::Definition::addCommand(const std::string& name, const Command::Definition& command, bool replace)
 {
-    return this->getName() > str;
+    this->addCommand(name, command.m_description, command.m_function, command.m_possibleInputs, command.m_commands, replace);
+    return *this;
 }
 
-bool command::operator== (const command& command) const
+Command::Definition& Command::Definition::addCommand(const std::string& name, const std::string& description, const funcHelper::funcDynamic<Data*>& func, 
+                                                   const std::set<std::string>& possibleInputs,
+                                                   const std::map<std::string, Command::Definition, Command::Command_Compare>& scopedCommands, bool replace)
 {
-    return this->operator==(command.getName());
+    auto iter = m_commands.find(name);
+    if (iter != m_commands.end())
+    {
+        if (replace)
+        {
+            m_commands.erase(iter);
+        }
+        else // we need to add only the sub commands that do not exist 
+        {
+            // adding the sub commands that do not exist by seting replace to false
+            for (auto commandPair: scopedCommands)
+            {
+                iter->second.addCommand(commandPair.first, commandPair.second, false);
+            }
+            return *this;
+        }
+    }
+
+    // emplace does not replace values if the key already exists
+    m_commands.emplace(name, Command::Definition{description, func, possibleInputs, scopedCommands});
+
+    return *this;
 }
 
-bool command::operator== (const std::string& str) const
+Command::Definition& Command::Definition::setPossibleInputs(const std::set<std::string>& possibleInputs)
 {
-    return this->getName() == str;
+    this->m_possibleInputs = possibleInputs;
+    return *this;
 }
 
-std::string command::getName() const
+Command::Definition& Command::Definition::addPossibleInput(const std::string& input)
 {
-    return this->m_name;
+    m_possibleInputs.insert(input);
+    return *this;
 }
 
-std::string command::getDescription() const
+std::string Command::Definition::getDescription() const
 {
     return this->m_description;
 }
 
-std::string command::getNameDescription(size_t maxLength, int tabs) const
+std::string Command::Definition::getNameDescription(const std::string& name, size_t maxLength, int tabs) const
 {
     //! this is not going to work too good unless the font is monospaced
     std::string tabsStr = TAB_STR;
-    for (size_t i = 0; i < 2 + this->m_name.length(); i++)
+    for (size_t i = 0; i < 2 + name.length(); i++)
         tabsStr += " ";
     for (int i = 0; i < tabs; i++) 
         tabsStr += TAB_STR;
 
-    std::string rtn = this->m_name + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
+    std::string rtn = name + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
 
     size_t pos = 0;
     while ((pos = rtn.find('\n', pos)) != std::string::npos) {
@@ -255,132 +350,310 @@ std::string command::getNameDescription(size_t maxLength, int tabs) const
     return rtn;
 }
 
-std::string command::getSubCommandsNameDescription(size_t maxLength, size_t subCommandIndex) const
+std::string Command::Definition::getScopedNameDescriptions(size_t maxLineLength, size_t commandIndex) const
 {
     std::string rtn;
-    std::for_each(m_subCommands.begin(), m_subCommands.end(), [&rtn, &maxLength, &subCommandIndex](const command& cmd)
+    // iter.first is the name of the command
+    // iter.second is the command
+    for (auto iter: this->m_commands)
     {
-        for (size_t i = 0; i < subCommandIndex; i++)
+        for (size_t i = 0; i < commandIndex; i++)
         {
             rtn += TAB_STR;
         }
-        rtn += "~ " + cmd.getNameDescription(maxLength) + "\n";
-        rtn += cmd.getSubCommandsNameDescription(maxLength, ++subCommandIndex);
-        --subCommandIndex;
-    });
+        rtn += "~ " + iter.second.getNameDescription(iter.first, maxLineLength) + "\n";
+        rtn += iter.second.getScopedNameDescriptions(maxLineLength, ++commandIndex);
+        --commandIndex;
+    }
     return rtn;
 }
 
-const std::list<std::string>& Command::command::getPossibleInputs() const
+std::string Command::Definition::getFullNameDescription(const std::string& name, size_t maxLineLength, size_t commandIndex) const
+{
+    std::string rtn = "~ ";
+    rtn += this->getNameDescription(name, maxLineLength, commandIndex);
+    rtn += "\n" + this->getScopedNameDescriptions(maxLineLength, commandIndex);
+    return rtn;
+}
+
+const std::set<std::string>& Command::Definition::getPossibleInputs() const
 {
     return m_possibleInputs;
 }
 
-void command::invoke(Data& data)
+const std::map<std::string, Command::Definition, Command::Command_Compare>& Command::Definition::getCommands() const
 {
+    return m_commands;
+}
+
+const Command::Definition* Command::Definition::findCommand(const std::string& command) const
+{
+    // Delegate to the non-const version using const_cast
+    // This is safe because we're not modifying the object, just reusing the logic
+    return const_cast<Command::Definition*>(this)->findCommand(command);
+}
+
+Command::Definition* Command::Definition::findCommand(const std::string& command)
+{
+    auto tokens = Command::parseTokens(command);
+    if (tokens.size() == 0)
+        return nullptr;
+    return this->findCommand(tokens);
+}
+
+const Command::Definition* Command::Definition::findCommand(const std::vector<std::string>& path) const
+{
+    return this->findCommand(path.begin(), path.end());
+}
+
+Command::Definition* Command::Definition::findCommand(const std::vector<std::string>& path)
+{
+    return this->findCommand(path.begin(), path.end());
+}
+
+const Command::Definition* Command::Definition::findCommand(std::vector<std::string>::const_iterator beginPath, std::vector<std::string>::const_iterator endPath) const
+{
+    // Delegate to the non-const version using const_cast
+    // This is safe because we're not modifying the object, just reusing the logic
+    return const_cast<Command::Definition*>(this)->findCommand(beginPath, endPath);
+}
+
+Command::Definition* Command::Definition::findCommand(std::vector<std::string>::const_iterator beginPath, std::vector<std::string>::const_iterator endPath)
+{
+    Command::Definition* lastValidCommand = this;
+
+    auto iter = lastValidCommand->m_commands.begin();
+    while (iter != lastValidCommand->m_commands.end() && beginPath != endPath)
+    {
+        iter = lastValidCommand->m_commands.find(*beginPath);
+        if (iter != lastValidCommand->m_commands.end())
+        {
+            lastValidCommand = &iter->second;
+            beginPath++;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return beginPath != endPath ? nullptr : lastValidCommand;
+}
+
+std::pair<std::string, const Command::Definition*> Command::Definition::findClosestCommand(const std::string& command) const
+{
+    // Delegate to the non-const version using const_cast
+    // This is safe because we're not modifying the object, just reusing the logic
+    return const_cast<Command::Definition*>(this)->findClosestCommand(command);
+}
+
+std::pair<std::string, Command::Definition*> Command::Definition::findClosestCommand(const std::string& command)
+{
+    auto tokens = Command::parseTokens(command);
+    if (tokens.size() == 0)
+        return {"", nullptr};
+    return this->findClosestCommand(tokens);
+}
+
+std::pair<std::string, const Command::Definition*> Command::Definition::findClosestCommand(const std::vector<std::string>& tokens) const
+{
+    return this->findClosestCommand(tokens.begin(), tokens.end());
+}
+
+std::pair<std::string, Command::Definition*> Command::Definition::findClosestCommand(const std::vector<std::string>& tokens)
+{
+    return this->findClosestCommand(tokens.begin(), tokens.end());
+}
+
+std::pair<std::string, const Command::Definition*> Command::Definition::findClosestCommand(std::vector<std::string>::const_iterator beginPath, std::vector<std::string>::const_iterator endPath) const
+{
+    // Delegate to the non-const version using const_cast
+    // This is safe because we're not modifying the object, just reusing the logic
+    return const_cast<Command::Definition*>(this)->findClosestCommand(beginPath, endPath);
+}
+
+std::pair<std::string, Command::Definition*> Command::Definition::findClosestCommand(std::vector<std::string>::const_iterator beginPath, std::vector<std::string>::const_iterator endPath)
+{
+    Command::Definition* lastValidCommand = this;
+    std::string command;
+
+    auto iter = lastValidCommand->m_commands.begin();
+    while (iter != lastValidCommand->m_commands.end() && beginPath != endPath)
+    {
+        iter = lastValidCommand->m_commands.find(*beginPath);
+        if (iter != lastValidCommand->m_commands.end())
+        {
+            lastValidCommand = &iter->second;
+            command += *beginPath + " ";
+            beginPath++;
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    if (command.size() > 0)
+        command.erase(command.size()-1); // removing the last space
+    return {command, lastValidCommand};
+}
+
+
+Command::Definition* Command::Definition::removeAllCommands()
+{
+    m_commands.clear();
+    return this;
+}
+
+Command::Definition* Command::Definition::removeCommand(const std::string& command)
+{
+    auto tokens = Command::parseTokens(command);
+    this->removeCommand(tokens);
+    return this;
+}
+
+void Command::Definition::removeCommand(const std::vector<std::string>& commandPath)
+{
+    this->removeCommand(commandPath.begin(), commandPath.end());
+}
+
+void Command::Definition::removeCommand(std::vector<std::string>::const_iterator beginPath, std::vector<std::string>::const_iterator endPath)
+{
+    // search the path first
+    auto second = beginPath;
+    second++;
+    if (second != endPath)
+    {
+        auto iter = m_commands.find(beginPath.operator*());
+        if (iter != m_commands.end())
+            iter->second.removeCommand(second, endPath);
+    }
+    else
+    {
+        auto iter = m_commands.find(beginPath.operator*());
+        if (iter != m_commands.end())
+            m_commands.erase(iter);
+    }
+}
+
+void Command::Definition::invoke(Command::Handler& context, Command::Data& data) const
+{
+    data.parseCommandInput(context);
     this->m_function.invoke(&data);
 }
 
-// * -------
+std::list<std::string> Command::Definition::autoFillSearch(const std::string& search)
+{
+    std::list<std::string> rtn;
+    std::vector<std::string> tokens;
+    size_t curToken = 0;
+    
+    // checking if there are nested commands to autofill for instead of the entire command
+    // finding the last $ in the string where its not "$$("
+    size_t nestedCommandPos = search.find_last_of('$');
+    while (nestedCommandPos != 0 && nestedCommandPos != search.size()-1 && nestedCommandPos != std::string::npos 
+            && (search[nestedCommandPos-1] == '$' || search[nestedCommandPos+1] != '('))
+    {
+        nestedCommandPos = search.find_last_of('$', nestedCommandPos-1);
+    }
+
+    if (nestedCommandPos != std::string::npos)
+    {
+        tokens = Command::parseTokens(search.substr(nestedCommandPos+2));
+        if (search.ends_with('('))
+            tokens.push_back(""); // adding an empty token so the auto fill will work if there is a open bracket
+    }
+    else // if there is no sub command to auto fill
+    {
+        tokens = Command::parseTokens(search);
+    }
+
+    if (search.ends_with(' '))
+        tokens.push_back(""); // adding an empty token so the auto fill will work if there is a space
+    
+    // skipping the help token so we autofill the command after it
+    if (tokens.size() == 0)
+        return rtn;
+    else if (Command::equalStr(tokens[0], "help"))
+    {
+        curToken++;
+        if (curToken >= tokens.size()) 
+            return rtn; // checking if the only thing imputed was help
+    }
+
+    auto closestCommand = this->findClosestCommand(tokens.begin() + curToken, tokens.end() - 1);
+    if (closestCommand.first.size() > 0)
+        curToken++;
+    for (char c: closestCommand.first)
+    {
+        if (c == ' ')
+            curToken++;
+    }
+    
+    if (tokens.back() == "")
+    {
+        for (auto i: closestCommand.second->getPossibleInputs())
+        {
+            rtn.emplace_back(i);
+        }
+    }
+
+    for (auto& iter: closestCommand.second->getCommands())
+    {
+        if (Command::startsWith(iter.first, tokens[curToken]))
+        {
+            rtn.emplace_back(iter.first + " ");
+        }
+    }
+
+    return rtn;
+}
+
+// * ----------
 
 // * Command Handler
 
-void Command::Handler::addCommand(const command& command, bool replace)
+Command::Handler& Command::Handler::get()
 {
-    m_addCommand(command, m_commands, replace);
+    static Handler* threadPool = new Handler();
+    return *threadPool;
 }
 
-void Command::Handler::m_addCommand(const command& cmd, std::list<command>& m_commands, bool replace)
+void Command::Handler::addCommand(const std::string& name, const Command::Definition& command, bool replace)
 {
-    auto lastCommand = std::find(m_commands.begin(), m_commands.end(), cmd);
-    // if the command is not already in the list add it
-    if (lastCommand == m_commands.end())
-    {
-        m_commands.push_back(cmd);
-        m_commands.sort();
-        return;
-    }
-
-    if (replace)
-    {
-        m_commands.erase(lastCommand);
-        m_commands.push_back(cmd);
-        m_commands.sort();
-        return;
-    }
-    // if the command is in the list try adding its sub commands to the current ones sub commands
-    for (auto subCommand: cmd.m_subCommands)
-    {
-        m_addCommand(subCommand, lastCommand->m_subCommands, replace);
-    }
+    m_commands.addCommand(name, command, replace);
 }
 
-bool Command::Handler::addSubCommand(const std::vector<std::string>& commandPath, const command& command, bool replace)
+void Command::Handler::addCommand(const std::string& name, const std::string& description, const funcHelper::funcDynamic<Data*>& func, 
+                                  const std::set<std::string>& possibleInputs,
+                                  const std::map<std::string, Command::Definition, Command::Command_Compare>& scopedCommands, bool replace)
 {
-    Command::command* cmd = m_getCommand(commandPath);
-    if (cmd == nullptr)
-        return false;
-
-    m_addCommand(command, cmd->m_subCommands, replace);
-
-    return true;
-}
-
-bool Command::Handler::addSubCommand(const std::string& strCommand, const command& command, bool replace)
-{
-    return addSubCommand(Command::Data(strCommand).getTokens(), command, replace);
+    m_commands.addCommand(name, description, func, possibleInputs, scopedCommands, replace);
 }
 
 void Command::Handler::removeAllCommands()
 {
-    m_commands.clear();
-    onAllCommandsRemoved.invoke(m_threadSafeEvents);
+    m_commands.removeAllCommands();
 }
 
-bool Command::Handler::removeCommand(const std::vector<std::string>& commandPath)
+void Command::Handler::removeCommand(const std::vector<std::string>& commandPath)
 {
-    std::list<command>* lastList = &m_commands;
-    std::list<command>* curList = &m_commands;
-    std::list<command>::iterator curCommand = m_commands.end();
-    size_t i = 0;
-    while (commandPath.size() > i)
-    {
-        curCommand = std::find_if(curList->begin(), curList->end(), [&commandPath, &i](const command& cmd){ return cmd.getName() == commandPath[i]; });
-        if (curCommand == curList->end())
-            return false;
-        else
-        {
-            i++;
-            lastList = curList;
-            curList = &(curCommand->m_subCommands);
-        }
-    }
-
-    if (i != 0)
-        lastList->erase(curCommand);
-
-    return true;
+    m_commands.removeCommand(commandPath);
 }
 
-bool Command::Handler::removeCommand(const std::string& strCommandPath)
+void Command::Handler::removeCommand(const std::string& command)
 {
-    return Command::Handler::removeCommand(Command::Data(strCommandPath).getTokens());
+    m_commands.removeCommand(command);
 }
 
-command* Command::Handler::m_getCommand(const std::vector<std::string>& commandPath, std::list<command>* list)
+Command::Definition* Command::Handler::findCommand(const std::string& command)
 {
-    std::list<command>::iterator curCommand = m_commands.end();
-    size_t i = 0;
-    while (commandPath.size() > i)
-    {
-        curCommand = std::find_if(list->begin(), list->end(), [&commandPath, &i](const command& cmd){ return cmd.getName() == commandPath[i]; });
-        if (curCommand == list->end())
-            return nullptr;
+    return m_commands.findCommand(command);
+}
 
-        i++;
-        list = &(curCommand->m_subCommands);
-    }
-    return &(*curCommand);
+Command::Definition* Command::Handler::findCommand(const std::vector<std::string>& commandPath)
+{
+    return m_commands.findCommand(commandPath);
 }
 
 void Command::Handler::setThreadSafeEvents(bool threadSafe)
@@ -393,96 +666,28 @@ bool Command::Handler::isThreadSafeEvents()
     return m_threadSafeEvents;
 }
 
-std::list<std::string> Handler::autoFillSearch(const std::string& search)
+Command::Data Command::Handler::invokeCommand(const std::string& commandStr)
 {
-    bool foundCommand = false; // set to true if a command that partially matches was found
-    std::list<std::string> rtn;
-    Data input("");
-    
-    // if we want to auto fill sub command instead of the whole command
-    size_t subCommandPos = search.find_last_of('(');
-    if (subCommandPos != std::string::npos)
-    {
-        input.setCommand(StringHelper::toLower_copy(search.substr(subCommandPos+1)));
-        if (search.ends_with(" ") || search.ends_with("("))
-            input.addToken(""); // adding an empty token so the auto fill will work if there is a space or a open bracket
-    }
-    else // if there is no sub command to auto fill
-    {
-        input.setCommand(StringHelper::toLower_copy(search));
-    }
-
-    if (search.ends_with(" "))
-        input.addToken(""); // adding an empty token so the auto fill will work if there is a space 
-    if (input.getNumTokens() == 0) return rtn;
-    else if (input.getToken(0) == "help") 
-    {
-        input.removeToken(0); // auto filling for searching by removing the help token
-        if (input.getNumTokens() == 0) return rtn; // checking if the only thing imputed was help
-    }
-
-    std::list<command>* commandsList = &m_commands;
-    command* lastValidCommand = nullptr;
-
-    // finding which list to find auto fill for
-    {
-        std::list<command>::iterator i = m_commands.begin();;
-        while (true)
-        {
-            i = std::find_if(commandsList->begin(), commandsList->end(), [&input](const Command::command& v){return StringHelper::toLower_copy(v.getName()) == input.getToken(0);});
-            if (i != commandsList->end() && input.getNumTokens() > 1)
-            {
-                commandsList = &i->m_subCommands;
-                lastValidCommand = &(*i);
-                input.removeToken(0);
-            }
-            else
-            {
-                break;
-            }
-        }    
-    }
-    
-    if (lastValidCommand != nullptr && input.getToken(input.getNumTokens()-1) == "")
-    {
-        for (auto i: lastValidCommand->getPossibleInputs())
-        {
-            rtn.emplace_back(i);
-        }
-    }
-
-    for (std::list<command>::iterator i = commandsList->begin(); i != commandsList->end(); i++)
-    {
-        if (StringHelper::toLower_copy(i->getName()).starts_with(input.getToken(0)))
-        {
-            rtn.push_back(i->getName() + " ");
-        }
-    }
-
-    rtn.sort();
-
-    return rtn;
-}
-
-Data Handler::callCommand(const std::string& commandStr)
-{
-    Data input(commandStr);
+    Command::Data input(commandStr);
 
     // doing early checks for either help command or no command being entered
     if (input.getNumTokens() == 0) 
     {
-        input.setReturnStr("Try using \"help\" for a list of commands");
+        input.setReturnStr(HELP_STRING);
         return input;
     }
     // returns the list of commands and there descriptions if help is entered
-    else if (input.getToken(0) == "help") 
+    else if (Command::equalStr(input.getToken(0), "help"))
     {
         // checking if command specific help
         if (input.getNumTokens() == 1)
         {
             // no command specific help
-            std::string rtn = "help [Command] - can be used on every command to show it's full description and it's sub commands if there are any\n\n";
-            std::for_each(m_commands.begin(), m_commands.end(), [&rtn](const command& cmd){ rtn += "~ " + cmd.getNameDescription(64) + "\n"; });
+            std::string rtn = "help [Command] - can be used on every command to show it's full description and it's scoped commands if there are any\n\n";
+            for (auto iter: m_commands.getCommands())
+            {
+                rtn += "~ " + iter.second.getNameDescription(iter.first, 64) + "\n";
+            }
             input.setReturnStr(rtn);
             return input;
         }
@@ -491,63 +696,89 @@ Data Handler::callCommand(const std::string& commandStr)
             input.removeToken(0); // remove help from the tokens
             
             std::string rtn;
-            command* cmd = m_getCommand(input.getTokens());
+            const Command::Definition* cmd = m_commands.findCommand(input.getTokens());
             if (cmd == nullptr) 
             {
-                input.setReturnStr("The given command could not be found\nTry using \"help\" for a list of commands");
+                input.setReturnStr("The given command could not be found"); // TODO make this a different color?
+                input.addReturnStrLine(HELP_STRING);
                 return input;
             }
 
             if (cmd != nullptr) // only if the entire command was found
             {
-                rtn += "~ " + cmd->getNameDescription() + "\n";
-                rtn += cmd->getSubCommandsNameDescription(64);
+                rtn += "~ " + cmd->getNameDescription(input.getLastToken()) + "\n";
+                rtn += cmd->getScopedNameDescriptions(64);
             }
 
-            input.setReturnStr(rtn);           
-            return input; // returning the string of commands in the color white
+            input.setReturnStr(rtn);    
         }
     }
-
-    std::list<command>::iterator curCommand = std::find(m_commands.begin(), m_commands.end(), input.getToken(0));
-    if (curCommand == m_commands.end()) 
+    else
     {
-        input.setReturnStr("Try using \"help\" for a list of commands");
-        return input;
+        auto closestCommand = m_commands.findClosestCommand(input.getTokens());
+        
+        if (closestCommand.second != nullptr)
+        {
+            input.setTokens(input.getTokensStr().substr(closestCommand.first.size()));
+            closestCommand.second->invoke(*this, input);
+        }
+    }
+    
+    if (m_commandHistory.front() != commandStr)
+    {
+        if (m_commandHistory.size() >= m_maxCommandHistory)
+        {
+            m_commandHistory.pop_back();
+        }
+        m_commandHistory.emplace_front(commandStr);
     }
 
-    input.removeToken(0); // remove the current command from the tokens to check if there is another to look for
-    while (input.getNumTokens() > 0 || curCommand->m_subCommands.size() == 0)
+    for (auto error: input.getErrors())
     {
-        auto temp = std::find(curCommand->m_subCommands.begin(), curCommand->m_subCommands.end(), input.getToken(0));
-
-        if (temp == curCommand->m_subCommands.end()) break;
-
-        curCommand = temp;
-        input.removeToken(0);
+        m_lineHistory.emplace_front(error);
     }
-
-    input.deepParseCommand(); // parsing the command to check if there are any subCommands that need to be called for input first
-    color printColor;
-    curCommand->invoke(input);
+    for (auto warning: input.getWarnings())
+    {
+        m_lineHistory.emplace_front(warning);
+    }
+    m_lineHistory.emplace_front(StringHelper::trim_copy(commandStr));
+    m_lineHistory.emplace_front(input.getReturnStr());
+    if (m_lineHistory.size() > m_maxLineHistory)
+        m_lineHistory.resize(m_maxLineHistory);
 
     return input;
 }
 
-bool Command::Handler::isCommand(const std::string& commandStr)
+size_t Command::Handler::getMaxCommandHistory()
 {
-    Data input(commandStr);
-    std::list<command>::iterator curCommand = std::find(m_commands.begin(), m_commands.end(), input.getToken(0));
-    if (curCommand == m_commands.end()) 
-    {
-        return false;
-    }
-
-    return true;
+    return m_maxCommandHistory;
 }
 
-std::list<command> Command::Handler::m_commands;
-EventHelper::Event Command::Handler::onAllCommandsRemoved;
-bool Command::Handler::m_threadSafeEvents = false;
+size_t Command::Handler::getMaxLineHistory()
+{
+    return m_maxLineHistory;
+}
+
+void Command::Handler::setMaxCommandHistory(size_t size)
+{
+    m_maxCommandHistory = size;
+    onMaxCommandHistoryChanged.invoke();
+}
+
+void Command::Handler::setMaxLineHistory(size_t size)
+{
+    m_maxLineHistory = size;
+    onMaxLineHistoryChanged.invoke();
+}
+
+const std::list<std::string>& Command::Handler::getCommandHistory()
+{
+    return m_commandHistory;
+}
+
+const std::list<std::string>& Command::Handler::getCommandHistoryLines()
+{
+    return m_lineHistory;
+}
 
 // * ---------------

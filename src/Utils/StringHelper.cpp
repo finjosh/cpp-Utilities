@@ -22,6 +22,17 @@ void StringHelper::toLower(std::string& string)
 std::string StringHelper::toLower_copy(std::string string)
 { StringHelper::toLower(string); return string; }
 
+void StringHelper::toUpper(std::string& string)
+{
+    std::transform(string.begin(), string.end(), string.begin(), [](const char c) { return static_cast<char>(std::toupper(c)); });
+}
+
+std::string StringHelper::toUpper_copy(std::string string)
+{
+    StringHelper::toUpper(string);
+    return string;
+}
+
 bool StringHelper::attemptToInt(std::string string, int& result)
 {
     StringHelper::trim(string);

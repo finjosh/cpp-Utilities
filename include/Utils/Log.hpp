@@ -23,6 +23,9 @@ class Log
 public:
 
     static void CreateLog(LogType logType, std::string message);
+    // /// @brief creates commands for dumping memory only logs to a file
+    // /// @note also dumps 
+    // static void initCommands();
 
 private:
 

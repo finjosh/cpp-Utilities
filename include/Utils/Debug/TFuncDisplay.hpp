@@ -42,7 +42,8 @@ protected:
         // if command handler is also in use then we add some commands for using the var display
         #ifdef COMMANDHANDLER_H
         tguiCommon::ChildWindow::createOpenCloseCommand("TFunc", m_parent);
-        Command::Handler::addSubCommand("TFunc", Command::command{"resetColumnSizes", "Resets the columns to be auto sized", [](){ TFuncDisplay::resetColumnSizes(); }});
+        Command::Handler::get().findCommand("TFunc")
+        ->addCommand("resetColumnSizes", "Resets the columns to be auto sized", [](){ TFuncDisplay::resetColumnSizes(); });
         #endif
     }
 
