@@ -25,6 +25,7 @@ using namespace sf;
 
 int main()
 {
+    std::cout << GET_FUNCTION_INFO() << std::endl;
     // TestHelperTest::test();
     // funcHelperTest::test();
     // EventHelperTest::test();

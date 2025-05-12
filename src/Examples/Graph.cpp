@@ -49,7 +49,7 @@ void GraphTest::test(tgui::Gui& gui)
         auto temp = _graph.getDataSet(_graph.getDataSets().back().getID());
         if (temp == nullptr)
         {
-            Command::Prompt::print(Command::ERROR_COLOR + "Data set does not exist could not expand data set!!");
+            // Command::Prompt::print(Command::ERROR_COLOR + "Data set does not exist could not expand data set!!"); // TODO update this
         }
         temp->push_back({temp->getDataValue(temp->getDataLength()-1).x + 0.1f, temp->getDataValue(temp->getDataLength()-1).y+(rand()%201-100)/100.f});
         auto graphIterator = _graph.getDataSets().end();

@@ -80,4 +80,64 @@ void CommandHandlerTest::test()
     {
         cout << s << endl;
     }
+
+    Command::Handler::get()
+    .addCommand("getRandom", "[min = 0] [max = " + std::to_string(RAND_MAX) + " ] [amount = 1]" +
+                        " | prints n random numbers with a total max of " + std::to_string(RAND_MAX) + " and total min of 0",
+        [](Command::Data* data)
+        {
+            int min = 0;
+            int max = RAND_MAX;
+
+            if (data->getNumTokens() > 0 && (!Command::isValidInput<int>(data->getToken(0), min, 0) || min < 0))
+            {
+                data->addError(Command::ERROR_COLOR + "getRandom Error" + Command::END_COLOR + " - Invalid min entered (min=" + std::to_string(min) + ", max=" + std::to_string(max) + ")");
+                return;
+            }
+            if (data->getNumTokens() > 1 && (!Command::isValidInput<int>(data->getToken(1), max, RAND_MAX) || max < min || max > RAND_MAX))
+            {
+                data->addError(Command::ERROR_COLOR + "getRandom Error" + Command::END_COLOR + " - Invalid max entered (min=" + std::to_string(min) + ", max=" + std::to_string(max) + ")");
+                return;
+            }
+
+            unsigned long amount = 1;
+            if (data->getNumTokens() == 3 && (!Command::isValidInput<unsigned long>(data->getToken(2), amount, 1) || amount < 1))
+            {
+                data->addError(Command::ERROR_COLOR + "getRandom Error" + Command::END_COLOR + " - Invalid amount entered (amount=" + std::to_string(amount) + ")");
+            }
+
+            while (amount != 0)
+            {
+                data->addToReturnStr(std::to_string((min + (rand())%(max+1 - min))) + " ");
+                amount--;
+            }
+        });
+
+    std::cout << "Calling a command with nested commands as input" << std::endl;
+    std::cout << Command::Handler::get().invokeCommand("getRandom $(getRandom 0 10) $(getRandom 10 100) 100").getReturnStr() << std::endl;
+
+    std::cout << "Calling a command with nested commands as input - including bad syntax that does not cause an error" << std::endl;
+    auto data = Command::Handler::get().invokeCommand("getRandom $(getRandom 0 10) $(getRandom 10 100");
+    for (auto error: data.getErrors())
+    {
+        std::cout << error << std::endl;
+    }
+    for (auto warning: data.getWarnings())
+    {
+        std::cout << warning << std::endl;
+    }
+    std::cout << data.getReturnStr() << std::endl;
+
+    std::cout << "Calling a command with nested commands as input - including bad syntax that does not cause an error" << std::endl;
+    // Note that nested commands are evaluated from right to left so first "$(getRandom 10 100" is called then "$(getRandom 0 10" is called with the result of "$(getRandom 10 100" as input
+    data = Command::Handler::get().invokeCommand("getRandom $(getRandom 0 10 $(getRandom 10 100");
+    for (auto error: data.getErrors())
+    {
+        std::cout << error << std::endl;
+    }
+    for (auto warning: data.getWarnings())
+    {
+        std::cout << warning << std::endl;
+    }
+    std::cout << data.getReturnStr() << std::endl;
 }

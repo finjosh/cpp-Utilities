@@ -7,9 +7,12 @@
 
 #include "TGUI/Backend/SFML-Graphics.hpp"
 #include "TGUI/Widgets/EditBox.hpp"
-#include "TGUI/Widgets/ChatBox.hpp"
 #include "TGUI/Widgets/ListBox.hpp"
 #include "TGUI/Widgets/ChildWindow.hpp"
+
+#include "TGUI/Widgets/ScrollablePanel.hpp"
+#include "TGUI/Widgets/GrowVerticalLayout.hpp"
+#include "TGUI/Widgets/RichTextLabel.hpp"
 
 #include "Utils/CommandHandler.hpp"
 #include "Utils/StringHelper.hpp"
@@ -39,15 +42,8 @@ public:
     /// @brief focuses the input box for the command prompt
     static void setInputBoxFocused(bool focused = true);
 
-    /// @brief only prints to the command prompt IF the command prompt is set to true
-    /// @note setting command prompt to allow prints is only done through the command prompt its self during runtime
-    /// @param forcePrint if this should print no matter if printing is allowed
-    static void print(const tgui::String& str, bool forcePrint = false);
-
-    static bool isPrintAllowed();
-
-    /// @param print true if printing is allowed
-    static void allowPrint(bool print = true);
+    // TODO implement tabs, one for commands, warnings, errors, and printing info from the program
+    static void print(const std::string& str); // TODO remove this when the tabs are implemented
 
 protected:
     static void UpdateAutoFill();
@@ -55,6 +51,8 @@ protected:
     /// @brief commits the currently selected auto fill
     /// @param updateAutoFill if true updates the auto fill list
     static void AutoFill(bool updateAutoFill = true);
+
+    static void addLine(const tgui::String& line);
 
 private:
     inline Prompt() = default;
@@ -64,9 +62,7 @@ private:
     static tgui::ChildWindow::Ptr m_parent;
     static tgui::EditBox::Ptr m_textBox;
     static tgui::ListBox::Ptr m_autoFillList;
-    static tgui::ChatBox::Ptr m_chatBox; // TODO dont use a chatbox use a list of richtext labels
-
-    static bool m_allowPrint;
+    static tgui::GrowVerticalLayout::Ptr m_lineContainer;
 
     static bool m_ignoreInputText;
 };

@@ -4,22 +4,6 @@
 
 using namespace Command;
 
-// color Command::color::_default_text_color = color(0,0,0,255);
-
-// Command::color::color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) :
-//     r(r), b(b), g(g), a(a)
-// {}
-
-// void Command::color::setDefaultColor(color color)
-// {
-//     _default_text_color = color;
-// }
-
-// color Command::color::getDefaultColor()
-// {
-//     return _default_text_color;
-// }
-
 void Command::print(const std::string& str, Data* input)
 {
     input->setReturnStr(str);
@@ -165,16 +149,17 @@ void Data::addToReturnStr(const std::string& str)
 
 void Data::parseCommandInput(Command::Handler& context)
 {
-    size_t tIndex = 0;
-    while (tIndex < this->getNumTokens() && !this->hasErrors())
+    size_t tIndex = this->getNumTokens();
+    while (tIndex > 0 && !this->hasErrors())
     {
+        tIndex--;
         std::string token = this->getToken(tIndex);
         // checking if we are calling commands for the token data
         if (token.starts_with("$("))
         {
             size_t startOfCommand = tIndex;
             std::string command = token.substr(2);
-            token = this->getToken(++tIndex); // getting the next token since tokens are space separated
+            token = this->getToken(++tIndex);
             while (!token.ends_with(')') && token != "")
             {
                 command += " " + token;
@@ -188,8 +173,8 @@ void Data::parseCommandInput(Command::Handler& context)
             }
             else
             {
-                // this is not an error as we can still call the comands as expected
-                this->addWarning(WARNING_COLOR + "Missing closing bracket for final command: " + command);
+                // this is not an error as we can still call the comands
+                this->addWarning(WARNING_COLOR + "Warning" + END_COLOR + " - Missing closing bracket for \"" + command + "\" starting at input token " + std::to_string(startOfCommand+1));
             }
 
             Data returnData = context.invokeCommand(command);
@@ -201,12 +186,11 @@ void Data::parseCommandInput(Command::Handler& context)
             if (!returnData.hasErrors())
             {
                 std::vector<std::string> returnTokenized = Command::parseTokens(returnData.getReturnStr());
-                this->m_tokens.erase(this->m_tokens.begin()+startOfCommand,this->m_tokens.begin()+tIndex); // removing all the tokens we have used
+                this->m_tokens.erase(this->m_tokens.begin()+startOfCommand, this->m_tokens.begin()+tIndex + (tIndex < m_tokens.size() ? 1 : 0)); // removing all the tokens we have used
                 this->m_tokens.insert(this->m_tokens.begin()+startOfCommand, returnTokenized.begin(), returnTokenized.end()); // adding the data from the input command
-                tIndex = startOfCommand + returnTokenized.size()-1; // setting tIndex to the end of the input commands return tokens
+                tIndex = startOfCommand; // setting tIndex to the end of the input commands return tokens
             }
         }
-        tIndex++;
     }
 }
 
@@ -340,7 +324,7 @@ std::string Command::Definition::getNameDescription(const std::string& name, siz
     for (int i = 0; i < tabs; i++) 
         tabsStr += TAB_STR;
 
-    std::string rtn = name + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
+    std::string rtn = Command::BOLD_FONT + name + Command::END_BOLD_FONT + " - " + this->m_description.substr(0, maxLength) + (this->m_description.size() > maxLength ? "..." : "");
 
     size_t pos = 0;
     while ((pos = rtn.find('\n', pos)) != std::string::npos) {
@@ -551,7 +535,7 @@ std::list<std::string> Command::Definition::autoFillSearch(const std::string& se
     // checking if there are nested commands to autofill for instead of the entire command
     // finding the last $ in the string where its not "$$("
     size_t nestedCommandPos = search.find_last_of('$');
-    while (nestedCommandPos != 0 && nestedCommandPos != search.size()-1 && nestedCommandPos != std::string::npos 
+    while (nestedCommandPos >= 0 && nestedCommandPos < search.size() && nestedCommandPos != std::string::npos 
             && (search[nestedCommandPos-1] == '$' || search[nestedCommandPos+1] != '('))
     {
         nestedCommandPos = search.find_last_of('$', nestedCommandPos-1);

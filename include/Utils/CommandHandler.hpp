@@ -72,35 +72,11 @@ inline bool startsWith(const std::string& str, const std::string& prefix)
 #endif
 }
 
-// /// @note if you want a constructor from sf::Color make sure to include the CommandHandler include AFTER sfml color include
-// struct color
-// {
-//     /// @brief default is the default color
-//     color(uint8_t r = _default_text_color.r, uint8_t g = _default_text_color.g, uint8_t b = _default_text_color.b, uint8_t a = _default_text_color.a);
-//     #ifdef SFML_COLOR_HPP
-//     inline color(const sf::Color& color) : r(color.r), g(color.g), b(color.b), a(color.a) {};
-//     #endif 
-
-//     static void setDefaultColor(color color);
-
-//     static color getDefaultColor();
-
-//     uint8_t r = _default_text_color.g;
-//     uint8_t g = _default_text_color.g;
-//     uint8_t b = _default_text_color.g;
-//     uint8_t a = _default_text_color.g;
-
-// protected:
-//     static color _default_text_color;
-// };
-
-// const color WARNING_COLOR = color(255,164,0,255);
-// const color ERROR_COLOR = color(255,0,0,255);
-// const color INVALID_INPUT_COLOR = color(255,164,0,255);
-
-const std::string WARNING_COLOR = "";
-const std::string ERROR_COLOR = "";
-const std::string INVALID_INPUT_COLOR= "";
+const std::string WARNING_COLOR = "<color=#ffff00>";
+const std::string ERROR_COLOR = "<color=#ff0000>";
+const std::string END_COLOR = "</color>";
+const std::string BOLD_FONT = "<b>";
+const std::string END_BOLD_FONT = "</b>";
 
 /// @brief parses the given command
 /// @warning if not able to be parsed returns a empty list
@@ -136,6 +112,11 @@ inline bool isValidInput(const std::string& strValue, valueType& value, valueTyp
     else // if the type is unsigned long 
     {
         valid = StringHelper::attemptToULong(strValue, value);
+    }
+
+    if (!valid)
+    {
+        value = defaultValue;
     }
 
     return valid;
@@ -361,15 +342,13 @@ public:
     /// @note if there are warning the function will still be called if possible (warnings are stored in the data)
     void invoke(Command::Handler& context, Data& data) const;
 
-protected:
-    /// @brief key is the name, value is the definition
-    std::map<std::string, Command::Definition, Command::Command_Compare> m_commands = {};
-    std::set<std::string> m_possibleInputs = {};
-
 private:
     std::string m_description = "";
     
     funcHelper::funcDynamic<Data*> m_function;
+    /// @brief key is the name, value is the definition
+    std::map<std::string, Command::Definition, Command::Command_Compare> m_commands = {};
+    std::set<std::string> m_possibleInputs = {};
 };
 
 class Handler

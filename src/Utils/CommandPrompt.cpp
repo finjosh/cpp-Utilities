@@ -5,9 +5,8 @@ tguiCommon::ChildWindow Command::Prompt::m_windowHandler;
 tgui::ChildWindow::Ptr Command::Prompt::m_parent{nullptr};
 tgui::EditBox::Ptr Command::Prompt::m_textBox{nullptr};
 tgui::ListBox::Ptr Command::Prompt::m_autoFillList{nullptr};
-tgui::ChatBox::Ptr Command::Prompt::m_chatBox{nullptr};
+tgui::GrowVerticalLayout::Ptr Command::Prompt::m_lineContainer{nullptr};
 
-bool Command::Prompt::m_allowPrint = true;
 bool Command::Prompt::m_ignoreInputText = false;
 
 void Command::Prompt::init(tgui::Gui& sfmlGui)
@@ -33,8 +32,8 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
     {
         m_textBox = tgui::EditBox::create();
         m_parent->add(m_textBox);
-        m_textBox->setSize({"100%", "25"});
-        m_textBox->setPosition({0, "100% - 25"});
+        m_textBox->setSize({"100%", "5%"});
+        m_textBox->setPosition({0, "95%"});
 
         // * setup for auto closing m_autoFillList when focus is lost
         m_textBox->onUnfocus([]()
@@ -46,70 +45,21 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
         });
 
         // * setup for chat m_textBox
-        m_chatBox = tgui::ChatBox::create();
-        m_parent->add(m_chatBox);
-        m_chatBox->setSize({"100%", "100%-25"});
-        m_chatBox->setLinesStartFromTop();
-        m_chatBox->setLineLimit(256);
-        m_chatBox->setFocusable(false);
+        auto linePanel = tgui::ScrollablePanel::create();
+        m_parent->add(linePanel);
+        linePanel->getHorizontalScrollbar()->setPolicy(tgui::Scrollbar::Policy::Never);
+        linePanel->setSize({"100%", "95%"});
+        m_lineContainer = tgui::GrowVerticalLayout::create();
+        linePanel->add(m_lineContainer);
+        m_lineContainer->setWidth("100%");
+        m_lineContainer->setFocusable(false);
 
         // * setup for the command prompt custom commands
         {
-            auto temp = m_chatBox.get();
+            auto temp = m_lineContainer.get();
             Command::Handler::get().addCommand("cp", Command::Definition{"Prefix for any Command Prompt specific commands", {Command::helpPrint, "Not a valid cp command. Try using 'help cp' for more info"}, {}});
             Command::Handler::get().findCommand("cp")
-            ->addCommand("clear", "clears the command prompt", {[temp](){ temp->removeAllLines(); }})
-            // Note that the following command only affects the command prompts max lines not the command handlers max lines
-            .addCommand("setMaxLines", "sets the max number of lines the command prompt will hold (min value of 50)", 
-                [temp](Command::Data* data)
-                { 
-                    unsigned long t;
-                    if (!Command::isValidInput<unsigned long>(data->getToken(0), t, 0) || t < 50)
-                    {
-                        data->addError(ERROR_COLOR + "Please enter a valid number (min = 50)");
-                    }
-                    else
-                    {
-                        temp->setLineLimit(t);
-                        data->setReturnStr("Max lines was successfully set to: " + data->getToken(0)); // TODO make this green text
-                    }
-                }
-            )
-            .addCommand("getMaxLines", "retuns the current max lines", 
-                [temp](Command::Data* data){
-                    data->setReturnStr(std::to_string(temp->getLineLimit()));
-                }
-            )
-            .addCommand("allowPrinting", "controls if printing to the command prompt is allowed (true/false or 1/0)", 
-                [](Command::Data* data)
-                {
-                    m_allowPrint = StringHelper::toBool(data->getToken(0), m_allowPrint);
-                    data->setReturnStr("Printing is now: ");
-                    data->addToReturnStr(m_allowPrint ? "allowed" : "not allowed");
-                }, {"True", "False"}
-            )
-            .addCommand("getPrintingAllowed", "prints if printing is allowed", 
-                [](Command::Data* data)
-                {
-                    data->setReturnStr(m_allowPrint ? "True" : "False");
-                }
-            )
-            .addCommand("getMaxHistory", "prints the max number of commands in history", 
-                [](Command::Data* data){ 
-                    Command::print(std::to_string(Command::Handler::get().getMaxCommandHistory()), data); 
-                })
-            .addCommand("setMaxHistory", "sets the max number of commands in history", 
-                [](Command::Data* data){
-                    unsigned long temp = 0;
-                    if (!Command::isValidInput<unsigned long>(data->getToken(), temp, 64))
-                    {
-                        data->addError(ERROR_COLOR + "Invalid max entered");
-                        return;
-                    }
-                    Command::Handler::get().setMaxCommandHistory(temp);
-                    data->setReturnStr("Max history set successfully"); // TODO make this green text
-                }
-            )
+            ->addCommand("clear", "clears the command prompt", {[temp](){ temp->removeAllWidgets(); }})
             .addCommand("getRandom", "[min = 0] [max = " + std::to_string(RAND_MAX) + " ] [amount = 1]" +
                         " | prints n random numbers with a total max of " + std::to_string(RAND_MAX) + " and total min of 0",
                 [](Command::Data* data)
@@ -119,19 +69,19 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
 
                     if (data->getNumTokens() > 0 && (!Command::isValidInput<int>(data->getToken(0), min, 0) || min < 0))
                     {
-                        data->addError(ERROR_COLOR + "Invalid min entered");
+                        data->addError(Command::ERROR_COLOR + "getRandom Error" + Command::END_COLOR + " - Invalid min entered (min=" + std::to_string(min) + ", max=" + std::to_string(max) + ")");
                         return;
                     }
                     if (data->getNumTokens() > 1 && (!Command::isValidInput<int>(data->getToken(1), max, RAND_MAX) || max < min || max > RAND_MAX))
                     {
-                        data->addError(ERROR_COLOR + "Invalid max entered");
+                        data->addError(Command::ERROR_COLOR + "getRandom Error" + Command::END_COLOR + " - Invalid max entered (min=" + std::to_string(min) + ", max=" + std::to_string(max) + ")");
                         return;
                     }
 
                     unsigned long amount = 1;
                     if (data->getNumTokens() == 3 && (!Command::isValidInput<unsigned long>(data->getToken(2), amount, 1) || amount < 1))
                     {
-                        data->addError(ERROR_COLOR + "Invalid amount entered - Defaulted to 1");
+                        data->addError(Command::ERROR_COLOR + "getRandom Error" + Command::END_COLOR + " - Invalid amount entered (amount=" + std::to_string(amount) + ")");
                     }
 
                     while (amount != 0)
@@ -169,13 +119,24 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
             if (m_autoFillList->isVisible())
                 AutoFill(false);
 
-            m_chatBox->addLine("> " + m_textBox->getText());
+            
+            addLine("> " + m_textBox->getText());
 
             auto commandData = Command::Handler::get().invokeCommand(m_textBox->getText().toStdString());
             
+            for (auto error: commandData.getErrors())
+            {
+                addLine(error);
+            }
+
+            for (auto warning: commandData.getWarnings())
+            {
+                addLine(warning);
+            }
+
             if (commandData.getReturnStr() != "")
             {
-                m_chatBox->addLine(commandData.getReturnStr());
+                addLine(commandData.getReturnStr());
             }
 
             m_textBox->setText("");
@@ -190,12 +151,14 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
 
 void Command::Prompt::close()
 {
+    assert(m_parent != nullptr && "Command::Prompt::close() - Command Prompt not initialized");
+
     if (m_parent)
         m_parent->getParent()->remove(m_parent);
     m_parent = nullptr;
     m_textBox = nullptr;
     m_autoFillList = nullptr;
-    m_chatBox = nullptr;
+    m_lineContainer = nullptr;
 }
 
 bool Command::Prompt::UpdateEvent(const sf::Event& event)
@@ -284,8 +247,8 @@ bool Command::Prompt::UpdateEvent(const sf::Event& event)
 
 void Command::Prompt::setVisible(bool visible)
 {
-    if (!m_parent)
-        return;
+    assert(m_parent != nullptr && "Command::Prompt::setVisible() - Command Prompt not initialized");
+
     if (visible)
     {
         m_parent->setVisible(true);
@@ -301,29 +264,22 @@ void Command::Prompt::setVisible(bool visible)
 
 void Command::Prompt::setInputBoxFocused(bool focused)
 {
-    if (!m_parent)
-        return;
+    assert(m_parent != nullptr && "Command::Prompt::setInputBoxFocused() - Command Prompt not initialized");
+
     m_textBox->setFocused(focused);
 }
 
-void Command::Prompt::print(const tgui::String& str, bool forcePrint)
+void Command::Prompt::print(const std::string &str)
 {
-    if (m_chatBox && (m_allowPrint || forcePrint))
-        m_chatBox->addLine(str);
-}
+    assert(m_parent != nullptr && "Command::Prompt::print() - Command Prompt not initialized");
 
-bool Command::Prompt::isPrintAllowed()
-{
-    return m_allowPrint;
-}
-
-void Command::Prompt::allowPrint(bool print)
-{
-    m_allowPrint = print;
+    addLine(str);
 }
 
 void Command::Prompt::UpdateAutoFill()
 {
+    assert(m_parent != nullptr && "Command::Prompt::UpdateAutoFill() - Command Prompt not initialized");
+
     std::list<std::string> commands = Command::Handler::get().autoFillSearch(m_textBox->getText().toStdString());
     commands.sort();
     m_autoFillList->removeAllItems();
@@ -348,6 +304,8 @@ void Command::Prompt::UpdateAutoFill()
 
 void Command::Prompt::AutoFill(bool updateAutoFill)
 {
+    assert(m_parent != nullptr && "Command::Prompt::AutoFill() - Command Prompt not initialized");
+
     m_textBox->onFocus.setEnabled(false);
     m_textBox->setFocused(true);
     m_textBox->onFocus.setEnabled(true);
@@ -357,9 +315,9 @@ void Command::Prompt::AutoFill(bool updateAutoFill)
         temp.addToken("");
 
     size_t lastToken = temp.getNumTokens()-1;
-    if (temp.getToken(lastToken).starts_with('('))
+    if (temp.getToken(lastToken).starts_with("$("))
     {
-        temp.setToken(lastToken, "(" + m_autoFillList->getSelectedItem().toStdString());
+        temp.setToken(lastToken, "$(" + m_autoFillList->getSelectedItem().toStdString());
     }
     else
     {
@@ -371,4 +329,18 @@ void Command::Prompt::AutoFill(bool updateAutoFill)
     m_textBox->setText(temp.getTokensStr());
     if (updateAutoFill)
         UpdateAutoFill();
+}
+
+void Command::Prompt::addLine(const tgui::String& line)
+{
+    assert(m_parent != nullptr && "Command::Prompt::addLine() - Command Prompt not initialized");
+
+    if (m_lineContainer->getWidgets().size() > Command::Handler::get().getMaxLineHistory())
+    {
+        m_lineContainer->remove(0);
+    }
+    auto label = tgui::RichTextLabel::create(line);
+    label->getScrollbar()->setPolicy(tgui::Scrollbar::Policy::Never);
+    label->setAutoSize(true);
+    m_lineContainer->add(label);
 }

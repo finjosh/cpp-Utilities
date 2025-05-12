@@ -14,20 +14,21 @@ void CommandPromptTest::test()
     // closePrompt
     TFunc::Add([](TData* data){ if (data->getTotalTime() >= 5) Command::Prompt::setVisible(false); else data->setRunning(); });
 
-    // print which prints to the command prompt
-    Command::Prompt::print("Something was printed");
+    // TODO update this
+    // // print which prints to the command prompt
+    // Command::Prompt::print("Something was printed");
 
-    // isPrintAllowed which checks if print is functional at the moment
-    Command::Prompt::print("Is printing allowed:");
-    Command::Prompt::print(std::to_string(Command::Prompt::isPrintAllowed()));
+    // // isPrintAllowed which checks if print is functional at the moment
+    // Command::Prompt::print("Is printing allowed:");
+    // Command::Prompt::print(std::to_string(Command::Prompt::isPrintAllowed()));
 
-    // allowPrint changes if printing is allowed
-    Command::Prompt::allowPrint(false);
-    Command::Prompt::print("This will not be printed");
-    Command::Prompt::allowPrint(true);
+    // // allowPrint changes if printing is allowed
+    // Command::Prompt::allowPrint(false);
+    // Command::Prompt::print("This will not be printed");
+    // Command::Prompt::allowPrint(true);
 
-    Command::Prompt::print("To open the prompt click \"~\"");
-    Command::Prompt::print("To get a list of commands type \"help\"");
+    // Command::Prompt::print("To open the prompt click \"~\"");
+    // Command::Prompt::print("To get a list of commands type \"help\"");
 
     // everything else about the command prompt is used during runtime
     // any command that is added to the CommandHandler will but in the CommandPrompt
