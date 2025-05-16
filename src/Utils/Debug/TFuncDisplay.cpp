@@ -47,7 +47,7 @@ void TFuncDisplay::close()
     m_list = nullptr;
 }
 
-void TFuncDisplay::update()
+void TFuncDisplay::Update()
 {
     if (!m_parent->isVisible() || m_windowHandler.isMinimized(m_parent))
         return;

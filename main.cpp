@@ -126,7 +126,7 @@ int main()
         //! Updates all Terminating Functions
         TerminatingFunction::UpdateFunctions(deltaTime);
         //* Updates for the terminating functions display
-        TFuncDisplay::update();
+        TFuncDisplay::Update();
         //! ------------------------------
 
         // draw for tgui

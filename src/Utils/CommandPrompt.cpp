@@ -6,6 +6,7 @@ tgui::ChildWindow::Ptr Command::Prompt::m_parent{nullptr};
 tgui::EditBox::Ptr Command::Prompt::m_textBox{nullptr};
 tgui::ListBox::Ptr Command::Prompt::m_autoFillList{nullptr};
 tgui::GrowVerticalLayout::Ptr Command::Prompt::m_lineContainer{nullptr};
+tgui::ScrollablePanel::Ptr Command::Prompt::m_linePanel{nullptr};
 
 bool Command::Prompt::m_ignoreInputText = false;
 
@@ -45,12 +46,12 @@ void Command::Prompt::init(tgui::Container::Ptr parent)
         });
 
         // * setup for chat m_textBox
-        auto linePanel = tgui::ScrollablePanel::create();
-        m_parent->add(linePanel);
-        linePanel->getHorizontalScrollbar()->setPolicy(tgui::Scrollbar::Policy::Never);
-        linePanel->setSize({"100%", "95%"});
+        m_linePanel = tgui::ScrollablePanel::create();
+        m_parent->add(m_linePanel);
+        m_linePanel->getHorizontalScrollbar()->setPolicy(tgui::Scrollbar::Policy::Never);
+        m_linePanel->setSize({"100%", "95%"});
         m_lineContainer = tgui::GrowVerticalLayout::create();
-        linePanel->add(m_lineContainer);
+        m_linePanel->add(m_lineContainer);
         m_lineContainer->setWidth("100%");
         m_lineContainer->setFocusable(false);
 
@@ -335,6 +336,12 @@ void Command::Prompt::addLine(const tgui::String& line)
 {
     assert(m_parent != nullptr && "Command::Prompt::addLine() - Command Prompt not initialized");
 
+    bool scrollToBottom = false;
+    if (m_linePanel->getVerticalScrollbar()->getValue() == m_linePanel->getVerticalScrollbar()->getMaximum()) // TODO make this work
+    {
+        scrollToBottom = true;
+    }
+
     if (m_lineContainer->getWidgets().size() > Command::Handler::get().getMaxLineHistory())
     {
         m_lineContainer->remove(0);
@@ -343,4 +350,7 @@ void Command::Prompt::addLine(const tgui::String& line)
     label->getScrollbar()->setPolicy(tgui::Scrollbar::Policy::Never);
     label->setAutoSize(true);
     m_lineContainer->add(label);
+
+    if (scrollToBottom)
+        m_linePanel->getVerticalScrollbar()->setValue(m_linePanel->getVerticalScrollbar()->getMaximum());
 }

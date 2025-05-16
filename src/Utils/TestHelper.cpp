@@ -152,17 +152,17 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
     std::string timeFormatStr = "ns";
     switch (m_timeFormat)
     {
-    case timer::SECONDS:
+    case timer::TimeFormat::SECONDS:
         conversionFactor = 1000000000.0;
         timeFormatStr = "s";
         break;
     
-    case timer::MILLISECONDS:
+    case timer::TimeFormat::MILLISECONDS:
         conversionFactor = 1000000.0;
         timeFormatStr = "ms";
         break;
 
-    case timer::MICROSECONDS:
+    case timer::TimeFormat::MICROSECONDS:
         conversionFactor = 1000.0;
         timeFormatStr = "mus";
         break;
@@ -367,7 +367,7 @@ void TestHelper::graphData(const std::list<std::string>& files)
 
     std::list<std::string>::const_iterator currentFile = files.begin();
 
-    enum graphState 
+    enum class graphState 
     {
         Updating = 0,
         Finished = 1,

@@ -22,7 +22,7 @@
                 "${default}",
                 "${workspaceFolder}",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/../../libraries/linux/TGUI-1.8.0/include",
+                "${workspaceFolder}/../../libraries/linux/TGUI-1.9.0/include",
                 "/usr/include"
             ],
             "defines": [

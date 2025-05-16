@@ -29,6 +29,6 @@ void UpdateLimiterTest::test()
 
         // must call wait when you want the thread to wait till next update time
         limit.wait();
-        cout << timer.lap<timer::MILLISECONDS>()/1000.f << "s" << endl;
+        cout << timer.lap<timer::TimeFormat::MILLISECONDS>()/1000.f << "s" << endl;
     }
 }

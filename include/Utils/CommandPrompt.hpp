@@ -63,6 +63,7 @@ private:
     static tgui::EditBox::Ptr m_textBox;
     static tgui::ListBox::Ptr m_autoFillList;
     static tgui::GrowVerticalLayout::Ptr m_lineContainer;
+    static tgui::ScrollablePanel::Ptr m_linePanel;
 
     static bool m_ignoreInputText;
 };

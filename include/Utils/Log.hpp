@@ -23,7 +23,7 @@ TODO list:
 class Log
 {
 public:
-    enum Type : int8_t
+    enum class Type : int8_t
     {
         Error = 0,
         Debug = 1,

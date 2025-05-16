@@ -18,7 +18,7 @@
 class TestHelper
 {
 public:
-    enum FileExists
+    enum class FileExists
     {
         Replace = 0,
         DoNothing = 1, // skips the test
@@ -52,7 +52,7 @@ public:
     /// @param folderPath the folder to put the files in
     /// @param inf the value that infinity and -infinity values will be converted to (graph will break otherwise)
     /// @returns the name of the file that was made (if no file was made returns "")
-    static std::string runTest(TestHelper::FileExists fileExists = TestHelper::MakeNew, const std::string& suffix = "", std::string folderPath = "", float inf = 0);
+    static std::string runTest(TestHelper::FileExists fileExists = TestHelper::FileExists::MakeNew, const std::string& suffix = "", std::string folderPath = "", float inf = 0);
     static void setXName(const std::string& name);
     static std::string getXName();
     /// @brief opens a window that attempts to graph all .ini files in the given folder

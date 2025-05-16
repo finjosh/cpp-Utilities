@@ -9,7 +9,7 @@
 
 namespace timer {
 
-enum TimeFormat{ NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS };
+enum class TimeFormat{ NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS };
 
 class Stopwatch{
 public:

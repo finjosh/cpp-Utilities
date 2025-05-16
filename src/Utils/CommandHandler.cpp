@@ -708,7 +708,7 @@ Command::Data Command::Handler::invokeCommand(const std::string& commandStr)
         }
     }
     
-    if (m_commandHistory.front() != commandStr)
+    if (m_commandHistory.size() > 0 && m_commandHistory.front() != commandStr)
     {
         if (m_commandHistory.size() >= m_maxCommandHistory)
         {

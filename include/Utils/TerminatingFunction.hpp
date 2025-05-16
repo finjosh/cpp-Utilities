@@ -12,7 +12,7 @@
 struct TerminatingFunction 
 {
 public:
-    enum State
+    enum class State
     {
         Finished = 0,
         Running = 1

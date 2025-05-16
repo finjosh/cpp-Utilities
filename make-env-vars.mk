@@ -29,13 +29,12 @@ define general_config
 	CREATE_LIB:=SET_LATER
 
 	CPP_COMPILER_FLAGS:=-std=c++20
-	C_COMPILER_FLAGS:=-std=c11
+	C_COMPILER_FLAGS:=-std=c17
 	# any other compiler options for both C and CPP (warning flags -Wextra -Wall)
 	C_CPP_COMPILER_FLAGS:=
 	PROJECT_FINAL_FLAGS:=
 	
 	# Where the source files will be found (recursive)
-	# Assumes that header for a given source file is in the same path where "src" is replaced with "include"
 	SOURCE_DIRECTORIES:=/src
 	# Where you don't want underlying folders to be included
 	# Leave empty for no non-recursive directories
@@ -47,9 +46,9 @@ define general_config
 	GIT_LIB_PREFIX:=$$(MOUNT_POINT)/dev-env/git-projects
 	# -------------------------------------------------------------
 
-	INCLUDE_DIRECTORIES=$${LIBRARY_PREFIX}/SFML-3.0.0/include $${LIBRARY_PREFIX}/TGUI-1.8.0/include\
+	INCLUDE_DIRECTORIES=$${LIBRARY_PREFIX}/SFML-3.0.0/include $${LIBRARY_PREFIX}/TGUI-1.9.0/include\
 								$${PROJECT_DIRECTORY} $${PROJECT_DIRECTORY}/include
-	LIB_DIRECTORIES=$${LIBRARY_PREFIX}/SFML-3.0.0/lib $${LIBRARY_PREFIX}/TGUI-1.8.0/lib
+	LIB_DIRECTORIES=$${LIBRARY_PREFIX}/SFML-3.0.0/lib $${LIBRARY_PREFIX}/TGUI-1.9.0/lib
 
 	SOURCE_FILES_NO_GRAPHICS=$$(PROJECT_DIRECTORY)/src/Utils/CommandHandler.cpp $$(PROJECT_DIRECTORY)/src/Utils/EventHelper.cpp\
 							 $$(PROJECT_DIRECTORY)/src/Utils/iniParser.cpp $$(PROJECT_DIRECTORY)/src/Utils/Log.cpp\

@@ -161,6 +161,14 @@ debug:
 	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=${COMPILE_OS} BUILD_TYPE=executable BUILD_RELEASE=debug build
 release:
 	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=${COMPILE_OS} BUILD_TYPE=executable BUILD_RELEASE=release build
+libs-all:
+	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=${HOST_OS} BUILD_TYPE=library BUILD_RELEASE=debug build
+	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=${HOST_OS} BUILD_TYPE=library BUILD_RELEASE=release build
+ifeq (${HOST_OS},linux)
+	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=windows BUILD_TYPE=library BUILD_RELEASE=debug build
+	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=windows BUILD_TYPE=library BUILD_RELEASE=release build
+endif
+	$(call ECHO_COLOR,${COLOR_BLUE}Finished building all libs)
 libs: libs-r libs-d
 	$(call ECHO_COLOR,${COLOR_BLUE}Finished building libs for ${COLOR_MAGENTA}${COMPILE_OS})
 libs-r:
@@ -177,6 +185,8 @@ clean-all:
 	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=linux clean
 	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=windows clean
 	$(call ECHO_COLOR,${COLOR_BLUE}Finished cleaning all build types)
+win:
+	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=windows debug
 win-run:
 	@${MAKE} ${PRINT_DIRECTORY_CHANGES} COMPILE_OS=windows run
 win-run-r:
@@ -246,15 +256,15 @@ ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%.o:${PROJECT_DIRECTORY}%.c
 
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}%${PATH_SEPARATOR}:
 	-@${MKDIR} ${@}
-	$(call ECHO_COLOR,${COLOR_YELLOW}Created Object Directory: ${COLOR_MAGENTA}${@})
+	$(call ECHO_COLOR,${COLOR_YELLOW}Created Directory: ${COLOR_MAGENTA}${@})
 
 ${PROJECT_DIRECTORY}${OBJECT_OUT_DIRECTORY}${PATH_SEPARATOR}:
 	-@${MKDIR} ${@}
-	$(call ECHO_COLOR,${COLOR_YELLOW}Created Object Directory: ${COLOR_MAGENTA}${@})
+	$(call ECHO_COLOR,${COLOR_YELLOW}Created Directory: ${COLOR_MAGENTA}${@})
 
 ${PROJECT_DIRECTORY}${PROJECT_OUT_DIRECTORY}${PATH_SEPARATOR}:
 	-@${MKDIR} ${@}
-	$(call ECHO_COLOR,${COLOR_YELLOW}Created Project Directory: ${COLOR_MAGENTA}${@})
+	$(call ECHO_COLOR,${COLOR_YELLOW}Created Directory: ${COLOR_MAGENTA}${@})
 
 clean-project: clean-project-objects clean-project-files
 	$(call ECHO_COLOR,${COLOR_CYAN}Finished Cleaning for ${COLOR_MAGENTA}${COMPILE_OS}${COMMA} ${BUILD_TYPE}${COMMA} ${BUILD_RELEASE})

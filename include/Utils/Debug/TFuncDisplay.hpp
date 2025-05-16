@@ -28,7 +28,7 @@ public:
     static void close();
 
     /// @brief Call this every frame to update the terminating functions being shown
-    static void update();
+    static void Update();
 
     /// @brief closes and opens the window
     static void setVisible(bool visible = true);
