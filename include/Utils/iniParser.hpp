@@ -64,6 +64,7 @@ public:
     {
         bool key = false;
         bool section = false;
+        bool duplicateSections = false;
     };
 
     /// @brief creates the 'iniParser' with a 'null' file path not opening any file
@@ -92,11 +93,13 @@ public:
     void overrideData();
 
     /// @brief loads the 'KeyName' and the value it has into a 'Dictionary' (map)
+    /// @param ignoreDuplicateSections whether the duplicate section should be kept and renamed or just removed/ignored
     /// @exception if the file had no properly formatted data returns false
     /// @exception any faulty formatted data is erased
+    /// @exception if there are two sections with the same name there will be numbers appended to the section name if ignoreDuplicateSections=false e.g. section, section(1), section(2), section(3), ect.
     /// @warning if any data was loaded before it will be unloaded
-    /// @returns if data was loaded (NOT if there was a format error)
-    bool loadData();
+    /// @returns if data was loaded (not if there was a format error)
+    bool loadData(bool ignoreDuplicateSections = true);
 
     /// @brief counts as loading data and will override any data in the opened file
     /// @returns false if there is no file open 
@@ -107,19 +110,15 @@ public:
     /// @note does not close the file
     void unloadData();
 
+    /// @brief errors entail key errors, section errors, and duplicate sections
+    /// @warning data could be lost with key and section errors
+    /// @note duplicate sections do not lose data but create an extra section
     /// @returns a struct storing the current format errors states
     const FormatErrors getFormatErrors() const;
-    /// @note if there was no data in the file then there was no format error
-    /// @returns true for a format error
-    bool isFormatError() const;
-    /// @return true if error
-    bool isKeyFormatError() const;
-    /// @return true if error
-    bool isSectionFormatError() const;
-    void clearKeyError();
-    void clearSectionError();
     /// @brief erases the errors from loading data
     void clearFormatErrors();
+    /// @returns true if there are any format errors
+    bool isFormatError() const;
 
     /// @brief creates a copy of the current file with a Error suffix on the name (Writes a log error)
     /// @note Does not edit the loaded data
@@ -128,7 +127,7 @@ public:
     void createCopyError(const std::string path = "");
 
     /// @brief the entire map holding all the loaded data data is stored as follows std::map<"SectionName", std::map<"KeyName", "KeyValue">>
-    /// @warning DO NOT EDIT GIVEN DATA
+    /// @warning dont edit given data
     const std::map<std::string, SectionData>& getLoadedData() const;
 
     /// @exception if the data is not loaded then returns nullptr
@@ -173,61 +172,6 @@ public:
     bool removeValue(const std::string& section, const std::string& key);
     /// @returns true if the key value pair was found and removed
     bool removeValue(const std::pair<std::string, std::string>& sectionKeyPair);
-
-    // /// @deprecated
-    // /// @warning if the data was never loaded then it will return "\0\0\0"
-    // /// @returns the keyValue as a String OR a string containing "\0\0" if there was no keyName found and "\0" for no sectionName found
-    // [[deprecated]] std::string getValue(const std::string& SectionName, const std::string& keyName) const;
-    // /// @deprecated
-    // /// @param Section_Key_Name the pair is in order of SectionName then KeyName
-    // /// @warning if the data was never loaded then it will return "\0\0\0"
-    // /// @returns the keyValue as a String OR a string containing "\0\0" if there was no keyName found and "\0" for no sectionName found
-    // [[deprecated]] std::string getValue(const std::pair<std::string, std::string>& Section_Key_Name) const;
-    // /// @deprecated
-    // /// @brief sets the given value if possible
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @returns false if the value was not set meaning that there was either no sectionName of keyName
-    // [[deprecated]] bool setValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue);
-    // /// @deprecated
-    // /// @param Section_Key_Name the pair is in order of SectionName then KeyName
-    // /// @brief sets the given value if possible
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @returns false if the value was not set meaning that there was either no sectionName of keyName
-    // [[deprecated]] bool setValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue);
-    // /// @deprecated
-    // /// @brief adds a value to the loadedData and will be added to the ini file at next save
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @note adds the SectionName if there is not already one
-    // /// @returns false if the inputted SectionName and KeyName already exist
-    // [[deprecated]] bool addValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue);
-    // /// @deprecated
-    // /// @param Section_Key_Name the pair is in order of SectionName then KeyName
-    // /// @brief adds a value to the loadedData and will be added to the ini file at next save
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @note adds the SectionName if there is not already one
-    // /// @returns false if the inputted SectionName and KeyName already exist
-    // [[deprecated]] bool addValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue);
-    // /// @deprecated
-    // /// @brief removes a value from the loadedData and will be removed from the ini file at next save
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @returns false if the value was not found
-    // [[deprecated]] bool removeValue(const std::string& SectionName, const std::string& keyName);
-    // /// @deprecated
-    // /// @param Section_Key_Name the pair is in order of SectionName then KeyName
-    // /// @brief removes a value from the loadedData and will be removed from the ini file at next save
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @returns false if the value was not found
-    // [[deprecated]] bool removeValue(const std::pair<std::string, std::string>& Section_Key_Name);
-    // /// @deprecated
-    // /// @brief adds a section to the loadedData and will be added to the ini file at next save
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @returns false if the inputted SectionName already exists
-    // [[deprecated]] bool addSection(const std::string& SectionName);
-    // /// @deprecated
-    // /// @brief removes a section and all of its keyValues from the loadedData and will be removed from the ini file at next save
-    // /// @exception if the data was not loaded then it will always return false and does nothing
-    // /// @returns false if the inputted SectionName was not found
-    // [[deprecated]] bool removeSection(const std::string& SectionName);
 
     /// @brief AutoSave[Default] = true;
     /// @param AutoSave false then the data will not be saved when closing the file or when destroying this obj

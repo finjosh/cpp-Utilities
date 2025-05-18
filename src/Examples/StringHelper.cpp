@@ -1,13 +1,20 @@
 #include "include/Examples/StringHelper.hpp"
 
+#include <cassert>
+
 template <typename T>
-void printList(std::list<T> list)
+void printList(const std::list<T>& list)
 {
-    for (auto i: list)
+    std::cout << '[';
+    size_t i = 0;
+    for (auto& elem : list)
     {
-        std::cout << std::to_string(i) << ",";
+        std::cout << "\'" << elem << "\'";
+        if (i < list.size()-1)
+            std::cout << ",";
+        i++;
     }
-    std::cout << "\n";
+    std::cout << ']';
 }
 
 void StringHelperTest::test()
@@ -19,16 +26,61 @@ void StringHelperTest::test()
     //      trim, toLower, toInt, toUInt, toULong, toFloat, toLongDouble, toBool, FloatToStringRound
     // the rest of the functions serve the same functionality 
 
-    printList<float>(StringHelper::toList<float>("[7,6,5]", StringHelper::toFloat));
-    printList<float>(StringHelper::toList<float>("7,6,5]", StringHelper::toFloat));
-    printList<float>(StringHelper::toList<float>("7,6,5", StringHelper::toFloat));
-    printList<float>(StringHelper::toList<float>("[7 ,6,5] ", StringHelper::toFloat));
-    printList<float>(StringHelper::toList<float>("[7,6 , 5,4,34,5,6,645,45,45,45,645,45,64,56,,456,4,56,45,6456, ]", StringHelper::toFloat));
-    printList<float>(StringHelper::toList<float>(StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}), StringHelper::toFloat));
+    //* testing non-ending quote
+    std::cout << "--- LIST FUNCTIONS ---" << std::endl;
+    #define ASSERT_PRINT_LIST(GOT, EXPECTED) \
+        std::cout << "Got: "; \
+        printList(GOT); \
+        std::cout << " Expected: "; \
+        printList(EXPECTED); \
+        std::cout << std::endl; \
+        assert(GOT == EXPECTED);
+
+    ASSERT_PRINT_LIST(StringHelper::toList("['7,6,5]", '\''), std::list<std::string>({"7,6,5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("['7','6,5]", '\''), std::list<std::string>({"7","6,5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("['7','6','5]", '\''), std::list<std::string>({"7","6","5"}));
+    
+    ASSERT_PRINT_LIST(StringHelper::toList("7,6,5", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("'7,6,5", '\''), std::list<std::string>({"7,6,5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("'7','6,5", '\''), std::list<std::string>({"7","6,5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("'7','6','5", '\''), std::list<std::string>({"7","6","5"}));
+
+    ASSERT_PRINT_LIST(StringHelper::toList("'7',6,5", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("7,'6',5", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("7,6,'5'", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("'7',6,'5'", '\''), std::list<std::string>({"7","6","5"}));
+
+    ASSERT_PRINT_LIST(StringHelper::toList("['7',6,5]", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("[7,'6',5]", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("[7,6,'5']", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("['7',6,'5']", '\''), std::list<std::string>({"7","6","5"}));
+
+    ASSERT_PRINT_LIST(StringHelper::toList("['7',6,5", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("[7,'6',5", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("[7,6,'5'", '\''), std::list<std::string>({"7","6","5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("['7',6,'5'", '\''), std::list<std::string>({"7","6","5"}));
+
+    ASSERT_PRINT_LIST(StringHelper::toList("['7,6,5", '\''), std::list<std::string>({"7,6,5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("['7','6,5", '\''), std::list<std::string>({"7","6,5"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("['7','6','5", '\''), std::list<std::string>({"7","6","5"}));
+
+    ASSERT_PRINT_LIST(StringHelper::toList("[7]", '\''), std::list<std::string>({"7"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("[7", '\''), std::list<std::string>({"7"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("7]", '\''), std::list<std::string>({"7"}));
+    ASSERT_PRINT_LIST(StringHelper::toList("7", '\''), std::list<std::string>({"7"}));
+
+    #undef ASSERT_PRINT_LIST
+    
+    printList<float>(StringHelper::toList<float>("[7,6,5]", &StringHelper::toFloat)); std::cout << std::endl;
+    printList<float>(StringHelper::toList<float>("7,6,5]", &StringHelper::toFloat)); std::cout << std::endl;
+    printList<float>(StringHelper::toList<float>("7,6,5", &StringHelper::toFloat)); std::cout << std::endl;
+    printList<float>(StringHelper::toList<float>("[7 ,6,5] ", &StringHelper::toFloat)); std::cout << std::endl;
+    printList<float>(StringHelper::toList<float>("[7,6 , 5,4,34,5,6,645,45,45,45,645,45,64,56,,456,4,56,45,6456, ]", &StringHelper::toFloat)); std::cout << std::endl;
+    printList<float>(StringHelper::toList<float>(StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}), &StringHelper::toFloat)); std::cout << std::endl;
     std::list<float> tempList = {7,6,5,34,4,5,67,7,4,3,4,5,76};
-    printList<float>(StringHelper::toList<float>(StringHelper::fromContainer<std::list<float>::iterator>(tempList.begin(), tempList.end()), StringHelper::toFloat));
+    printList<float>(StringHelper::toList<float>(StringHelper::fromContainer<std::list<float>::iterator>(tempList.begin(), tempList.end()), &StringHelper::toFloat)); std::cout << std::endl;
     std::vector<float> tempVector = {7,6,5,34,4,5,67,7,4,3,4,5,76};
-    for (auto i: StringHelper::toVector<float>(StringHelper::fromContainer<std::vector<float>::iterator>(tempVector.begin(), tempVector.end()), StringHelper::toFloat))
+    for (auto i: StringHelper::toVector<float>(StringHelper::fromContainer<std::vector<float>::iterator>(tempVector.begin(), tempVector.end()), &StringHelper::toFloat))
     {
         std::cout << std::to_string(i) << ",";
     }
@@ -36,7 +88,10 @@ void StringHelperTest::test()
 
     cout << StringHelper::fromList<float>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl;
     cout << StringHelper::fromList({"7","6","5","34","4","5","67","7","4","3","4","5","76"}) << endl;
+    cout << StringHelper::fromList({"7","6","5","34","4","5","67","7","4","3","4","5","76"}, '\'') << endl;
     cout << StringHelper::fromList<int>({7,6,5,34,4,5,67,7,4,3,4,5,76}) << endl; 
+
+    std::cout << "--- END LIST FUNCTIONS ---" << std::endl;
 
     // for example trim and trim_copy
     std::string str = "      a string that needs to be trimmed          ";

@@ -206,7 +206,6 @@ std::vector<std::string> StringHelper::tokenize(const std::string& str, char del
     return tokens;
 }
 
-
 std::string StringHelper::fromVector(const std::vector<std::string>& vector, char quotation)
 {
     std::string rtn = "[";
@@ -222,27 +221,47 @@ std::string StringHelper::fromVector(const std::vector<std::string>& vector, cha
 std::vector<std::string> StringHelper::toVector(const std::string& str, char quotation)
 {
     std::vector<std::string> rtn;
-    size_t pos = str.find_first_of('[');
-    size_t last = str.find_last_not_of(whitespaceDelimiters)+1;
-    if (pos != std::string::npos) 
-        pos++;
+    size_t curPos = str.find_first_of('[');
+    size_t last = str.find_last_not_of(whitespaceDelimiters)+1; // last index of useful chars
+    if (curPos != std::string::npos) 
+        curPos++;
     else
-        pos = 0;
-    while (pos < last)
+        curPos = 0;
+    
+    while (curPos < last)
     {
-        size_t start = str.find_first_of(quotation, pos);
-        size_t nextPos = str.find_first_of(',', pos); // finding first comma
-        size_t end = str.find_last_of(quotation, nextPos); // finding "first" comma before ","
-
-        if (end == std::string::npos || nextPos == std::string::npos || end <= start) 
+        size_t nextComma = str.find_first_of(',', curPos);
+        size_t start = str.find_first_of(quotation, curPos);
+        size_t end = start;
+        if (start < nextComma)
         {
-            nextPos = str.find_first_of(']', pos);
-            if (nextPos == std::string::npos) 
-                nextPos = last;
-            end = nextPos;
+            start++;
+            end = str.find_first_of(quotation, end+1);
+
+            // we found the ending quote so find nextComma outside of quotes
+            nextComma = str.find_first_of(',', end);
+            if (end != std::string::npos && nextComma == std::string::npos)
+            {
+                nextComma = last;
+            }
         }
+        else
+        {
+            start = curPos;
+            end = nextComma;
+        }
+
+        if (end == std::string::npos || nextComma == std::string::npos)
+        {
+            nextComma = str.find_last_of(']', last-1);
+            if (nextComma == std::string::npos) 
+                nextComma = last;
+            
+            end = nextComma;
+        }
+        start = start > last-1 ? last-1 : start;
         std::string temp = str.substr(start,end-start); // getting string between quotes
-        pos = nextPos+1;
+        curPos = nextComma + 1;
         trim(temp);
         rtn.emplace_back(temp);
     }
@@ -252,28 +271,47 @@ std::vector<std::string> StringHelper::toVector(const std::string& str, char quo
 std::list<std::string> StringHelper::toList(const std::string& str, char quotation)
 {
     std::list<std::string> rtn;
-    size_t pos = str.find_first_of('[');
-    size_t last = str.find_last_not_of(whitespaceDelimiters)+1;
-    if (pos != std::string::npos) 
-        pos++;
+    size_t curPos = str.find_first_of('[');
+    size_t last = str.find_last_not_of(whitespaceDelimiters)+1; // last index of useful chars
+    if (curPos != std::string::npos) 
+        curPos++;
     else
-        pos = 0;
-    while (pos < last)
+        curPos = 0;
+    
+    while (curPos < last)
     {
-        size_t start = str.find_first_of(quotation, pos);
-        size_t nextPos = str.find_first_of(',', pos); // finding first comma
-        size_t end = str.find_last_of(quotation, nextPos); // finding "first" comma before ","
-
-        if (end == std::string::npos || nextPos == std::string::npos || end <= start) 
+        size_t nextComma = str.find_first_of(',', curPos);
+        size_t start = str.find_first_of(quotation, curPos);
+        size_t end = start;
+        if (start < nextComma)
         {
-            nextPos = str.find_first_of(']', pos);
-            if (nextPos == std::string::npos) 
-                nextPos = last;
+            start++;
+            end = str.find_first_of(quotation, end+1);
 
-            end = nextPos;
+            // we found the ending quote so find nextComma outside of quotes
+            nextComma = str.find_first_of(',', end);
+            if (end != std::string::npos && nextComma == std::string::npos)
+            {
+                nextComma = last;
+            }
         }
+        else
+        {
+            start = curPos;
+            end = nextComma;
+        }
+
+        if (end == std::string::npos || nextComma == std::string::npos)
+        {
+            nextComma = str.find_last_of(']', last-1);
+            if (nextComma == std::string::npos) 
+                nextComma = last;
+            
+            end = nextComma;
+        }
+        start = start > last-1 ? last-1 : start;
         std::string temp = str.substr(start,end-start); // getting string between quotes
-        pos = nextPos+1;
+        curPos = nextComma + 1;
         trim(temp);
         rtn.emplace_back(temp);
     }

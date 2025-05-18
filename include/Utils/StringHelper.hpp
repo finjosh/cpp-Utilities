@@ -99,24 +99,25 @@ public:
     static inline std::list<T> toList(const std::string& str, const ConvertFunc& convFunc = &StringHelper::toFloat, T defaultValue = 0)
     {
         std::list<T> rtn;
-        size_t pos = str.find_first_of('[');
-        size_t last = str.find_last_not_of(whitespaceDelimiters)+1;
-        if (pos != std::string::npos) 
-            pos++;
+        size_t curPos = str.find_first_of('[');
+        size_t last = str.find_last_not_of(whitespaceDelimiters)+1; // last index of useful chars
+        if (curPos != std::string::npos) 
+            curPos++;
         else
-            pos = 0;
-        while (pos < last)
+            curPos = 0;
+        
+        while (curPos < last)
         {
-            size_t nextPos = str.find_first_of(',', pos); // finding first comma
+            size_t nextComma = str.find_first_of(',', curPos);
 
-            if (nextPos == std::string::npos) 
+            if (nextComma == std::string::npos)
             {
-                nextPos = str.find_first_of(']', pos);
-                if (nextPos == std::string::npos) 
-                    nextPos = last;
+                nextComma = str.find_last_of(']', last-1);
+                if (nextComma == std::string::npos) 
+                    nextComma = last;
             }
-            std::string temp = str.substr(pos,nextPos-pos); // getting string between quotes
-            pos = nextPos+1;
+            std::string temp = str.substr(curPos,nextComma-curPos); // getting string between quotes
+            curPos = nextComma + 1;
             trim(temp);
             rtn.emplace_back(convFunc(temp, defaultValue));
         }
@@ -153,25 +154,26 @@ public:
     template <typename T = float, typename ConvertFunc = T(const std::string&, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::vector<T> toVector(const std::string& str, const ConvertFunc& convFunc = StringHelper::toFloat, T defaultValue = 0)
     {
-        std::vector<T> rtn;
-        size_t pos = str.find_first_of('[');
-        size_t last = str.find_last_not_of(whitespaceDelimiters)+1;
-        if (pos != std::string::npos) 
-            pos++;
+        std::vector<T> rtn = {};
+        size_t curPos = str.find_first_of('[');
+        size_t last = str.find_last_not_of(whitespaceDelimiters)+1; // last index of useful chars
+        if (curPos != std::string::npos) 
+            curPos++;
         else
-            pos = 0;
-        while (pos < last)
+            curPos = 0;
+        
+        while (curPos < last)
         {
-            size_t nextPos = str.find_first_of(',', pos); // finding first comma
+            size_t nextComma = str.find_first_of(',', curPos);
 
-            if (nextPos == std::string::npos) 
+            if (nextComma == std::string::npos)
             {
-                nextPos = str.find_first_of(']', pos);
-                if (nextPos == std::string::npos) 
-                    nextPos = last;
+                nextComma = str.find_last_of(']', last-1);
+                if (nextComma == std::string::npos) 
+                    nextComma = last;
             }
-            std::string temp = str.substr(pos,nextPos-pos); // getting string between quotes
-            pos = nextPos+1;
+            std::string temp = str.substr(curPos,nextComma-curPos); // getting string between quotes
+            curPos = nextComma + 1;
             trim(temp);
             rtn.emplace_back(convFunc(temp, defaultValue));
         }
@@ -236,16 +238,19 @@ public:
         return rtn;
     }
 
-    /// @note assumes quotations `"` around the string for each element
+    /// @note adds quotations `"` around the string for each element
     /// @param quotation the type of quotation to use
     static std::string fromVector(const std::vector<std::string>& vector, char quotation = '"');
-    /// @note adds quotations `"` around the string for each element
+    /// @note assumes quotations `"` around the string for each element
     /// @param quotation the type of quotation to use
     static std::vector<std::string> toVector(const std::string& str, char quotation = '"');
-    /// @note adds quotations `"` around the string for each element
+    /// @note if an element has quotes around it they will be removed and any commas in the quotes will be ignored
+    /// @note each element must have quotations around its value or else it will be registered as one value
+    /// @note "[]" are optional
+    /// @note each element in quotes must be separated via a comma ','
     /// @param quotation the type of quotation to use
     static std::list<std::string> toList(const std::string& str, char quotation = '"');
-    /// @note assumes quotations `"` around the string for each element
+    /// @note adds quotations `"` around the string for each element
     /// @param quotation the type of quotation to use
     static std::string fromList(const std::list<std::string>& list, char quotation = '"');
     /// @note assumes quotations `"` around the string for each element

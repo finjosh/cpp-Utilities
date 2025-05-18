@@ -30,7 +30,7 @@ int main()
     // funcHelperTest::test();
     // EventHelperTest::test();
     // StopwatchTest::test();
-    // StringHelperTest::test();
+    StringHelperTest::test();
     // UpdateLimiterTest::test();
     // LogTest::test();
     // iniParserTest::test();

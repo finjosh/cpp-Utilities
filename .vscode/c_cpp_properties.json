@@ -6,7 +6,7 @@
                 "${default}",
                 "${workspaceFolder}",
                 "${workspaceFolder}/include",
-                "${workspaceFolder}/../../libraries/windows/TGUI-1.7/include",
+                "${workspaceFolder}/../../libraries/windows/TGUI-1.9.0/include",
                 "${workspaceFolder}/../../libraries/windows/SFML-3.0.0/include"
             ],
             "defines": [

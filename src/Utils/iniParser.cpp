@@ -134,7 +134,7 @@ bool iniParser::isDataLoaded() const
 void iniParser::overrideData()
 { this->m_DataWasLoaded = true; }
 
-bool iniParser::loadData()
+bool iniParser::loadData(bool ignoreDuplicateSections)
 {
     // clearing any old data
     this->unloadData();
@@ -201,7 +201,21 @@ bool iniParser::loadData()
     }
 
     // adding the map into the data map if the section that was being made had not been added yet
-    if (currentSectionName != "") this->m_loadedData.insert({currentSectionName, currentSectionData});
+    if (currentSectionName != "") 
+    {
+        std::string temp = currentSectionName;
+        if (!ignoreDuplicateSections)
+        {
+            int i = 0;
+            while (m_loadedData.find(temp) != m_loadedData.end())
+            {
+                temp = currentSectionName + '(' + std::to_string(++i) + ')';
+                m_loadedDataErrors.duplicateSections = true;
+            }
+        }
+        
+        this->m_loadedData.emplace(temp, currentSectionData);
+    }
 
     if (this->m_loadedData.size() == 0) 
     {
@@ -228,42 +242,25 @@ void iniParser::unloadData()
     if (this->m_DataWasLoaded && this->m_AutoSave) this->save();
     this->m_DataWasLoaded = false;
     this->m_loadedData.clear();
-}
-
-bool iniParser::isFormatError() const
-{
-    return (m_loadedDataErrors.key || m_loadedDataErrors.section);
+    this->clearFormatErrors();
 }
 
 void iniParser::clearFormatErrors()
 {
     m_loadedDataErrors.section = false;
     m_loadedDataErrors.key = false;
+    m_loadedDataErrors.duplicateSections = false;
+}
+
+bool iniParser::isFormatError() const
+{
+    return m_loadedDataErrors.duplicateSections || m_loadedDataErrors.key ||
+           m_loadedDataErrors.section;
 }
 
 const iniParser::FormatErrors iniParser::getFormatErrors() const
 {
     return m_loadedDataErrors;
-}
-
-bool iniParser::isKeyFormatError() const
-{
-    return m_loadedDataErrors.key;
-}
-
-bool iniParser::isSectionFormatError() const
-{
-    return m_loadedDataErrors.section;
-}   
-
-void iniParser::clearKeyError()
-{
-    m_loadedDataErrors.key = false;
-}
-
-void iniParser::clearSectionError()
-{
-    m_loadedDataErrors.section = false;
 }
 
 void iniParser::createCopyError(const std::string path)
@@ -446,113 +443,6 @@ bool iniParser::removeValue(const std::pair<std::string, std::string>& sectionKe
 
     return sectionIter->remove(sectionKeyPair.second);
 }
-
-// std::string iniParser::getValue(const std::string& SectionName, const std::string& keyName) const
-// {
-//     if (!this->m_DataWasLoaded) return "\0\0\0";
-
-//     auto section = this->m_loadedData.find(SectionName);
-//     if (section == this->m_loadedData.end())
-//         return "\0";
-
-//     const std::string* key = section->second.find(keyName);
-//     if (key == nullptr)
-//         return "\0\0";
-
-//     return *key;
-// }
-
-// std::string iniParser::getValue(const std::pair<std::string, std::string>& Section_Key_Name) const
-// { return this->getValue(Section_Key_Name.first, Section_Key_Name.second); }
-
-// bool iniParser::setValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
-// {
-//     if (!this->m_DataWasLoaded) return false;
-    
-//     auto section = this->m_loadedData.find(SectionName);
-//     if (section == this->m_loadedData.end())
-//         return false;
-
-//     auto key = section->second.get(keyName);
-//     if (key == nullptr)
-//         return false;
-
-//     key = keyValue;
-//     return true;
-// }
-
-// bool iniParser::setValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
-// { return this->setValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
-
-// bool iniParser::addValue(const std::string& SectionName, const std::string& keyName, const std::string& keyValue)
-// {
-//     if (!this->m_DataWasLoaded) return false;
-    
-//     auto section = this->m_loadedData.find(SectionName);
-//     if (section == this->m_loadedData.end())
-//     {
-//         this->m_loadedData.insert({SectionName, std::map<std::string, std::string>()});
-//         this->m_loadedData.find(SectionName)->second.insert({keyName, keyValue});
-//         return true;
-//     }
-
-//     auto key = section->second.find(keyName);
-//     if (key == section->second.end())
-//     {
-//         section->second.insert({keyName, keyValue});
-//         return true;
-//     }
-
-//     return false;
-// }
-
-// bool iniParser::addValue(const std::pair<std::string, std::string>& Section_Key_Name, const std::string& keyValue)
-// { return this->addValue(Section_Key_Name.first, Section_Key_Name.second, keyValue); }
-
-// bool iniParser::removeValue(const std::string& SectionName, const std::string& keyName)
-// {
-//     if (!this->m_DataWasLoaded) return false;
-    
-//     auto section = this->m_loadedData.find(SectionName);
-//     if (section == this->m_loadedData.end())
-//         return false;
-
-//     auto key = section->second.find(keyName);
-//     if (key == section->second.end())
-//         return false;
-
-//     section->second.erase(key);
-//     return true;
-// }
-
-// bool iniParser::removeValue(const std::pair<std::string, std::string>& Section_Key_Name)
-// { return this->removeValue(Section_Key_Name.first, Section_Key_Name.second); }
-
-// bool iniParser::addSection(const std::string& SectionName)
-// {
-//     if (!this->m_DataWasLoaded) return false;
-    
-//     auto section = this->m_loadedData.find(SectionName);
-//     if (section == this->m_loadedData.end())
-//     {
-//         this->m_loadedData.insert({SectionName, std::map<std::string, std::string>()});
-//         return true;
-//     }
-
-//     return false;
-// }
-
-// bool iniParser::removeSection(const std::string& SectionName)
-// {
-//     if (!this->m_DataWasLoaded) return false;
-    
-//     auto section = this->m_loadedData.find(SectionName);
-//     if (section == this->m_loadedData.end())
-//         return false;
-
-//     this->m_loadedData.erase(section);
-//     return true;
-// }
 
 void iniParser::setAutoSave(bool AutoSave)
 { this->m_AutoSave = AutoSave; }
