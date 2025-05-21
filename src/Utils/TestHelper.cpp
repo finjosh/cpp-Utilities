@@ -277,15 +277,16 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
         data.createFile(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
         data.setFile(folderPath + m_name + "Test (" + std::to_string(temp) + ")" + suffix + ".ini");
     }
-    data.overrideData();
-    data.setValue("General", "XLabel", m_xName);
-    data.setValue("General", "YLabel", "Time (" + timeFormatStr + ")");
-    data.setValue("General", "Average Test Time", std::to_string(totalTime/m_repetitions));
-    data.setValue(m_name, "Values", StringHelper::fromVector<float>(m_yData));
+    iniParser::SectionData generalSection;
+    generalSection.setValue("XLabel", m_xName);
+    generalSection.setValue("YLabel", "Time (" + timeFormatStr + ")");
+    generalSection.setValue("Average Test Time", std::to_string(totalTime/m_repetitions));
+    data.insertSection(m_name).first.setValue("Values", StringHelper::fromVector<float>(m_yData));
     std::vector<size_t> xValues;
     xValues.resize(m_iterations);
     std::iota(xValues.begin(), xValues.end(), m_startingValue);
-    data.setValue("General", "X", StringHelper::fromVector<size_t>(xValues));
+    generalSection.setValue("X", StringHelper::fromVector<size_t>(xValues));
+    data.setSection("General", generalSection);
     data.save();
     return data.getFilePath(); // path is just the file name in this case
 }
@@ -402,7 +403,7 @@ void TestHelper::graphData(const std::list<std::string>& files)
         });
         graphThread = new std::thread([&graph, &state, path, id, filesBox, Next, Last](){ 
             iniParser temp(path);
-            if (temp.loadData() && makeGraph(graph, temp)) 
+            if (temp.parseData() && makeGraph(graph, temp)) 
                 state = graphState::Finished; 
             else 
                 state = graphState::Failed; 
@@ -494,28 +495,28 @@ void TestHelper::graphData(const std::list<std::string>& files)
 
 bool TestHelper::makeGraph(Graph& graph, const iniParser& data, float thickness)
 {
-    if (data.getValue("General", "X") == nullptr)
+    if (data.getSection("General")->getValue("X") == nullptr)
         return false;
 
     graph.clearDataSets();
-    if (auto xLabel = data.getValue("General", "XLabel"))
+    if (auto xLabel = data.getSection("General")->getValue("XLabel"))
         graph.setXLable(*xLabel);
     else
         graph.setXLable("Unable to Parse");
-    if (auto yLabel = data.getValue("General", "YLabel"))
+    if (auto yLabel = data.getSection("General")->getValue("YLabel"))
         graph.setYLable(*yLabel);
     else    
         graph.setYLable("Unable to Parse");
 
     GraphData graphData;
-    if (auto xValues = data.getValue("General", "X"))
+    if (auto xValues = data.getSection("General")->getValue("X"))
         graphData.setXValues(StringHelper::toVector<float>(*xValues));
     
-    for (auto i: data.getLoadedData())
+    for (auto i: data.getData())
     {
         if (i.first == "General")
             continue;
-        if (auto yValues = data.getValue(i.first, "Values"))
+        if (auto yValues = data.getSection(i.first)->getValue("Values"))
         graphData.setYValues(StringHelper::toVector<float>(*yValues));
         graphData.setLabel(i.first);
 

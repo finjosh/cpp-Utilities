@@ -33,7 +33,7 @@ int main()
     StringHelperTest::test();
     // UpdateLimiterTest::test();
     // LogTest::test();
-    // iniParserTest::test();
+    iniParserTest::test();
     // TerminatingFunctionTest::test(); 
     // // live var test is put after the VarDisplay is initalized so the vars will be in the display
     VarDisplayTest::test();
