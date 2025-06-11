@@ -99,9 +99,33 @@ public:
     }
 
     /// @brief Disconnect a function from this event
-    /// @param id  Unique id of the connection returned by the connect function
+    /// @param id  Unique id of the callback returned by the connect function
     /// @return True when a connection with this id existed and was removed
     bool disconnect(size_t id);
+
+    /// @brief changes the callback with the given id
+    /// @param id Unique id of the callback returned by the connect function
+    /// @return True if callback was found and changed
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr>
+    bool setCallback(size_t id, const Func& func, const BoundArgs&... args)
+    {
+        auto callback = m_callbacks.find(id);
+        if (callback != m_callbacks.end())
+        {
+            if constexpr(sizeof...(BoundArgs) == 0)
+                callback->second = func;
+            else
+            {
+                callback->second = [=]{ 
+                    invokeFunc(func, args...); 
+                };
+            } 
+
+            return true;
+        }
+
+        return false;
+    }
 
     /// @brief Disconnect all public function from this event
     /// @note previous ids are now invalid
@@ -216,6 +240,24 @@ protected:
     size_t connectPrivate(const Func& func, const BoundArgs&... args) \
     { \
         return Event::connectPrivate(func, args...); \
+    } \
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&...)>>::value>* = nullptr> \
+    bool setCallback(size_t id, const Func& func, const BoundArgs&... args) \
+    { \
+        auto callback = m_callbacks.find(id); \
+        if (callback != m_callbacks.end()) \
+        { \
+            if constexpr(sizeof...(BoundArgs) == 0) \
+                callback->second = func; \
+            else \
+            { \
+                callback->second = [=]{  \
+                    invokeFunc(func, args...);  \
+                }; \
+            }  \
+            return true; \
+        } \
+        return false; \
     }
 
 #define CONNECT_ONE_PARAM() \
@@ -228,6 +270,19 @@ protected:
     size_t connectPrivate(const Func& func, const BoundArgs&... args) \
     { \
         return Event::connectPrivate([=]{ invokeFunc(func, args..., dereferenceParam<T>(0)); }); \
+    } \
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T)>>::value>* = nullptr> \
+    bool setCallback(size_t id, const Func& func, const BoundArgs&... args) \
+    { \
+        auto callback = m_callbacks.find(id); \
+        if (callback != m_callbacks.end()) \
+        { \
+            callback->second = [=]{  \
+                invokeFunc(func, args..., dereferenceParam<T>(0));  \
+            }; \
+            return true; \
+        } \
+        return false; \
     }
 
 #define CONNECT_TWO_PARAMS() \
@@ -240,6 +295,19 @@ protected:
     size_t connectPrivate(const Func& func, const BoundArgs&... args) \
     { \
         return Event::connectPrivate([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1)); }); \
+    } \
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2)>>::value>* = nullptr> \
+    bool setCallback(size_t id, const Func& func, const BoundArgs&... args) \
+    { \
+        auto callback = m_callbacks.find(id); \
+        if (callback != m_callbacks.end()) \
+        { \
+            callback->second = [=]{  \
+                invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1));  \
+            }; \
+            return true; \
+        } \
+        return false; \
     }
 
 #define CONNECT_THREE_PARAMS() \
@@ -252,6 +320,19 @@ protected:
     size_t connectPrivate(const Func& func, const BoundArgs&... args) \
     { \
         return Event::connectPrivate([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2)); }); \
+    } \
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3)>>::value>* = nullptr> \
+    bool setCallback(size_t id, const Func& func, const BoundArgs&... args) \
+    { \
+        auto callback = m_callbacks.find(id); \
+        if (callback != m_callbacks.end()) \
+        { \
+            callback->second = [=]{  \
+                invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2));  \
+            }; \
+            return true; \
+        } \
+        return false; \
     }
 
 #define CONNECT_FOUR_PARAMS() \
@@ -264,6 +345,19 @@ protected:
     size_t connectPrivate(const Func& func, const BoundArgs&... args) \
     { \
         return Event::connectPrivate([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3)); }); \
+    } \
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4)>>::value>* = nullptr> \
+    bool setCallback(size_t id, const Func& func, const BoundArgs&... args) \
+    { \
+        auto callback = m_callbacks.find(id); \
+        if (callback != m_callbacks.end()) \
+        { \
+            callback->second = [=]{  \
+                invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3));  \
+            }; \
+            return true; \
+        } \
+        return false; \
     }
 
 #define CONNECT_FIVE_PARAMS() \
@@ -276,6 +370,19 @@ protected:
     size_t connectPrivate(const Func& func, const BoundArgs&... args) \
     { \
         return Event::connectPrivate([=]{ invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3), dereferenceParam<T5>(4)); }); \
+    } \
+    template <typename Func, typename... BoundArgs, typename std::enable_if_t<std::is_convertible<Func, std::function<void(const BoundArgs&..., T, T2, T3, T4, T5)>>::value>* = nullptr> \
+    bool setCallback(size_t id, const Func& func, const BoundArgs&... args) \
+    { \
+        auto callback = m_callbacks.find(id); \
+        if (callback != m_callbacks.end()) \
+        { \
+            callback->second = [=]{  \
+                invokeFunc(func, args..., dereferenceParam<T>(0), dereferenceParam<T2>(1), dereferenceParam<T3>(2), dereferenceParam<T4>(3), dereferenceParam<T5>(4));  \
+            }; \
+            return true; \
+        } \
+        return false; \
     }
 
 /// Optional unbound parameters:
