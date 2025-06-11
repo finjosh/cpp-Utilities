@@ -1,5 +1,5 @@
-#ifndef FUNCHELPER_H
-#define FUNCHELPER_H
+#ifndef FUNC_HELPER_H
+#define FUNC_HELPER_H
 
 #pragma once
 

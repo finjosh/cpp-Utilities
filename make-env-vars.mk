@@ -19,6 +19,11 @@ define general_config
 	# empty defaults to ${PROJECT_DIRECTORY}
 	PROJECT_OUT_DIRECTORY:=
 	OBJECT_OUT_DIRECTORY:=/bin/$${COMPILE_OS}
+	ifeq ($${COMPILE_OS}, windows)
+	ifeq ($${HOST_OS}, linux)
+	OBJECT_OUT_DIRECTORY:=/bin/windows-via-linux
+	endif
+	endif
 	LINKER_FLAGS:=SET_LATER
 	INCLUDE_FLAGS:=
 	EXECUTABLE_EXTENSION:=SET_LATER
@@ -94,6 +99,12 @@ define windows_config
 				  -lsfml-network-s -lsfml-system-s -lws2_32 \
 				  -lsfml-system-s -lwinmm \
 				  -lstdc++
+
+	ifeq ($${BUILD_RELEASE},release)
+	ifeq ($${BUILD_TYPE},executable)
+		LINKER_FLAGS:=$${LINKER_FLAGS} -mwindows
+	endif
+	endif
 endef
 
 # First windows_config is evaluated, then windows_via_linux_config

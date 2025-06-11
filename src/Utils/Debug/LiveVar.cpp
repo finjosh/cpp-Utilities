@@ -57,7 +57,7 @@ bool LiveVar::initVar(const std::string& name, float value)
 {
     if (m_vars.find(name) == m_vars.end()) 
     {
-        m_vars.insert({name, {value, [](){}}});
+        m_vars.emplace(name, LiveVar::var(value, [](){}));
         onVarAdded.invoke(name);
         return true;
     }
@@ -69,7 +69,7 @@ bool LiveVar::initVar(const std::string& name, float value, funcHelper::funcDyna
 {
     if (m_vars.find(name) == m_vars.end()) 
     {
-        m_vars.insert({name, {value, func}});
+        m_vars.emplace(name, LiveVar::var(value, func));
         onVarAdded.invoke(name);
         return true;
     }

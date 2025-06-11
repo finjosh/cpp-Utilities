@@ -2,10 +2,10 @@
 
 using namespace EventHelper;
 
-std::list<std::pair<Event*, std::function<void()>>> Event::ThreadSafe::m_events;
-std::mutex Event::ThreadSafe::m_lock;
+std::list<std::pair<Event*, std::function<void()>>> Event::Synchronized::m_events;
+std::mutex Event::Synchronized::m_lock;
 
-void Event::ThreadSafe::update()
+void Event::Synchronized::update()
 {
     m_lock.lock();
     for (auto event: m_events)
@@ -16,7 +16,7 @@ void Event::ThreadSafe::update()
     m_lock.unlock();
 }
 
-void Event::ThreadSafe::removeEvent(Event* event)
+void Event::Synchronized::removeEvent(Event* event)
 {
     m_lock.lock();
     // removing from list
@@ -29,65 +29,45 @@ void Event::ThreadSafe::removeEvent(Event* event)
 
 std::deque<const void*> Event::m_parameters(5, nullptr);
 
-Event::Event(const Event& other) :
-    m_enabled {other.m_enabled},
-    m_functions{} // Event handlers are not copied
-{
-}
-
-Event& Event::operator=(const Event& other)
-{
-    if (this != &other)
-    {
-        m_enabled = other.m_enabled;
-        m_functions.clear(); // Event handlers are not copied
-    }
-
-    return *this;
-}
-
 bool Event::disconnect(size_t id)
 {
-    return (m_functions.erase(id) != 0);
+    return (m_callbacks.erase(id) != 0);
 }
 
 void Event::disconnectAll()
 {
-    m_functions.clear();
-    m_lastId = 0;
+    // all public ids will be greater than m_nextPublicID
+    auto iter = m_callbacks.lower_bound(m_nextPublicID);
+    m_callbacks.erase(iter, m_callbacks.end());
+    
+    // Reset the public ID counter
+    m_nextPublicID = STARTING_PUBLIC_ID;
 }
 
-bool Event::invoke(bool threadSafe, bool removeOtherInstances)
+void Event::invoke(bool threadSafe, bool removeOtherInstances)
 {
-    if (m_functions.empty() || !m_enabled)
-        return false;
+    if (m_callbacks.empty() || !m_enabled)
+        return;
 
     if (threadSafe)
     {
-        Event::ThreadSafe::addEvent(this, [this]{ Event::invokeFunc(&Event::_invoke, this); }, removeOtherInstances);
-        return true;
+        Event::Synchronized::addEvent(this, [this]{ Event::invokeFunc(&Event::_invoke, this); }, removeOtherInstances);
     }
 
     _invoke();
-    return true;
 }
 
 void Event::_invoke()
 {
-    auto function = m_functions.begin();
-    while (function != m_functions.end())
+    auto callback = m_callbacks.begin();
+    while (callback != m_callbacks.end())
     {
-        auto temp = function++;
+        auto temp = callback++;
         (*temp).second();
     }
 }
 
 size_t Event::getNumCallbacks() const
 {
-    return m_functions.size();
+    return m_callbacks.size();
 }
-
-// void Event::invokeThreadSafe()
-// {
-//     Event::ThreadSafe::addEvent(this);
-// }

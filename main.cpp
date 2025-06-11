@@ -28,12 +28,12 @@ int main()
     std::cout << GET_FUNCTION_INFO() << std::endl;
     // TestHelperTest::test();
     // funcHelperTest::test();
-    // EventHelperTest::test();
+    EventHelperTest::test();
     // StopwatchTest::test();
-    StringHelperTest::test();
+    // StringHelperTest::test();
     // UpdateLimiterTest::test();
     // LogTest::test();
-    iniParserTest::test();
+    // iniParserTest::test();
     // TerminatingFunctionTest::test(); 
     // // live var test is put after the VarDisplay is initalized so the vars will be in the display
     VarDisplayTest::test();
@@ -98,7 +98,7 @@ int main()
     while (window.isOpen())
     {
         //! should be called first thing every frame
-        EventHelper::Event::ThreadSafe::update();
+        EventHelper::Event::Synchronized::update();
         //! ----------------------------------------
         window.clear();
         // updating the delta time var

@@ -1,5 +1,5 @@
-#ifndef LIVEVAR_H
-#define LIVEVAR_H
+#ifndef LIVE_VAR_H
+#define LIVE_VAR_H
 
 #pragma once
 

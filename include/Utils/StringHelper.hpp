@@ -7,88 +7,75 @@
 #include <list>
 #include <vector>
 #include <stdint.h>
+#include <ostream>
+#include <sstream>
 
 class StringHelper
 {
 public:
-    /**
-     *  @brief removes the white space from the start and end of the string
-    */
-    static void trim(std::string& string);
-    /**
-     *  @brief returns a copy of the given string without any white space in it
-    */
+    
+    /// @brief removes the white space from the start and end of the string
+    /// @returns a reference to the inputted string
+    static std::string& trim(std::string& string);
+    /// @brief returns a copy of the given string without any white space in it
     static std::string trim_copy(std::string string);
     static void toLower(std::string& string);
     static std::string toLower_copy(std::string string);
     static void toUpper(std::string& string);
     static std::string toUpper_copy(std::string string);
-    /** @brief Converts the string to an integer
-     *  @param result Integer value if the string contains a base 10 integer. Unmodified if string is invalid.
-     *  @return Returns whether the string was valid and a value has been placed into the reference parameter.
-    */ 
+    /// @brief Converts the string to an integer
+    /// @param result Integer value if the string contains a base 10 integer. Unmodified if string is invalid.
+    /// @return Returns whether the string was valid and a value has been placed into the reference parameter. 
     static bool attemptToInt(std::string string, int& result);
-    /** @brief Converts the string to an integer
-     *  @param result unsigned Integer value if the string contains a base 10 unsigned integer. Unmodified if string is invalid.
-     *  @return Returns whether the string was valid and a value has been placed into the reference parameter.
-    */ 
+    /// @brief Converts the string to an integer
+    /// @param result unsigned Integer value if the string contains a base 10 unsigned integer. Unmodified if string is invalid.
+    /// @return Returns whether the string was valid and a value has been placed into the reference parameter.
     static bool attemptToUInt(std::string string, unsigned int& result);
-    /** @brief Converts the string to an integer
-     *  @param result Integer value if the string contains a base 10 integer. Unmodified if string is invalid.
-     *  @return Returns whether the string was valid and a value has been placed into the reference parameter.
-    */ 
+    /// @brief Converts the string to an integer
+    /// @param result Integer value if the string contains a base 10 integer. Unmodified if string is invalid.
+    /// @return Returns whether the string was valid and a value has been placed into the reference parameter.
     static bool attemptToULong(std::string string, unsigned long& result);
-    /** @brief Converts the string to a float
-     *  @param result  Float value if the string contains a float. Unmodified if string is invalid.
-     *  @return Returns whether the string was valid and a value has been placed into the reference parameter.
-    */ 
+    /// @brief Converts the string to a float
+    /// @param result  Float value if the string contains a float. Unmodified if string is invalid.
+    /// @return Returns whether the string was valid and a value has been placed into the reference parameter.
     static bool attemptToFloat(std::string string, float& result);
-    /** @brief Converts the string to a float
-     *  @param result  Long Double value if the string contains a Long Double. Unmodified if string is invalid.
-     *  @return Returns whether the string was valid and a value has been placed into the reference parameter.
-    */ 
+    /// @brief Converts the string to a float
+    /// @param result  Long Double value if the string contains a Long Double. Unmodified if string is invalid.
+    /// @return Returns whether the string was valid and a value has been placed into the reference parameter.
     static bool attemptToLongDouble(std::string string, long double& result);
-    /** @brief Converts the string to a bool
-     *  @note checks for "true" or "false" or "1" or "0"
-     *  @note trims and converts given string to lower case
-     *  @param result  Bool Value if the string contains a bool. Unmodified if string is invalid.
-     *  @return Returns whether the string was valid and a value has been place into the reference parameter.
-    */ 
+    /// @brief Converts the string to a bool
+    /// @note checks for "true" or "false" or "1" or "0"
+    /// @note trims and converts given string to lower case
+    /// @param result  Bool Value if the string contains a bool. Unmodified if string is invalid.
+    /// @return Returns whether the string was valid and a value has been place into the reference parameter.
     static bool attemptToBool(std::string string, bool& result);
-    /** @brief Converts the string to an integer
-     *  @param defaultValue  Value to return if conversion fails
-     *  @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
-    */ 
+    /// @brief Converts the string to an integer
+    /// @param defaultValue  Value to return if conversion fails
+    /// @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
     static int toInt(const std::string& string, int defaultValue = 0);
-    /** @brief Converts the string to an integer
-     *  @param defaultValue  Value to return if conversion fails
-     *  @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
-    */ 
+    /// @brief Converts the string to an integer
+    /// @param defaultValue  Value to return if conversion fails
+    /// @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
     static unsigned int toUInt(const std::string& string, unsigned int defaultValue = 0); 
-    /** @brief Converts the string to an integer
-     *  @param defaultValue  Value to return if conversion fails
-     *  @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
-    */ 
+    /// @brief Converts the string to an integer
+    /// @param defaultValue  Value to return if conversion fails
+    /// @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
    static unsigned long toULong(const std::string& string, int defaultValue = 0);
-    /** @brief Converts the string to a float
-     *  @param defaultValue  Value to return if conversion fails
-     *  @return Returns the float value or defaultValue if the string didn't contain a float
-    */ 
+    /// @brief Converts the string to a float
+    /// @param defaultValue  Value to return if conversion fails
+    /// @return Returns the float value or defaultValue if the string didn't contain a float
     static float toFloat(const std::string& string, float defaultValue = 0);
-    /** @brief Converts the string to a long double
-     *  @param defaultValue  Value to return if conversion fails
-     *  @return Returns the long double value or defaultValue if the string didn't contain a long double
-    */ 
+    /// @brief Converts the string to a long double
+    /// @param defaultValue  Value to return if conversion fails
+    /// @return Returns the long double value or defaultValue if the string didn't contain a long double
     static long double toLongDouble(const std::string& string, long double defaultValue = 0);
-    /** @brief Converts the string to a bool
-     *  @param defaultValue  Value to return if conversion fails
-     *  @return Returns the bool value or defaultValue if the string didn't contain a bool
-    */ 
+    /// @brief Converts the string to a bool
+    /// @param defaultValue  Value to return if conversion fails
+    /// @return Returns the bool value or defaultValue if the string didn't contain a bool
     static bool toBool(const std::string& string, bool defaultValue = 0);
-    /** @brief Converts a float to a string while rounding its decimal value
-     *  @param value is the float value to be converted
-     *  @param decimalRoundingPlace is the number of decimals to round to
-    */
+    /// @brief Converts a float to a string while rounding its decimal value
+    /// @param value is the float value to be converted
+    /// @param decimalRoundingPlace is the number of decimals to round to
     static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
     /// @returns the value as a string containing the two chars that represent it in hex
     static std::string intToHex(uint8_t value);
@@ -272,6 +259,22 @@ public:
 
     /// @note each token is trimmed
     static std::vector<std::string> tokenize(const std::string& str, char delim);
+    template<typename T>
+    inline static std::string fromNumber(T value)
+    {
+        // checking if we can just use to_string
+        if constexpr (std::is_integral<T>::value)
+        {
+            return {std::to_string(value)};
+        }
+        else
+        {
+            std::ostringstream oss;
+            oss.imbue(std::locale::classic());
+            oss << value;
+            return {oss.str()};
+        }
+    }
 
 private:
     inline StringHelper() = default;

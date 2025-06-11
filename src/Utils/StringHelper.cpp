@@ -1,16 +1,15 @@
 #include "Utils/StringHelper.hpp"
 #include <charconv>
 #include <algorithm>
-#include <sstream>
-#include <ostream>
 #include <iomanip>
 
 const char *const StringHelper::whitespaceDelimiters = " \t\n\r\f\v";
 
-void StringHelper::trim(std::string& string)
+std::string& StringHelper::trim(std::string& string)
 {
     string.erase(string.find_last_not_of(whitespaceDelimiters) + 1);
 	string.erase(0, string.find_first_not_of(whitespaceDelimiters));
+    return string;
 }
 
 std::string StringHelper::trim_copy(std::string string)
