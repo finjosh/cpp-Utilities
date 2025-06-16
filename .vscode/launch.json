@@ -8,7 +8,7 @@
             "name": "Debug - Win32",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\utils.exe",
+            "program": "${workspaceFolder}\\main.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

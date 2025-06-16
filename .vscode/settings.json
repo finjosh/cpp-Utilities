@@ -108,7 +108,6 @@
         }
     ],
     "makefile.makefilePath": "Makefile",
-    "C_Cpp.default.compilerPath": "\\dev-env\\MSYS2\\mingw64\\bin\\gcc.exe",
     "cSpell.words": [
         "tgui"
     ]

@@ -1,4 +1,6 @@
 #* ALL paths should start with a / and end without one
+#* it is preferred to use only '/' in paths instead of mixing with '\'
+#* ALL paths must be relative to the project directory
 #* Try to use COMPILE_OS instead of HOST_OS unless needed
 # Some variables that are accessible at eval
 # HOST_OS: the OS the makefile is running on

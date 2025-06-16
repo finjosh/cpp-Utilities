@@ -393,8 +393,7 @@ class EventDynamic : public Event
 public:
 
     /// @brief Constructor
-    EventDynamic()
-    {}
+    inline EventDynamic() = default;
 
     CONNECT_NO_PARAMS();
     CONNECT_ONE_PARAM();
