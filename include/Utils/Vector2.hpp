@@ -13,7 +13,7 @@ class Vector2
 {
 public:
     inline Vector2() = default;
-    Vector2(float x, float y);
+    inline Vector2(float x, float y) : x(x), y(y) {}
     Vector2(const Vector2& vector);
     /// @brief attempts to convert the given string to a vector2 and initializes this
     Vector2(std::string str);

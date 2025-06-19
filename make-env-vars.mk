@@ -59,7 +59,9 @@ define general_config
 
 	SOURCE_FILES_NO_GRAPHICS=$$(PROJECT_DIRECTORY)/src/Utils/CommandHandler.cpp $$(PROJECT_DIRECTORY)/src/Utils/EventHelper.cpp\
 							 $$(PROJECT_DIRECTORY)/src/Utils/iniParser.cpp $$(PROJECT_DIRECTORY)/src/Utils/Log.cpp\
-							 $$(PROJECT_DIRECTORY)/src/Utils/StringHelper.cpp $$(PROJECT_DIRECTORY)/src/Utils/TerminatingFunction.cpp
+							 $$(PROJECT_DIRECTORY)/src/Utils/StringHelper.cpp $$(PROJECT_DIRECTORY)/src/Utils/TerminatingFunction.cpp\
+							 $$(PROJECT_DIRECTORY)/src/Utils/Vector2.cpp $$(PROJECT_DIRECTORY)/src/Utils/Rotation.cpp\
+							 $$(PROJECT_DIRECTORY)/src/Utils/Transform.cpp
 endef
 
 define executable_config
