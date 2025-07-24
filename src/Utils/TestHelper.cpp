@@ -255,7 +255,7 @@ std::string TestHelper::runTest(TestHelper::FileExists fileExists, const std::st
     for (size_t i: m_yData)
     {
         m_yData[i] /= m_repetitions;
-        if (abs(m_yData[i]) == std::numeric_limits<float>::infinity())
+        if (std::abs(m_yData[i]) == std::numeric_limits<float>::infinity())
             m_yData[i] = inf;
     }
 
@@ -517,8 +517,10 @@ bool TestHelper::makeGraph(Graph& graph, const iniParser& data, float thickness)
         if (i.first == "General")
             continue;
         if (auto yValues = data.getSection(i.first)->getValue("Values"))
-        graphData.setYValues(StringHelper::toVector<float>(*yValues));
-        graphData.setLabel(i.first);
+        {
+            graphData.setYValues(StringHelper::toVector<float>(*yValues));
+            graphData.setLabel(i.first);
+        }
 
         graphData.setThickness(thickness);
 

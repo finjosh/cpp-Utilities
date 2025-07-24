@@ -4,6 +4,7 @@
 #include "TGUI/TGUI.hpp"
 #include "TGUI/Backend/SFML-Graphics.hpp"
 
+#include "Utils/StringHelper.hpp"
 #include "include/Examples/funcHelper.hpp"
 #include "include/Examples/EventHelper.hpp"
 #include "include/Examples/Stopwatch.hpp"

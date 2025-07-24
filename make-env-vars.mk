@@ -14,6 +14,9 @@
 #* i.e. executable_config is evaluated after general_config if compiling an executable
 #* First, general_config, then BUILT_TYPE, then BUILD_RELEASE, then OS
 
+# so that the clangd compile commands are auto updated
+MAKE:=bear --output compile_commands.json --append -- ${MAKE}
+
 define general_config
 	MAKEFLAGS:=-j$$(NUM_THREADS)
 	
@@ -121,7 +124,7 @@ endef
 define linux_config
 	EXECUTABLE_EXTENSION:=
 	LIB_EXTENSION:=.so
-	CREATE_LIB:=g++ -shared -o
+	CREATE_LIB:=g++ ${C_CPP_COMPILER_FLAGS} -shared -o
 	
 	INCLUDE_DIRECTORIES:=$${INCLUDE_DIRECTORIES} /usr/include
 	LIB_DIRECTORIES:=$${LIB_DIRECTORIES} /lib

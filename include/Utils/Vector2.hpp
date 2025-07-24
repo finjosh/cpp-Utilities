@@ -15,8 +15,10 @@ public:
     inline Vector2() = default;
     inline Vector2(float x, float y) : x(x), y(y) {}
     Vector2(const Vector2& vector);
-    /// @brief attempts to convert the given string to a vector2 and initializes this
+    /// @brief attempts to convert the given string to a vector2
+    /// @note format is "(x,y)" where x and y are a floating point value
     Vector2(std::string str);
+    /// @note format is "(x,y)" where x and y are a floating point value
     std::string toString() const;
 
     /// @brief adds given vector to this

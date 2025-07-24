@@ -14,20 +14,27 @@ class Rotation
 {
 public:
     inline Rotation() = default;
+    /// @brief uses radians as the rotation
+    /// @note for setting as degrees use setDegrees() 
     Rotation(float radians);
     Rotation(const Rotation& rotation);
     Rotation(float cos, float sin);
 
     /// @brief sets the stored sin and cos values with and angle in radians
     void set(float radians);
+    inline void setDegrees(float degrees) { this->set(degrees/180.f*PI); }
     /// @returns the rotation/angle in radians
     float getAngle() const;
     /// @returns the rotation/angle in degrees
     float getAngleInDegrees() const;
     /// @brief same as "getAngleInDegrees()"
-    float getDegrees() const { return getAngleInDegrees(); }
+    inline float getDegrees() const { return getAngleInDegrees(); }
+    /// @brief same as getDegrees()
+    inline float asDegrees() const { return this->getDegrees(); }
     /// @brief same as "getAngle()"
-    float getRadians() const { return getAngle(); }
+    inline float getRadians() const { return getAngle(); }
+    /// @brief same as getRadians()
+    inline float asRadians() const { return this->getRadians(); }
     /// @brief sets the stored rotation to 0
     void setZero();
 	/// @returns the rotated x axis (1,0) in terms of this rotation

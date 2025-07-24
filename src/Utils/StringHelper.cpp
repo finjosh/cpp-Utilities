@@ -1,4 +1,5 @@
 #include "Utils/StringHelper.hpp"
+#include <cctype>
 #include <charconv>
 #include <algorithm>
 #include <iomanip>
@@ -79,55 +80,55 @@ bool StringHelper::attemptToBool(std::string string, bool& result)
     return false;
 }
 
-int StringHelper::toInt(const std::string& string, int defaultValue)
+int StringHelper::toInt(std::string string, int defaultValue)
 {
     int result;
-    if (attemptToInt(string, result))
+    if (attemptToInt(std::move(string), result))
         return result;
     else
         return defaultValue;
 }
 
-unsigned int StringHelper::toUInt(const std::string& string, unsigned int defaultValue)
+unsigned int StringHelper::toUInt(std::string string, unsigned int defaultValue)
 {
     unsigned int result;
-    if (attemptToUInt(string, result))
+    if (attemptToUInt(std::move(string), result))
         return result;
     else
         return defaultValue;
 }
 
-unsigned long StringHelper::toULong(const std::string& string, int defaultValue)
+unsigned long StringHelper::toULong(std::string string, int defaultValue)
 {
     unsigned long result;
-    if (attemptToULong(string, result))
+    if (attemptToULong(std::move(string), result))
         return result;
     else
         return defaultValue;
 }
 
-float StringHelper::toFloat(const std::string& string, float defaultValue)
+float StringHelper::toFloat(std::string string, float defaultValue)
 {
     float result;
-    if (attemptToFloat(string, result))
+    if (attemptToFloat(std::move(string), result))
         return result;
     else
         return defaultValue;
 }
 
-long double StringHelper::toLongDouble(const std::string& string, long double defaultValue)
+long double StringHelper::toLongDouble(std::string string, long double defaultValue)
 {
     long double result;
-    if (attemptToLongDouble(string, result))
+    if (attemptToLongDouble(std::move(string), result))
         return result;
     else 
         return defaultValue;
 }
 
-bool StringHelper::toBool(const std::string& string, bool defaultValue)
+bool StringHelper::toBool(std::string string, bool defaultValue)
 {
     bool result;
-    if (attemptToBool(string, result))
+    if (attemptToBool(std::move(string), result))
         return result;
     else
         return defaultValue;
@@ -140,6 +141,52 @@ std::string StringHelper::FloatToStringRound(float value, unsigned int decimalRo
     oss << std::fixed << std::setprecision(static_cast<int>(decimalRoundingPlace));
     oss << value;
     return {oss.str()};
+}
+
+uint8_t StringHelper::fromHex(std::string hex)
+{
+    return (fromHex(hex[0]) << 4 | fromHex(hex[1]));
+}
+
+uint8_t StringHelper::fromHex(char hex)
+{
+    switch (hex)
+    {
+    case '0':
+        return 0;
+    case '1':
+        return 1;
+    case '2':
+        return 2;
+    case '3':
+        return 3;
+    case '4':
+        return 4;
+    case '5':
+        return 5;
+    case '6':
+        return 6;
+    case '7':
+        return 7;
+    case '8':
+        return 8;
+    case '9':
+        return 9;
+    case 'A':
+        return 10;
+    case 'B':
+        return 11;
+    case 'C':
+        return 12;
+    case 'D':
+        return 13;
+    case 'E':
+        return 14;
+    case 'F':
+        return 15;
+    default:
+        return 0;
+    }
 }
 
 std::string StringHelper::intToHex(uint8_t value)

@@ -52,37 +52,42 @@ public:
     /// @brief Converts the string to an integer
     /// @param defaultValue  Value to return if conversion fails
     /// @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
-    static int toInt(const std::string& string, int defaultValue = 0);
+    static int toInt(std::string string, int defaultValue = 0);
     /// @brief Converts the string to an integer
     /// @param defaultValue  Value to return if conversion fails
     /// @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
-    static unsigned int toUInt(const std::string& string, unsigned int defaultValue = 0); 
+    static unsigned int toUInt(std::string string, unsigned int defaultValue = 0); 
     /// @brief Converts the string to an integer
     /// @param defaultValue  Value to return if conversion fails
     /// @return Returns the integer value or defaultValue if the string didn't contain a base 10 integer
-   static unsigned long toULong(const std::string& string, int defaultValue = 0);
+   static unsigned long toULong(std::string string, int defaultValue = 0);
     /// @brief Converts the string to a float
     /// @param defaultValue  Value to return if conversion fails
     /// @return Returns the float value or defaultValue if the string didn't contain a float
-    static float toFloat(const std::string& string, float defaultValue = 0);
+    static float toFloat(std::string string, float defaultValue = 0);
     /// @brief Converts the string to a long double
     /// @param defaultValue  Value to return if conversion fails
     /// @return Returns the long double value or defaultValue if the string didn't contain a long double
-    static long double toLongDouble(const std::string& string, long double defaultValue = 0);
+    static long double toLongDouble(std::string string, long double defaultValue = 0);
     /// @brief Converts the string to a bool
     /// @param defaultValue  Value to return if conversion fails
     /// @return Returns the bool value or defaultValue if the string didn't contain a bool
-    static bool toBool(const std::string& string, bool defaultValue = 0);
+    static bool toBool(std::string string, bool defaultValue = 0);
     /// @brief Converts a float to a string while rounding its decimal value
     /// @param value is the float value to be converted
     /// @param decimalRoundingPlace is the number of decimals to round to
     static std::string FloatToStringRound(float value, unsigned int decimalRoundingPlace = 1);
+    /// @note if given char is not hex then returns 0
+    static uint8_t fromHex(char hex);
+    /// @param hex only uses first two chars
+    static uint8_t fromHex(std::string hex);
     /// @returns the value as a string containing the two chars that represent it in hex
     static std::string intToHex(uint8_t value);
     /// @returns the hex char representing the first 4 bits in the given int
     static char intToHex_char(uint8_t value);
 
-    template <typename T = float, typename ConvertFunc = T(const std::string&, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
+    // TODO add options to change bracket type and quotation type while parsing from/converting to string
+    template <typename T = float, typename ConvertFunc = T(std::string, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::list<T> toList(const std::string& str, const ConvertFunc& convFunc = &StringHelper::toFloat, T defaultValue = 0)
     {
         std::list<T> rtn;
@@ -106,7 +111,7 @@ public:
             std::string temp = str.substr(curPos,nextComma-curPos); // getting string between quotes
             curPos = nextComma + 1;
             trim(temp);
-            rtn.emplace_back(convFunc(temp, defaultValue));
+            rtn.emplace_back(convFunc(std::move(temp), defaultValue));
         }
         return rtn;
     }
@@ -138,7 +143,7 @@ public:
         return rtn;
     }
 
-    template <typename T = float, typename ConvertFunc = T(const std::string&, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
+    template <typename T = float, typename ConvertFunc = T(std::string, T), typename std::enable_if_t<!std::is_same_v<std::string, T>>* = nullptr>
     static inline std::vector<T> toVector(const std::string& str, const ConvertFunc& convFunc = StringHelper::toFloat, T defaultValue = 0)
     {
         std::vector<T> rtn = {};
@@ -162,7 +167,7 @@ public:
             std::string temp = str.substr(curPos,nextComma-curPos); // getting string between quotes
             curPos = nextComma + 1;
             trim(temp);
-            rtn.emplace_back(convFunc(temp, defaultValue));
+            rtn.emplace_back(convFunc(std::move(temp), defaultValue));
         }
         return rtn;
     }
@@ -275,10 +280,10 @@ public:
             return {oss.str()};
         }
     }
-
+    
+    static const char *const whitespaceDelimiters;
 private:
     inline StringHelper() = default;
-    static const char *const whitespaceDelimiters;
 };
 
 #endif
